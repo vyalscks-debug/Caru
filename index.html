@@ -47,6 +47,7 @@
   .tab-btn{ background:none; border:none; cursor:pointer; padding:0 0 10px; font-family:'JetBrains Mono', monospace; font-size:12px; letter-spacing:0.05em; color:var(--muted); border-bottom:2px solid transparent; margin-bottom:-1px; }
   .tab-btn.active{ color:var(--ink); border-bottom-color:var(--ink); }
 
+  .today-prev-inline{border:0;background:none;color:inherit;font:inherit;font-weight:700;padding:0 7px 0 0;cursor:pointer;vertical-align:1px;}
   .date-title{ font-family:'Space Grotesk', sans-serif; font-weight:700; font-size:26px; letter-spacing:-0.01em; margin:0 0 4px; }
   .frac{ font-family:'JetBrains Mono', monospace; font-size:13px; color:var(--muted); margin-bottom:4px; }
   .mini-balance{ font-family:'JetBrains Mono', monospace; font-size:12.5px; color:var(--muted); margin-bottom:20px; }
@@ -347,6 +348,8 @@
   progressWeekStart.setHours(0,0,0,0);
   progressWeekStart.setDate(progressWeekStart.getDate() - ((progressWeekStart.getDay() + 6) % 7));
   let selectedProgressDay = null;
+  let selectedTodayDate = new Date();
+  selectedTodayDate.setHours(0,0,0,0);
 
   // ---- Focus session state ----
   let focusActive = false;
@@ -423,7 +426,7 @@
     else document.documentElement.removeAttribute('data-theme');
   }
 
-  function todayItems(){ return data.items.filter(it => it.date === todayKey()); }
+  function todayItems(){ return data.items.filter(it => it.date === dkeyFromDate(selectedTodayDate)); }
 
   function dayNet(dateKey){
     return data.items
@@ -559,7 +562,7 @@
       </div>
       <div class="comment-block">
         <div class="picker-label">Today's note</div>
-        <textarea class="comment-textarea" id="comment-textarea" placeholder="How did today go?">${escapeHtml(data.comments[todayKey()] || '')}</textarea>
+        <textarea class="comment-textarea" id="comment-textarea" placeholder="How did today go?">${escapeHtml(data.comments[dkeyFromDate(selectedTodayDate)] || '')}</textarea>
       </div>
     `;
   }
@@ -946,6 +949,16 @@
     if(activeTab === 'progress'){ bindProgressEvents(); return; }
     if(activeTab !== 'today') return;
 
+    const prevTodayBtn = document.getElementById('today-prev-day');
+    if(prevTodayBtn){
+      prevTodayBtn.addEventListener('click', () => {
+        selectedTodayDate = new Date(selectedTodayDate);
+        selectedTodayDate.setDate(selectedTodayDate.getDate() - 1);
+        selectedTodayDate.setHours(0,0,0,0);
+        render();
+      });
+    }
+
     root.querySelectorAll('[data-action="delete"]').forEach(btn => {
       btn.addEventListener('click', async () => {
         const id = btn.dataset.id;
@@ -970,7 +983,7 @@
       const input = document.getElementById('add-input');
       const typed = input ? input.value.trim() : '';
       const text = typed || ICON_LABELS[newItemIcon] || 'Item';
-      data.items.push({ id: uid(), icon: newItemIcon, type: newItemType, text, date: todayKey() });
+      data.items.push({ id: uid(), icon: newItemIcon, type: newItemType, text, date: dkeyFromDate(selectedTodayDate) });
       newItemText = ''; newItemType = 'plan';
       render(); await save();
       const again = document.getElementById('add-input'); if(again) again.focus();
@@ -1055,7 +1068,7 @@
     const commentArea = document.getElementById('comment-textarea');
     if(commentArea){
       commentArea.addEventListener('blur', async () => {
-        data.comments[todayKey()] = commentArea.value;
+        data.comments[dkeyFromDate(selectedTodayDate)] = commentArea.value;
         await save();
       });
     }
