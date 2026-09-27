@@ -44,15 +44,17 @@
   .theme-toggle{ border:1px solid var(--ink); background:var(--paper); color:var(--ink); font-family:'JetBrains Mono', monospace; font-size:10.5px; padding:5px 11px; border-radius:12px; cursor:pointer; }
   .theme-toggle:hover{ background:var(--hover); }
 
+  /* 탭: + / - 미니멀 기호 */
   .tabs{ display:flex; gap:18px; margin-bottom:22px; border-bottom:1px solid var(--divider); }
   .tab-btn{ background:none; border:none; cursor:pointer; padding:0 0 10px; font-family:'JetBrains Mono', monospace; font-size:12.5px; letter-spacing:0.05em; color:var(--muted); border-bottom:2px solid transparent; margin-bottom:-1px; transition:color .15s; }
-  .tab-btn.active{ color:var(--ink); border-bottom-color:var(--ink); font-weight:600; }
+  .tab-btn.active{ color:var(--ink); border-bottom-color:var(--ink); font-weight:700; }
 
   .date-title{ font-family:'Space Grotesk', sans-serif; font-weight:700; font-size:22px; letter-spacing:-0.01em; margin:0 0 12px; }
 
   .list{ list-style:none; margin:0 0 4px; padding:0; }
-  .item{ display:flex; align-items:center; gap:8px; padding:12px 2px; border-bottom:1px solid var(--divider); }
+  .item{ display:flex; align-items:center; gap:9px; padding:12px 2px; border-bottom:1px solid var(--divider); }
   
+  /* 뱃지 대비: Charge는 아웃라인 맑음, Drain은 솔리드 묵직함 */
   .type-pill{
     flex:none; font-family:'JetBrains Mono', monospace; font-size:10.5px; font-weight:700;
     padding:3px 8px; border-radius:10px; border:1.3px solid var(--ink); color:var(--ink); background:transparent;
@@ -63,12 +65,15 @@
   .item-text{ flex:1; font-size:15px; line-height:1.4; word-break:break-word; }
   .item.done .item-text{ text-decoration:line-through; color:var(--muted); }
 
-  /* 네모 체크박스 공통 스타일 */
+  /* 1번 대비: Charge는 동그란 원형(○), Drain은 각진 네모(□) */
   .check-btn{
-    flex:none; width:22px; height:22px; border-radius:6px; border:1.5px solid var(--ink);
+    flex:none; width:22px; height:22px; border:1.5px solid var(--ink);
     background:transparent; cursor:pointer; display:flex; align-items:center; justify-content:center;
-    font-size:12px; padding:0; color:transparent; transition:all .12s;
+    font-size:11px; padding:0; color:transparent; transition:all .12s;
   }
+  .check-btn.charge-round{ border-radius:50%; } /* 원형 */
+  .check-btn.drain-square{ border-radius:4px; }  /* 각진 사각 */
+  
   .item.done .check-btn{ background:var(--ink); color:var(--paper); font-weight:700; }
 
   .del-btn{ flex:none; width:24px; height:24px; border:none; background:none; color:var(--muted); font-size:18px; cursor:pointer; line-height:1; }
@@ -88,7 +93,7 @@
   .comment-textarea::placeholder{ color:var(--muted); }
   .picker-label{ font-family:'JetBrains Mono', monospace; font-size:9.5px; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); margin-bottom:8px; }
 
-  /* 카테고리 칩: 검은색(#000000) 테두리 */
+  /* 카테고리 칩: 검은색(#000000) 테두리 유지 */
   .word-grid{
     display:flex; flex-wrap:wrap; gap:6px 7px; margin-bottom:14px;
     align-items:center;
@@ -118,14 +123,15 @@
   .add-input::placeholder{ color:var(--muted); }
   .add-submit-btn{ flex:none; border:1px solid var(--ink); background:var(--ink); color:var(--paper); font-family:'JetBrains Mono', monospace; font-size:11px; padding:9px 16px; border-radius:16px; cursor:pointer; }
 
+  /* 3번 대비: Charge는 아웃라인(라이트), Drain은 솔리드(묵직함) */
   .single-btn{
     width:100%; border:1.3px solid var(--ink);
     font-family:'JetBrains Mono', monospace; font-size:13px; font-weight:600;
     padding:12px 10px; border-radius:12px; cursor:pointer; margin-top:14px;
     transition:opacity .15s, transform .1s;
   }
-  .single-btn.charge{ background:var(--ink); color:var(--paper); }
-  .single-btn.drain{ background:var(--paper); color:var(--ink); }
+  .single-btn.charge-btn{ background:var(--paper); color:var(--ink); } /* 맑은 테두리 */
+  .single-btn.drain-btn{ background:var(--ink); color:var(--paper); }   /* 꽉 찬 블랙 */
   .single-btn:active{ transform:scale(0.98); opacity:0.9; }
 
   /* 주간 네비 & 7개 요일 바 */
@@ -368,14 +374,12 @@
   let chargeIconEditMode = false;
   let drainIconEditMode = false;
 
-  // Charge / Drain 각각의 Edit as a routine 토글 모드
   let chargeEditRoutineMode = false;
   let drainEditRoutineMode = false;
 
-  let selectedChargeRoutineDays = [1, 2, 3, 4, 5, 6, 0]; // 기본: 매일
-  let selectedDrainRoutineDays = [1, 2, 3, 4, 5];         // 기본: 평일
+  let selectedChargeRoutineDays = [1, 2, 3, 4, 5, 6, 0]; // Charge는 기본 매일
+  let selectedDrainRoutineDays = [1, 2, 3, 4, 5];         // Drain은 기본 평일
 
-  // 주간 기준 날짜 (Charge와 Drain 공통 기준)
   let currentWeekMonday = getMonday(new Date());
   let selectedChargeDate = todayKey();
   let selectedDrainDate = todayKey();
@@ -489,7 +493,7 @@
   }
 
   // ==========================================
-  // 1) Charge 탭 (체크박스 + Charge 루틴 + Daily Note)
+  // 1) + Charge 탭 (원형 체크박스 ○, 아웃라인 버튼)
   // ==========================================
   function renderChargeTab(){
     const days = [];
@@ -531,15 +535,15 @@
 
     const dayRoutines = (data.chargeRoutines || []).filter(r => (r.days || []).includes(selectedDow));
 
-    // [✓ 체크박스] [Charge +1 뱃지] 텍스트 [× 삭제버튼]
+    // [✓ 원형 체크박스] [Charge +1 뱃지] 텍스트 [× 삭제버튼]
     const routinesListHtml = dayRoutines.length
       ? dayRoutines.map(r => {
           const itemId = `rt_c_${r.id}_${selectedChargeDate}`;
           const isDone = data.items.some(it => it.id === itemId);
           return `
             <li class="item${isDone ? ' done' : ''}" data-routine-id="${r.id}">
-              <button class="check-btn" data-action="toggle-charge-routine" data-routine-id="${r.id}">
-                ${isDone ? '✓' : ''}
+              <button class="check-btn charge-round" data-action="toggle-charge-routine" data-routine-id="${r.id}">
+                ${isDone ? '●' : ''}
               </button>
               <span class="type-pill">Charge +1</span>
               <span class="item-text">${escapeHtml(r.text)}</span>
@@ -547,7 +551,7 @@
             </li>
           `;
         }).join('')
-      : `<li class="item-empty">No charge routines set for ${DAY_NAMES_SHORT[selectedDow]}. Add one below!</li>`;
+      : `<li class="item-empty">No charge routines for ${DAY_NAMES_SHORT[selectedDow]}. Add one below!</li>`;
 
     const pickerKeys = getChargeCategories();
     const wordGridHtml = pickerKeys.map(key => `
@@ -589,7 +593,7 @@
       
       <div class="comment-block main-note">
         <div class="picker-label">Daily note</div>
-        <textarea class="comment-textarea" id="comment-textarea" placeholder="How did today go?">${escapeHtml(data.comments[selectedChargeDate] || '')}</textarea>
+        <textarea class="comment-textarea" id="comment-textarea" placeholder="How did you recharge today?">${escapeHtml(data.comments[selectedChargeDate] || '')}</textarea>
       </div>
 
       <ul class="list">${routinesListHtml}</ul>
@@ -627,15 +631,16 @@
         ` : ''}
 
         <div class="add-row">
-          <input class="add-input" id="charge-add-input" type="text" placeholder="e.g. Sleep, Walk, Reading…" value="${escapeHtml(newItemText)}" />
+          <input class="add-input" id="charge-add-input" type="text" placeholder="What brought you energy today?" value="${escapeHtml(newItemText)}" />
         </div>
-        <button class="single-btn charge" id="charge-submit-btn">+ Charge</button>
+        <!-- 3번: Charge는 테두리선 중심의 맑은 버튼 -->
+        <button class="single-btn charge-btn" id="charge-submit-btn">+ Charge</button>
       </div>
     `;
   }
 
   // ==========================================
-  // 2) Drain 탭
+  // 2) − Drain 탭 (각진 사각 체크박스 □, 묵직한 솔리드 버튼)
   // ==========================================
   function renderDrainTab(){
     const days = [];
@@ -677,14 +682,15 @@
 
     const dayRoutines = (data.drainRoutines || []).filter(r => (r.days || []).includes(selectedDow));
 
+    // [✓ 각진 사각 체크박스] [Drain −1 뱃지] 텍스트 [× 삭제버튼]
     const routinesListHtml = dayRoutines.length
       ? dayRoutines.map(r => {
           const itemId = `rt_d_${r.id}_${selectedDrainDate}`;
           const isDone = data.items.some(it => it.id === itemId);
           return `
             <li class="item${isDone ? ' done' : ''}" data-routine-id="${r.id}">
-              <button class="check-btn" data-action="toggle-drain-routine" data-routine-id="${r.id}">
-                ${isDone ? '✓' : ''}
+              <button class="check-btn drain-square" data-action="toggle-drain-routine" data-routine-id="${r.id}">
+                ${isDone ? '■' : ''}
               </button>
               <span class="type-pill plan">Drain −1</span>
               <span class="item-text">${escapeHtml(r.text)}</span>
@@ -766,9 +772,10 @@
         ` : ''}
 
         <div class="add-row">
-          <input class="add-input" id="drain-add-input" type="text" placeholder="e.g. Commute, Gym, Study…" value="${escapeHtml(newItemText)}" />
+          <input class="add-input" id="drain-add-input" type="text" placeholder="What demands your focus today?" value="${escapeHtml(newItemText)}" />
         </div>
-        <button class="single-btn drain" id="drain-submit-btn">- Drain</button>
+        <!-- 3번: Drain은 솔리드 블랙의 묵직한 버튼 -->
+        <button class="single-btn drain-btn" id="drain-submit-btn">- Drain</button>
       </div>
     `;
   }
@@ -879,7 +886,7 @@
 
     return `
       <div class="progress-summary-bar">
-        <span class="sub-counts">Charge: ${healDone} · Drain: ${planDone}</span>
+        <span class="sub-counts">+Charge: ${healDone} · −Drain: ${planDone}</span>
         <div class="streak-row">
           <span class="streak-value">${streak}</span>
           <span class="streak-label">day streak</span>
@@ -907,8 +914,8 @@
       <div class="stats-section">
         <p class="section-title">Top Activity Breakdown</p>
         <div class="stats-toggle-row">
-          <button class="stats-tab-btn${activeStatsTab==='charge'?' active':''}" data-stats-tab="charge">⚡ Top Charge</button>
-          <button class="stats-tab-btn${activeStatsTab==='drain'?' active':''}" data-stats-tab="drain">📋 Top Drain</button>
+          <button class="stats-tab-btn${activeStatsTab==='charge'?' active':''}" data-stats-tab="charge">⚡ Top +Charge</button>
+          <button class="stats-tab-btn${activeStatsTab==='drain'?' active':''}" data-stats-tab="drain">📋 Top −Drain</button>
         </div>
         <div class="stats-box">
           ${statsContentHtml}
@@ -932,8 +939,8 @@
         <button class="theme-toggle" id="theme-toggle">${theme === 'dark' ? 'Light' : 'Dark'}</button>
       </div>
       <div class="tabs">
-        <button class="tab-btn${activeTab==='charge'?' active':''}" data-tab="charge">Charge</button>
-        <button class="tab-btn${activeTab==='drain'?' active':''}" data-tab="drain">Drain</button>
+        <button class="tab-btn${activeTab==='charge'?' active':''}" data-tab="charge">+ Charge</button>
+        <button class="tab-btn${activeTab==='drain'?' active':''}" data-tab="drain">− Drain</button>
         <button class="tab-btn${activeTab==='progress'?' active':''}" data-tab="progress">Progress</button>
       </div>
       ${activeTab === 'charge' ? renderChargeTab() : (activeTab === 'drain' ? renderDrainTab() : renderProgressTab())}
@@ -977,7 +984,7 @@
         });
       });
 
-      // Charge 체크박스 토글
+      // Charge 원형 체크박스 토글
       root.querySelectorAll('[data-action="toggle-charge-routine"]').forEach(btn => {
         btn.addEventListener('click', async () => {
           const rid = btn.dataset.routineId;
@@ -1148,7 +1155,7 @@
         });
       });
 
-      // Drain 체크박스 토글
+      // Drain 사각 체크박스 토글
       root.querySelectorAll('[data-action="toggle-drain-routine"]').forEach(btn => {
         btn.addEventListener('click', async () => {
           const rid = btn.dataset.routineId;
