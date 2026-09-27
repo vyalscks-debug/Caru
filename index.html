@@ -1,19 +1,18 @@
 <!doctype html>
-<html lang="en">
+<html lang="ko">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
 <meta name="apple-mobile-web-app-title" content="Caru" />
-<meta name="theme-color" content="#000000" />
+<meta name="theme-color" content="#fbfaf8" />
 <title>Caru</title>
-<!-- TensorFlow & BlazeFace -->
-<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
-<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/blazeface"></script>
+
 <!-- Firebase App & Database (compat SDK) -->
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
 
@@ -25,13 +24,17 @@
     --ink:#f3f1ec; --paper:#121110; --muted:#8a8378; --faint:#332f2a;
     --hover:#1d1b18; --band:#1e1c19; --divider:#2c2925;
   }
-  *{ box-sizing:border-box; }
+  *{ box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
   html,body{
     margin:0; padding:0; background:var(--paper); color:var(--ink);
     font-family:'Inter', -apple-system, sans-serif; -webkit-font-smoothing:antialiased;
     transition:background 0.15s ease, color 0.15s ease;
   }
-  #root{ max-width:420px; margin:0 auto; padding:36px 22px 90px; min-height:100vh; }
+  #root{ 
+    max-width:420px; margin:0 auto; 
+    padding: calc(env(safe-area-inset-top) + 24px) 22px calc(env(safe-area-inset-bottom) + 80px); 
+    min-height:100vh; 
+  }
 
   .top-bar{ display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
   .top-left{ display:flex; align-items:center; gap:8px; }
@@ -52,7 +55,6 @@
 
   .list{ list-style:none; margin:0 0 4px; padding:0; }
   .item{ display:flex; align-items:center; gap:10px; padding:13px 2px; border-bottom:1px solid var(--divider); }
-  .item-word{ flex:none; font-size:13.5px; color:var(--ink); font-weight:600; }
   .type-pill{
     flex:none; font-family:'JetBrains Mono', monospace; font-size:10.5px; font-weight:700;
     padding:3px 8px; border-radius:10px; border:1.3px solid var(--ink); color:var(--ink); background:transparent;
@@ -60,7 +62,7 @@
   }
   .type-pill.plan{ background:var(--ink); color:var(--paper); }
   .item-text{ flex:1; font-size:15.5px; line-height:1.4; word-break:break-word; }
-  .del-btn{ flex:none; width:20px; height:20px; border:none; background:none; color:var(--muted); font-size:16px; cursor:pointer; line-height:1; }
+  .del-btn{ flex:none; width:24px; height:24px; border:none; background:none; color:var(--muted); font-size:18px; cursor:pointer; line-height:1; }
   .del-btn:hover{ color:var(--ink); }
 
   .item-empty{ padding:26px 2px; color:var(--muted); font-size:14px; text-align:center; }
@@ -68,12 +70,12 @@
   .add-block{ margin-top:18px; padding-top:18px; border-top:1px solid var(--ink); }
   .comment-block{ margin-top:24px; }
   .main-note{ margin:10px 0 22px; }
-  .main-note .comment-textarea{ min-height:96px; font-size:15px; }
+  .main-note .comment-textarea{ min-height:86px; font-size:14px; }
   .quick-add-row{ display:flex; gap:8px; margin-top:12px; }
   .quick-add-btn{
     flex:1; border:1.3px solid var(--ink); background:var(--paper); color:var(--ink);
-    font-family:'JetBrains Mono', monospace; font-size:12px; font-weight:600;
-    padding:11px 10px; border-radius:12px; cursor:pointer; transition:transform .1s, background .15s;
+    font-family:'JetBrains Mono', monospace; font-size:13px; font-weight:600;
+    padding:12px 10px; border-radius:12px; cursor:pointer; transition:transform .1s, background .15s;
   }
   .quick-add-btn:active{ transform:scale(0.97); }
   .quick-add-btn.active{ background:var(--ink); color:var(--paper); }
@@ -85,9 +87,6 @@
   }
   .comment-textarea::placeholder{ color:var(--muted); }
   .picker-label{ font-family:'JetBrains Mono', monospace; font-size:9.5px; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); margin-bottom:8px; }
-  .cat-pill{ border:1.3px solid var(--ink); background:var(--paper); color:var(--ink); font-family:'JetBrains Mono', monospace; font-size:11px; padding:6px 12px; border-radius:14px; cursor:pointer; white-space:nowrap; }
-  .cat-pill.active{ background:var(--ink); color:var(--paper); }
-  .type-picker{ display:flex; gap:6px; margin-bottom:16px; }
 
   .word-grid{
     display:flex; flex-wrap:wrap; gap:6px 7px; margin-bottom:14px;
@@ -95,17 +94,15 @@
   }
   .word-item{
     position:relative; display:inline-flex; align-items:center; justify-content:center;
-    padding:6px 10px; border:1.5px solid var(--divider); border-radius:4px;
+    padding:6px 10px; border:1.5px solid var(--divider); border-radius:6px;
     background:transparent; cursor:pointer;
     font-family:'Space Grotesk', sans-serif; font-size:12px; letter-spacing:.01em;
     color:var(--muted); text-align:center; transition:all .15s ease;
-    box-shadow:none;
   }
   .word-item.active{
     background:var(--ink); color:var(--paper); border-color:var(--ink);
-    box-shadow:none;
   }
-  .word-item:hover{ border-color:var(--ink); color:var(--ink); transform:none; }
+  .word-item:hover{ border-color:var(--ink); color:var(--ink); }
 
   .word-item-remove{
     position:absolute; top:-5px; right:-4px; width:16px; height:16px; border-radius:50%;
@@ -114,12 +111,9 @@
   }
 
   .add-row{ display:flex; align-items:center; gap:10px; }
-  .add-input{ flex:1; border:none; outline:none; font-family:'Inter', sans-serif; font-size:15px; background:transparent; color:var(--ink); border-bottom:1.3px solid var(--ink); padding-bottom:6px; }
+  .add-input{ flex:1; border:none; outline:none; font-family:'Inter', sans-serif; font-size:15px; background:transparent; color:var(--ink); border-bottom:1.3px solid var(--ink); padding:6px 0; border-radius:0; }
   .add-input::placeholder{ color:var(--muted); }
   .add-submit-btn{ flex:none; border:1px solid var(--ink); background:var(--ink); color:var(--paper); font-family:'JetBrains Mono', monospace; font-size:11px; padding:9px 16px; border-radius:16px; cursor:pointer; }
-  .add-submit-btn.big{ font-size:13px; padding:12px 22px; border-radius:18px; }
-  .add-submit-btn:hover{ opacity:0.85; }
-  .add-submit-btn[disabled]{ opacity:0.5; cursor:default; }
 
   .balance-banner{ border:1px solid var(--ink); border-radius:14px; padding:18px; margin-bottom:20px; background:var(--band); }
   .balance-banner .label{ font-family:'JetBrains Mono', monospace; font-size:10px; letter-spacing:0.14em; text-transform:uppercase; color:var(--muted); margin-bottom:4px; }
@@ -132,11 +126,8 @@
   .streak-label{ font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--muted); }
 
   .section-title{ font-family:'JetBrains Mono', monospace; font-size:11px; letter-spacing:0.14em; text-transform:uppercase; color:var(--muted); margin:0 0 14px; }
-  .month-nav{ display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
-  .month-nav-title{ font-family:'Space Grotesk', sans-serif; font-weight:600; font-size:16px; }
   .nav-btn{ border:1px solid var(--ink); background:var(--paper); color:var(--ink); font-family:'JetBrains Mono', monospace; font-size:11px; padding:4px 9px; border-radius:8px; cursor:pointer; }
 
-  .month-net-label{ font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--muted); margin:-2px 0 14px; }
   .month-weekday-row{ display:grid; grid-template-columns:repeat(7,1fr); margin-bottom:6px; }
   .month-weekday-label{ font-family:'JetBrains Mono', monospace; font-size:8.5px; color:var(--muted); text-transform:uppercase; text-align:center; }
   .month-grid{ display:grid; grid-template-columns:repeat(7,1fr); gap:3px; margin-bottom:2px; }
@@ -150,7 +141,6 @@
   .day-detail{ margin-top:18px; border:1px solid var(--ink); border-radius:14px; padding:16px; }
   .day-detail-title{ font-family:'Space Grotesk', sans-serif; font-weight:600; font-size:15px; margin-bottom:10px; }
   .day-detail-item{ display:flex; align-items:center; gap:8px; padding:6px 0; font-size:13.5px; }
-  .day-detail-word{ flex:none; font-size:12px; color:var(--ink); font-weight:600; }
   .day-detail-comment{ margin-top:10px; padding-top:10px; border-top:1px solid var(--divider); font-size:13.5px; line-height:1.5; color:var(--ink); white-space:pre-wrap; }
   .day-detail-empty{ color:var(--muted); font-size:13px; }
   .month-daynum{ font-family:'JetBrains Mono', monospace; font-size:12px; color:var(--ink); }
@@ -178,16 +168,7 @@
     display:flex; align-items:flex-end; justify-content:space-between;
     margin:24px 0 12px;
   }
-  .progress-calendar-title{
-    font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:17px;
-    letter-spacing:-.02em;
-  }
-  .progress-calendar-net{
-    font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--muted);
-  }
-  .progress-calendar-nav{
-    display:flex; align-items:center; gap:4px; margin-bottom:10px;
-  }
+  .progress-calendar-nav{ display:flex; align-items:center; gap:4px; margin-bottom:10px; }
   .progress-calendar-nav .nav-btn{
     border:0; background:none; color:inherit; font:inherit; font-weight:700;
     font-size:20px; line-height:1; padding:0 5px; margin:0; cursor:pointer;
@@ -204,18 +185,10 @@
     line-height:1; cursor:pointer; -webkit-appearance:none; appearance:none;
   }
   .edit-icons-btn.active{ text-decoration:underline; text-underline-offset:3px; }
-
-
-
-
-
   .status{ font-family:'JetBrains Mono', monospace; font-size:12px; color:var(--muted); text-align:center; padding:60px 0; }
-
-  .icon-search-row{ display:flex; gap:8px; margin-bottom:6px; }
-  .icon-search-row .add-input{ border:1.3px solid var(--faint); border-radius:10px; padding:9px 12px; border-bottom:1.3px solid var(--faint); }
+  .icon-search-row{ display:flex; gap:8px; margin-bottom:10px; }
+  .icon-search-row .add-input{ border:1.3px solid var(--faint); border-radius:10px; padding:9px 12px; }
   .icon-search-row .add-input:focus{ border-color:var(--ink); }
-  .icon-search-hint{ font-size:11px; color:var(--muted); margin:-2px 0 12px; }
-  .icon-search-err{ text-align:left; color:var(--ink); margin-top:0; margin-bottom:12px; }
 </style>
 </head>
 <body>
@@ -224,7 +197,7 @@
 <script>
 (function(){
   // ==========================================
-  // ⚙️ Firebase 설정 (사용자 설정값 적용 완료)
+  // ⚙️ Firebase 설정
   // ==========================================
   const firebaseConfig = {
     apiKey: "AIzaSyCitVETsMx-5ax48t4UViBT8DyIMOiB0sM",
@@ -237,6 +210,13 @@
     measurementId: "G-VDFG7XTY64"
   };
 
+  // 사용자별 고유 식별자 (로컬스토리지에 저장하여 본인 데이터 격리)
+  let userId = localStorage.getItem('caru_device_user_id');
+  if (!userId) {
+    userId = 'usr_' + Date.now().toString(36) + Math.random().toString(36).substring(2, 7);
+    localStorage.setItem('caru_device_user_id', userId);
+  }
+
   let db = null;
   let firebaseEnabled = false;
 
@@ -246,11 +226,11 @@
       db = firebase.database();
       firebaseEnabled = true;
     } catch(e) {
-      console.error("Firebase 연결 실패:", e);
+      console.warn("Firebase 연결 대기:", e);
     }
   }
 
-  const STORAGE_KEY = 'daily-app-data-v3';
+  const STORAGE_KEY = 'caru_data_' + userId;
   const root = document.getElementById('root');
   const MONTHS_FULL = ['January','February','March','April','May','June','July','August','September','October','November','December'];
   const MONTHS_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -260,28 +240,7 @@
   const ICON_LABELS = {
     run:'Exercise', book:'Study', cook:'Cooking', music:'Music', sleep:'Sleep',
     brief:'Work', brush:'Hobby', broom:'Chores', pill:'Medicine', pencil:'Journal',
-    coffee:'Break', alarm:'Wake up', bike:'Cycling', walk:'Walk', water:'Water',
-    phone:'Screen time', game:'Gaming', bag:'Shopping', plant:'Garden', call:'Call a friend',
-    heart:'Self-care', users:'Hang out', car:'Commute', tv:'Watch something', shirt:'Laundry'
-  };
-
-  const ICON_SEARCH_ALIASES = {
-    run:['run','running','exercise','workout','gym','fitness','운동','헬스','러닝','조깅'],
-    book:['book','books','study','reading','read','education','learning','공부','독서','학습','책'],
-    cook:['cook','cooking','kitchen','food','meal','pan','pot','요리','주방','식사','음식'],
-    music:['music','song','songs','note','notes','음악','노래'],
-    sleep:['sleep','bed','rest','nap','night','잠','수면','취침','낮잠','휴식'],
-    brief:['work','job','office','business','briefcase','업무','일','직장','회사'],
-    brush:['hobby','art','paint','painting','palette','drawing','취미','미술','그림','그리기'],
-    broom:['clean','cleaning','chore','chores','housework','broom','청소','집안일','정리'],
-    pill:['medicine','medical','pill','health','약','약먹기','건강','병원'],
-    pencil:['journal','journaling','write','writing','memo','note','기록','일기','메모','글쓰기'],
-    home:['home','house','room','집','홈'],
-    heart:['heart','love','care','selfcare','self-care','health','wellness','사랑','건강','셀프케어','마음'],
-    users:['people','friends','friend','social','hangout','hang','친구','사람','만남','약속'],
-    car:['car','drive','driving','commute','commuting','교통','이동','출퇴근','운전'],
-    tv:['tv','watch','movie','movies','video','youtube','영상','영화','시청'],
-    shirt:['shirt','clothes','laundry','wash','옷','빨래','세탁']
+    heart:'Self-care', users:'Hang out', car:'Commute', tv:'Watch', shirt:'Laundry'
   };
 
   function labelForIcon(key){
@@ -289,26 +248,9 @@
     if(ICON_LABELS[key]) return ICON_LABELS[key];
     return key.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
   }
-  const RECENT_ICON_STORAGE_KEY='caru_recent_icons_v1';
-  function getRecentIconKeys(){try{const a=JSON.parse(localStorage.getItem(RECENT_ICON_STORAGE_KEY)||'[]');return Array.isArray(a)?a.filter(k=>allIconKeys().includes(k)):[];}catch(e){return[];}}
-  function rememberIconKey(k){if(!k)return;try{localStorage.setItem(RECENT_ICON_STORAGE_KEY,JSON.stringify([k,...getRecentIconKeys().filter(x=>x!==k)].slice(0,6)));}catch(e){}}
   function allIconKeys(){
     const hidden = data.hiddenIconKeys || [];
     return ICON_KEYS.filter(k => !hidden.includes(k)).concat(data.customIconKeys || []);
-  }
-  function normalizeSearch(s){
-    return String(s).toLowerCase().replace(/[\s_-]+/g,'').replace(/[^\p{L}\p{N}]/gu,'');
-  }
-  function findBuiltinIconMatch(raw){
-    const q = normalizeSearch(raw);
-    if(!q) return null;
-    const keys = allIconKeys();
-    for(const key of keys){
-      const terms = [key, labelForIcon(key), ...(ICON_SEARCH_ALIASES[key]||[])]
-        .map(normalizeSearch).filter(Boolean);
-      if(terms.some(term => term === q || term.includes(q) || q.includes(term))) return key;
-    }
-    return null;
   }
 
   function dkeyFromDate(d){
@@ -322,26 +264,6 @@
   }
   function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
   function escapeHtml(str){ const div = document.createElement('div'); div.textContent = str; return div.innerHTML; }
-  function formatMMSS(sec){
-    const m = Math.floor(sec/60), s = sec%60;
-    return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
-  }
-
-  const hasClaudeStorage = (typeof window.storage !== 'undefined') && window.storage;
-  async function storageGet(key){
-    if(hasClaudeStorage){
-      try{ const res = await window.storage.get(key, false); return res ? res.value : null; }
-      catch(e){ return null; }
-    }
-    try{ return localStorage.getItem(key); }catch(e){ return null; }
-  }
-  async function storageSet(key, value){
-    if(hasClaudeStorage){
-      try{ await window.storage.set(key, value, false); }catch(e){ console.error('Save failed', e); }
-      return;
-    }
-    try{ localStorage.setItem(key, value); }catch(e){ console.error('Save failed', e); }
-  }
 
   let data = { items: [], comments: {}, customIconKeys: [], hiddenIconKeys: [], customLabels: {} };
   let theme = 'light';
@@ -349,7 +271,6 @@
   let newItemIcon = ICON_KEYS[0];
   let newItemType = 'plan';
   let newItemText = '';
-  let iconSearchError = '';
   let iconEditMode = false;
   let progressMonthCursor = new Date();
   progressMonthCursor.setHours(0,0,0,0);
@@ -359,17 +280,16 @@
   selectedTodayDate.setHours(0,0,0,0);
 
   function applyTheme(){
-    if(theme === 'dark') document.documentElement.setAttribute('data-theme','dark');
-    else document.documentElement.removeAttribute('data-theme');
+    if(theme === 'dark') {
+      document.documentElement.setAttribute('data-theme','dark');
+      document.querySelector('meta[name="theme-color"]')?.setAttribute('content', '#121110');
+    } else {
+      document.documentElement.removeAttribute('data-theme');
+      document.querySelector('meta[name="theme-color"]')?.setAttribute('content', '#fbfaf8');
+    }
   }
 
   function todayItems(){ return data.items.filter(it => it.date === dkeyFromDate(selectedTodayDate)); }
-
-  function dayNet(dateKey){
-    return data.items
-      .filter(it => it.date === dateKey)
-      .reduce((sum, it) => sum + (it.type === 'heal' ? 1 : -1), 0);
-  }
 
   function currentStreak(){
     let streak = 0;
@@ -397,22 +317,22 @@
 
   async function load(){
     try{
-      const raw = await storageGet(STORAGE_KEY);
+      const raw = localStorage.getItem(STORAGE_KEY);
       data = raw ? JSON.parse(raw) : { items: [], comments: {}, customIconKeys: [], hiddenIconKeys: [], customLabels: {} };
     }catch(e){ data = { items: [], comments: {}, customIconKeys: [], hiddenIconKeys: [], customLabels: {} }; }
+    
     if(!data.items) data.items = [];
     if(!data.comments) data.comments = {};
     if(!data.customIconKeys) data.customIconKeys = [];
     if(!data.hiddenIconKeys) data.hiddenIconKeys = [];
     if(!data.customLabels) data.customLabels = {};
 
-    theme = (await storageGet('daily-theme-pref')) === 'dark' ? 'dark' : 'light';
-
+    theme = localStorage.getItem('caru-theme-pref') === 'dark' ? 'dark' : 'light';
     render();
 
-    // Firebase 실시간 데이터 구독
+    // Firebase 사용자별 데이터 실시간 동기화
     if (firebaseEnabled && db) {
-      db.ref('daily_app_data').on('value', async (snapshot) => {
+      db.ref('users/' + userId).on('value', (snapshot) => {
         const val = snapshot.val();
         if (val) {
           data = val;
@@ -421,6 +341,7 @@
           if(!data.customIconKeys) data.customIconKeys = [];
           if(!data.hiddenIconKeys) data.hiddenIconKeys = [];
           if(!data.customLabels) data.customLabels = {};
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
           render();
         }
       });
@@ -428,12 +349,12 @@
   }
 
   async function save(){
-    await storageSet(STORAGE_KEY, JSON.stringify(data));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
     if (firebaseEnabled && db) {
       try {
-        await db.ref('daily_app_data').set(data);
+        await db.ref('users/' + userId).set(data);
       } catch(e) {
-        console.error('Firebase 데이터 저장 실패:', e);
+        console.error('Firebase 저장 실패 (규칙을 확인하세요):', e);
       }
     }
   }
@@ -457,36 +378,39 @@
           </li>`).join('')
       : `<li class="item-empty">Nothing logged yet today. Add something below.</li>`;
 
-    const recentKeys=getRecentIconKeys();
-    const pickerKeys=[...recentKeys,...allIconKeys().filter(k=>!recentKeys.includes(k))];
-    const wordGridHtml=pickerKeys.map(key => `
+    const pickerKeys = allIconKeys();
+    const wordGridHtml = pickerKeys.map(key => `
       <div class="word-item${key===newItemIcon?' active':''}" data-wordkey="${key}">
         <span>${escapeHtml(labelForIcon(key))}</span>
         ${iconEditMode ? `<button class="word-item-remove" data-removeword="${key}" title="Remove">×</button>` : ''}
       </div>`).join('');
 
     return `
-      <h1 class="date-title"><button class="today-prev-inline" id="today-prev-day" aria-label="Previous day">‹</button>${todayLabel()}${dkeyFromDate(selectedTodayDate) !== dkeyFromDate(new Date()) ? '<button class="today-prev-inline" id="today-present" aria-label="Next day" style="margin-left:8px;">›</button>' : ''}</h1>
+      <h1 class="date-title">
+        <button class="today-prev-inline" id="today-prev-day" aria-label="Previous day">‹</button>${todayLabel()}${dkeyFromDate(selectedTodayDate) !== dkeyFromDate(new Date()) ? '<button class="today-prev-inline" id="today-present" aria-label="Next day" style="margin-left:8px;">›</button>' : ''}
+      </h1>
       <p class="frac">${items.length} logged today</p>
       <p class="mini-balance">Balance: ${balance >= 0 ? '+' : ''}${balance}</p>
+      
       <div class="comment-block main-note">
         <div class="picker-label">Daily note</div>
         <textarea class="comment-textarea" id="comment-textarea" placeholder="How did today go?">${escapeHtml(data.comments[dkeyFromDate(selectedTodayDate)] || '')}</textarea>
       </div>
+
       <ul class="list">${listHtml}</ul>
+
       <div class="add-block">
         <div class="picker-label">Category</div>
         <div class="word-grid">${wordGridHtml}</div>
-        <button class="edit-icons-btn${iconEditMode ? ' active' : ''}" id="icon-edit-toggle-btn" aria-label="Edit categories">Edit</button>
+        <button class="edit-icons-btn${iconEditMode ? ' active' : ''}" id="icon-edit-toggle-btn">Edit Categories</button>
         ${iconEditMode ? `
           <div class="icon-search-row">
-            <input class="add-input" id="icon-search-input" type="text" placeholder="Add a category…" />
+            <input class="add-input" id="icon-search-input" type="text" placeholder="Add custom category…" />
             <button class="add-submit-btn" id="icon-search-btn">Add</button>
           </div>
-          ${(data.hiddenIconKeys || []).length ? `<button class="quote-add-link" id="restore-icons-btn" style="margin-bottom:16px;">↺ restore removed</button>` : ''}
         ` : ''}
         <div class="add-row">
-          <input class="add-input" id="add-input" type="text" placeholder="How was your day?" value="${escapeHtml(newItemText)}" />
+          <input class="add-input" id="add-input" type="text" placeholder="What did you do?" value="${escapeHtml(newItemText)}" />
         </div>
         <div class="quick-add-row">
           <button class="quick-add-btn drain${newItemType==='plan'?' active':''}" data-itemtype="plan">− Drain</button>
@@ -499,7 +423,6 @@
   function renderProgressTab(){
     const { balance, healDone, planDone } = totalBalance();
     const streak = currentStreak();
-
     const cursor = progressMonthCursor;
     const year = cursor.getFullYear();
     const month = cursor.getMonth();
@@ -516,13 +439,10 @@
     const monthDrain = monthItems.filter(it => it.type === 'plan').length;
 
     const weekDayLabels = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
-    const weekdayRowHtml = weekDayLabels
-      .map(d => `<span class="month-weekday-label">${d}</span>`).join('');
+    const weekdayRowHtml = weekDayLabels.map(d => `<span class="month-weekday-label">${d}</span>`).join('');
 
     let cellsHtml = '';
-    for(let i = 0; i < leadBlanks; i++){
-      cellsHtml += `<div class="month-cell empty"></div>`;
-    }
+    for(let i = 0; i < leadBlanks; i++) cellsHtml += `<div class="month-cell empty"></div>`;
 
     for(let d = 1; d <= daysInMonth; d++){
       const key = `${monthPrefix}${String(d).padStart(2,'0')}`;
@@ -558,8 +478,7 @@
             </div>`).join('')
         : `<p class="day-detail-empty">Nothing logged this day.</p>`;
 
-      const commentHtml = dComment
-        ? `<div class="day-detail-comment">${escapeHtml(dComment)}</div>` : '';
+      const commentHtml = dComment ? `<div class="day-detail-comment">${escapeHtml(dComment)}</div>` : '';
 
       dayDetailHtml = `
         <div class="day-detail">
@@ -569,89 +488,43 @@
         </div>`;
     }
 
-    const monthMap = {};
-    data.items.forEach(it => {
-      const prefix = it.date.slice(0,7);
-      if(!monthMap[prefix]) monthMap[prefix] = {heal:0,plan:0,net:0};
-      if(it.type === 'heal'){
-        monthMap[prefix].heal++;
-        monthMap[prefix].net++;
-      }else{
-        monthMap[prefix].plan++;
-        monthMap[prefix].net--;
-      }
-    });
-
-    const monthKeys = Object.keys(monthMap).sort((a,b) => b.localeCompare(a));
-    const monthRows = monthKeys.length
-      ? monthKeys.map(prefix => {
-          const [yy,mm] = prefix.split('-').map(Number);
-          const m = monthMap[prefix];
-          const net = `${m.net >= 0 ? '+' : ''}${m.net}`;
-          return `
-            <div class="monthly-row${prefix === todayStr.slice(0,7) ? ' current' : ''}">
-              <div>
-                <div class="monthly-name">${MONTHS_FULL[mm-1]} ${yy}</div>
-                <div class="monthly-meta">+${m.heal} Charge · −${m.plan} Drain</div>
-              </div>
-              <div class="monthly-net${m.net < 0 ? ' negative' : ''}">${net}</div>
-            </div>`;
-        }).join('')
-      : `<div class="monthly-empty">No progress logged yet.</div>`;
-
-    const note = balance >= 0
-      ? 'You have credit to spend on Drain items.'
-      : "You're in debt — do some Charge items to charge back up.";
-
     return `
       <div class="balance-banner">
-        <div class="label">Remaining +</div>
+        <div class="label">Remaining Balance</div>
         <div class="value">${balance >= 0 ? '+' : ''}${balance}</div>
-        <div class="note">${note}</div>
+        <div class="note">${balance >= 0 ? 'You have credit to spend on Drain items.' : "You're in debt — do some Charge items!"}</div>
       </div>
-      <p class="sub-counts">Charge done: ${healDone} · Drain done: ${planDone} (all-time)</p>
+      <p class="sub-counts">Charge: ${healDone} · Drain: ${planDone} (all-time)</p>
       <div class="streak-row">
         <span class="streak-value">${streak}</span>
-        <span class="streak-label">day${streak===1?'':'s'} in the green</span>
+        <span class="streak-label">day${streak===1?'':'s'} streak</span>
       </div>
 
       <div class="progress-calendar-head">
         <div>
           <div class="section-title" style="margin-bottom:4px;">Calendar</div>
           <div class="progress-calendar-nav">
-            <button class="nav-btn" id="progress-prev-month" aria-label="Previous month">‹</button>
+            <button class="nav-btn" id="progress-prev-month">‹</button>
             <span class="month-current">${monthLabel}</span>
-            <button class="nav-btn" id="progress-next-month" aria-label="Next month">›</button>
+            <button class="nav-btn" id="progress-next-month">›</button>
           </div>
         </div>
         <div class="progress-calendar-net">
-          ${monthNet >= 0 ? '+' : ''}${monthNet} &nbsp; · &nbsp; +${monthCharge} / −${monthDrain}
+          ${monthNet >= 0 ? '+' : ''}${monthNet} &nbsp; (+${monthCharge}/−${monthDrain})
         </div>
       </div>
 
       <div class="month-weekday-row">${weekdayRowHtml}</div>
       <div class="month-grid">${cellsHtml}</div>
       ${dayDetailHtml}
-
-      <div style="margin-top:28px;">
-        <p class="section-title">Monthly progress</p>
-        <div class="monthly-list">${monthRows}</div>
-      </div>
     `;
   }
 
   function render(){
     applyTheme();
-
-    const tabsHtml = `
-      <div class="tabs">
-        <button class="tab-btn${activeTab==='today'?' active':''}" data-tab="today">Today</button>
-        <button class="tab-btn${activeTab==='progress'?' active':''}" data-tab="progress">Progress</button>
-      </div>`;
-
     const syncStatusHtml = firebaseEnabled
-      ? `<span class="sync-badge online" title="Firebase 연동됨">☁ Sync</span>`
-      : `<span class="sync-badge" title="Firebase 설정 필요">Local</span>`;
+      ? `<span class="sync-badge online" title="Sync On">☁ Sync</span>`
+      : `<span class="sync-badge" title="Local Only">Local</span>`;
 
     root.innerHTML = `
       <div class="top-bar">
@@ -661,10 +534,12 @@
         </div>
         <button class="theme-toggle" id="theme-toggle">${theme === 'dark' ? 'Light' : 'Dark'}</button>
       </div>
-      ${tabsHtml}
+      <div class="tabs">
+        <button class="tab-btn${activeTab==='today'?' active':''}" data-tab="today">Today</button>
+        <button class="tab-btn${activeTab==='progress'?' active':''}" data-tab="progress">Progress</button>
+      </div>
       ${activeTab === 'today' ? renderTodayTab() : renderProgressTab()}
     `;
-
     bindEvents();
   }
 
@@ -673,7 +548,7 @@
     if(themeBtn){
       themeBtn.addEventListener('click', async () => {
         theme = theme === 'dark' ? 'light' : 'dark';
-        await storageSet('daily-theme-pref', theme);
+        localStorage.setItem('caru-theme-pref', theme);
         render();
       });
     }
@@ -682,35 +557,49 @@
       btn.addEventListener('click', () => { activeTab = btn.dataset.tab; render(); });
     });
 
-    if(activeTab === 'progress'){ bindProgressEvents(); return; }
-    if(activeTab !== 'today') return;
+    if(activeTab === 'progress'){
+      document.getElementById('progress-prev-month')?.addEventListener('click', () => {
+        progressMonthCursor = new Date(progressMonthCursor.getFullYear(), progressMonthCursor.getMonth() - 1, 1);
+        selectedProgressDay = null; render();
+      });
+      document.getElementById('progress-next-month')?.addEventListener('click', () => {
+        progressMonthCursor = new Date(progressMonthCursor.getFullYear(), progressMonthCursor.getMonth() + 1, 1);
+        selectedProgressDay = null; render();
+      });
+      root.querySelectorAll('[data-daykey]').forEach(cell => {
+        if(cell.classList.contains('empty')) return;
+        cell.addEventListener('click', () => {
+          const key = cell.dataset.daykey;
+          selectedProgressDay = (selectedProgressDay === key) ? null : key;
+          render();
+        });
+      });
+      return;
+    }
 
-    const prevTodayBtn = document.getElementById('today-prev-day');
-    if(prevTodayBtn){
-      prevTodayBtn.addEventListener('click', () => {
-        selectedTodayDate = new Date(selectedTodayDate);
-        selectedTodayDate.setDate(selectedTodayDate.getDate() - 1);
-        selectedTodayDate.setHours(0,0,0,0);
-        render();
-      });
-    }
-    const presentBtn = document.getElementById('today-present');
-    if(presentBtn){
-      presentBtn.addEventListener('click', () => {
-        selectedTodayDate = new Date(selectedTodayDate);
-        selectedTodayDate.setDate(selectedTodayDate.getDate() + 1);
-        selectedTodayDate.setHours(0,0,0,0);
-        render();
-      });
-    }
+    document.getElementById('today-prev-day')?.addEventListener('click', () => {
+      selectedTodayDate.setDate(selectedTodayDate.getDate() - 1);
+      render();
+    });
+    document.getElementById('today-present')?.addEventListener('click', () => {
+      selectedTodayDate.setDate(selectedTodayDate.getDate() + 1);
+      render();
+    });
 
     root.querySelectorAll('[data-action="delete"]').forEach(btn => {
       btn.addEventListener('click', async () => {
-        const id = btn.dataset.id;
-        data.items = data.items.filter(it => it.id !== id);
+        data.items = data.items.filter(it => it.id !== btn.dataset.id);
         render(); await save();
       });
     });
+
+    async function submitItem(){
+      const input = document.getElementById('add-input');
+      const text = (input ? input.value.trim() : '') || labelForIcon(newItemIcon) || 'Task';
+      data.items.push({ id: uid(), icon: newItemIcon, type: newItemType, text, date: dkeyFromDate(selectedTodayDate) });
+      newItemText = '';
+      render(); await save();
+    }
 
     root.querySelectorAll('[data-itemtype]').forEach(btn => {
       btn.addEventListener('click', async () => {
@@ -723,76 +612,37 @@
       el.addEventListener('click', () => {
         newItemIcon = el.dataset.wordkey;
         render();
-        const input = document.getElementById('add-input'); if(input) input.focus();
       });
     });
-
-    async function submitItem(){
-      const input = document.getElementById('add-input');
-      const typed = input ? input.value.trim() : '';
-      const text = typed || ICON_LABELS[newItemIcon] || 'Item';
-      data.items.push({ id: uid(), icon: newItemIcon, type: newItemType, text, date: dkeyFromDate(selectedTodayDate) });
-      newItemText = ''; newItemType = 'plan';
-      render(); await save();
-      const again = document.getElementById('add-input'); if(again) again.focus();
-    }
 
     const input = document.getElementById('add-input');
     if(input){
       input.addEventListener('input', () => { newItemText = input.value; });
       input.addEventListener('keydown', async (e) => { if(e.key === 'Enter') await submitItem(); });
     }
-    const addBtn = document.getElementById('add-btn');
-    if(addBtn){ addBtn.addEventListener('click', submitItem); }
 
-    async function submitIconSearch(){
-      const input = document.getElementById('icon-search-input');
-      const raw = (input?.value || '').trim();
-      if(!raw) return;
+    document.getElementById('icon-edit-toggle-btn')?.addEventListener('click', () => {
+      iconEditMode = !iconEditMode; render();
+    });
 
-      iconSearchError = '';
-
-      const match = findBuiltinIconMatch(raw);
-      if(match){
-        newItemIcon = match;
-        rememberIconKey(match);
-        if(input) input.value = '';
-        render();
-        return;
-      }
-
-      // Not a built-in word — make it its own new category.
-      const customName = raw.toLowerCase().replace(/\s+/g,'-');
+    async function addCustomCategory(){
+      const catInput = document.getElementById('icon-search-input');
+      const name = (catInput?.value || '').trim();
+      if(!name) return;
+      const key = name.toLowerCase().replace(/\s+/g,'-');
       data.customIconKeys = data.customIconKeys || [];
       data.customLabels = data.customLabels || {};
-      if(!data.customIconKeys.includes(customName)) data.customIconKeys.push(customName);
-      data.customLabels[customName] = raw;
-      newItemIcon = customName;
-      rememberIconKey(customName);
-      if(input) input.value = '';
+      if(!data.customIconKeys.includes(key)) data.customIconKeys.push(key);
+      data.customLabels[key] = name;
+      newItemIcon = key;
       await save();
       render();
     }
-    window.__submitIconSearch = submitIconSearch;
 
-    const iconSearchInput = document.getElementById('icon-search-input');
-    if(iconSearchInput){
-      iconSearchInput.addEventListener('keydown', async (e) => { if(e.key === 'Enter'){ e.preventDefault(); await submitIconSearch(); } });
-    }
-    const iconSearchBtn = document.getElementById('icon-search-btn');
-    if(iconSearchBtn){ iconSearchBtn.addEventListener('click', () => submitIconSearch()); }
-
-    const iconEditToggleBtn = document.getElementById('icon-edit-toggle-btn');
-    if(iconEditToggleBtn){
-      iconEditToggleBtn.addEventListener('click', () => {
-        iconEditMode = !iconEditMode;
-        iconSearchError = '';
-        render();
-        if(iconEditMode){
-          const input = document.getElementById('icon-search-input'); if(input) input.focus();
-        }
-      });
-    }
+    document.getElementById('icon-search-btn')?.addEventListener('click', addCustomCategory);
+    document.getElementById('icon-search-input')?.addEventListener('keydown', (e) => {
+      if(e.key === 'Enter') { e.preventDefault(); addCustomCategory(); }
+    });
 
     root.querySelectorAll('[data-removeword]').forEach(btn => {
       btn.addEventListener('click', async (e) => {
@@ -804,20 +654,11 @@
           data.customIconKeys = (data.customIconKeys || []).filter(k => k !== key);
           if(data.customLabels) delete data.customLabels[key];
         }
-        if(newItemIcon === key) newItemIcon = allIconKeys().find(k => k !== key) || ICON_KEYS[0];
+        if(newItemIcon === key) newItemIcon = allIconKeys()[0] || 'run';
         await save();
         render();
       });
     });
-
-    const restoreIconsBtn = document.getElementById('restore-icons-btn');
-    if(restoreIconsBtn){
-      restoreIconsBtn.addEventListener('click', async () => {
-        data.hiddenIconKeys = [];
-        await save();
-        render();
-      });
-    }
 
     const commentArea = document.getElementById('comment-textarea');
     if(commentArea){
@@ -827,44 +668,6 @@
       });
     }
   }
-
-  function bindProgressEvents(){
-    const prevBtn = document.getElementById('progress-prev-month');
-    if(prevBtn){
-      prevBtn.addEventListener('click', () => {
-        progressMonthCursor = new Date(
-          progressMonthCursor.getFullYear(),
-          progressMonthCursor.getMonth() - 1,
-          1
-        );
-        selectedProgressDay = null;
-        render();
-      });
-    }
-
-    const nextBtn = document.getElementById('progress-next-month');
-    if(nextBtn){
-      nextBtn.addEventListener('click', () => {
-        progressMonthCursor = new Date(
-          progressMonthCursor.getFullYear(),
-          progressMonthCursor.getMonth() + 1,
-          1
-        );
-        selectedProgressDay = null;
-        render();
-      });
-    }
-
-    root.querySelectorAll('[data-daykey]').forEach(cell => {
-      if(cell.classList.contains('empty')) return;
-      cell.addEventListener('click', () => {
-        const key = cell.dataset.daykey;
-        selectedProgressDay = (selectedProgressDay === key) ? null : key;
-        render();
-      });
-    });
-  }
-
 
   load();
 })();
