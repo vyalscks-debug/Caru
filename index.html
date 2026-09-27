@@ -44,51 +44,44 @@
   .theme-toggle{ border:1px solid var(--ink); background:var(--paper); color:var(--ink); font-family:'JetBrains Mono', monospace; font-size:10.5px; padding:5px 11px; border-radius:12px; cursor:pointer; }
   .theme-toggle:hover{ background:var(--hover); }
 
-  .tabs{ display:flex; gap:20px; margin-bottom:22px; border-bottom:1px solid var(--divider); }
-  .tab-btn{ background:none; border:none; cursor:pointer; padding:0 0 10px; font-family:'JetBrains Mono', monospace; font-size:12px; letter-spacing:0.05em; color:var(--muted); border-bottom:2px solid transparent; margin-bottom:-1px; transition:color .15s; }
-  .tab-btn.active{ color:var(--ink); border-bottom-color:var(--ink); }
+  .tabs{ display:flex; gap:18px; margin-bottom:22px; border-bottom:1px solid var(--divider); }
+  .tab-btn{ background:none; border:none; cursor:pointer; padding:0 0 10px; font-family:'JetBrains Mono', monospace; font-size:12.5px; letter-spacing:0.05em; color:var(--muted); border-bottom:2px solid transparent; margin-bottom:-1px; transition:color .15s; }
+  .tab-btn.active{ color:var(--ink); border-bottom-color:var(--ink); font-weight:600; }
 
   .today-prev-inline{display:inline-block;border:0;background:none;color:inherit;font:inherit;font-weight:700;font-size:22px;line-height:1;padding:0 7px 0 0;margin:0;cursor:pointer;vertical-align:2px;-webkit-appearance:none;appearance:none;}
   .date-title{ font-family:'Space Grotesk', sans-serif; font-weight:700; font-size:26px; letter-spacing:-0.01em; margin:0 0 4px; }
   .frac{ font-family:'JetBrains Mono', monospace; font-size:13px; color:var(--muted); margin-bottom:4px; }
-  .mini-balance{ font-family:'JetBrains Mono', monospace; font-size:12.5px; color:var(--muted); margin-bottom:20px; }
+  .mini-balance{ font-family:'JetBrains Mono', monospace; font-size:12.5px; color:var(--muted); margin-bottom:16px; }
 
   .list{ list-style:none; margin:0 0 4px; padding:0; }
-  .item{ display:flex; align-items:center; gap:10px; padding:13px 2px; border-bottom:1px solid var(--divider); }
+  .item{ display:flex; align-items:center; gap:10px; padding:12px 2px; border-bottom:1px solid var(--divider); }
   .type-pill{
     flex:none; font-family:'JetBrains Mono', monospace; font-size:10.5px; font-weight:700;
     padding:3px 8px; border-radius:10px; border:1.3px solid var(--ink); color:var(--ink); background:transparent;
     white-space:nowrap;
   }
   .type-pill.plan{ background:var(--ink); color:var(--paper); }
-  .item-text{ flex:1; font-size:15.5px; line-height:1.4; word-break:break-word; }
+  .item-text{ flex:1; font-size:15px; line-height:1.4; word-break:break-word; }
   .del-btn{ flex:none; width:24px; height:24px; border:none; background:none; color:var(--muted); font-size:18px; cursor:pointer; line-height:1; }
   .del-btn:hover{ color:var(--ink); }
 
-  .item-empty{ padding:26px 2px; color:var(--muted); font-size:14px; text-align:center; }
+  .item-empty{ padding:26px 2px; color:var(--muted); font-size:13.5px; text-align:center; }
 
   .add-block{ margin-top:18px; padding-top:18px; border-top:1px solid var(--ink); }
-  .comment-block{ margin-top:24px; }
-  .main-note{ margin:10px 0 22px; }
-  .main-note .comment-textarea{ min-height:86px; font-size:14px; }
-  .quick-add-row{ display:flex; gap:8px; margin-top:12px; }
-  .quick-add-btn{
-    flex:1; border:1.3px solid var(--ink); background:var(--paper); color:var(--ink);
-    font-family:'JetBrains Mono', monospace; font-size:13px; font-weight:600;
-    padding:12px 10px; border-radius:12px; cursor:pointer; transition:transform .1s, background .15s;
-  }
-  .quick-add-btn:active{ transform:scale(0.97); }
-  .quick-add-btn.active{ background:var(--ink); color:var(--paper); }
-
+  .comment-block{ margin-top:16px; }
+  .main-note{ margin:6px 0 18px; }
+  
+  /* Daily Note 박스 크기 축소 */
+  .main-note .comment-textarea{ min-height:48px; height:48px; font-size:13.5px; padding:9px 12px; }
   .comment-textarea{
-    width:100%; min-height:72px; border:1.3px solid var(--ink); border-radius:10px;
-    padding:12px; font-family:'Inter', sans-serif; font-size:14px; line-height:1.5;
-    color:var(--ink); background:var(--paper); resize:vertical; outline:none;
+    width:100%; border:1.3px solid var(--ink); border-radius:10px;
+    font-family:'Inter', sans-serif; line-height:1.4;
+    color:var(--ink); background:var(--paper); resize:none; outline:none;
   }
   .comment-textarea::placeholder{ color:var(--muted); }
   .picker-label{ font-family:'JetBrains Mono', monospace; font-size:9.5px; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); margin-bottom:8px; }
 
-  /* 카테고리 칩 스타일: 테두리 검은색(#000000) 적용 */
+  /* 카테고리 칩: 검은색 테두리 */
   .word-grid{
     display:flex; flex-wrap:wrap; gap:6px 7px; margin-bottom:14px;
     align-items:center;
@@ -96,7 +89,7 @@
   .word-item{
     position:relative; display:inline-flex; align-items:center; justify-content:center;
     padding:6px 10px; 
-    border:1.5px solid #000000; /* 검은색 테두리 */
+    border:1.5px solid #000000;
     border-radius:6px;
     background:transparent; cursor:pointer;
     font-family:'Space Grotesk', sans-serif; font-size:12px; letter-spacing:.01em;
@@ -118,6 +111,48 @@
   .add-input::placeholder{ color:var(--muted); }
   .add-submit-btn{ flex:none; border:1px solid var(--ink); background:var(--ink); color:var(--paper); font-family:'JetBrains Mono', monospace; font-size:11px; padding:9px 16px; border-radius:16px; cursor:pointer; }
 
+  /* 단일 Charge 전용 버튼 */
+  .single-charge-btn{
+    width:100%; border:1.3px solid var(--ink); background:var(--ink); color:var(--paper);
+    font-family:'JetBrains Mono', monospace; font-size:13px; font-weight:600;
+    padding:12px 10px; border-radius:12px; cursor:pointer; margin-top:14px;
+    transition:opacity .15s, transform .1s;
+  }
+  .single-charge-btn:active{ transform:scale(0.98); opacity:0.9; }
+
+  /* Drain 주간 탭 전용 스타일 */
+  .week-nav-bar{
+    display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;
+  }
+  .week-nav-title{ font-family:'Space Grotesk', sans-serif; font-weight:600; font-size:16px; }
+  .week-grid{
+    display:grid; grid-template-columns:repeat(7, 1fr); gap:4px; margin-bottom:18px;
+  }
+  .week-cell{
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    padding:8px 2px; border:1px solid var(--divider); border-radius:10px;
+    background:var(--paper); cursor:pointer; transition:all .15s;
+  }
+  .week-cell.today{ border-color:var(--muted); }
+  .week-cell.active{ background:var(--ink); border-color:var(--ink); color:var(--paper); font-weight:600; }
+  .week-cell.active .week-dow{ color:var(--paper); opacity:0.8; }
+  .week-dow{ font-family:'JetBrains Mono', monospace; font-size:9.5px; color:var(--muted); margin-bottom:2px; }
+  .week-daynum{ font-family:'Space Grotesk', sans-serif; font-size:14px; font-weight:600; }
+  .week-dot-count{ font-size:9px; height:8px; line-height:8px; margin-top:2px; }
+
+  .drain-item{
+    display:flex; align-items:center; gap:10px; padding:12px 2px; border-bottom:1px solid var(--divider);
+  }
+  .drain-check-btn{
+    width:20px; height:20px; border-radius:6px; border:1.5px solid var(--ink);
+    background:transparent; cursor:pointer; display:flex; align-items:center; justify-content:center;
+    font-size:12px; padding:0; color:transparent; transition:all .12s;
+  }
+  .drain-item.done .drain-check-btn{ background:var(--ink); color:var(--paper); }
+  .drain-text{ flex:1; font-size:15px; line-height:1.4; word-break:break-word; }
+  .drain-item.done .drain-text{ text-decoration:line-through; color:var(--muted); }
+
+  /* Progress 탭 스타일 */
   .balance-banner{ border:1px solid var(--ink); border-radius:14px; padding:18px; margin-bottom:20px; background:var(--band); }
   .balance-banner .label{ font-family:'JetBrains Mono', monospace; font-size:10px; letter-spacing:0.14em; text-transform:uppercase; color:var(--muted); margin-bottom:4px; }
   .balance-banner .value{ font-family:'Space Grotesk', sans-serif; font-weight:700; font-size:40px; letter-spacing:-0.01em; color:var(--ink); }
@@ -152,21 +187,7 @@
   .month-dot.negative{ background:transparent; border-color:var(--ink); }
   .month-cell.today{ border-color:var(--ink); }
   .month-cell.today .month-daynum{ color:var(--ink); font-weight:700; }
-  .monthly-list{ display:flex; flex-direction:column; gap:0; margin-top:8px; }
-  .monthly-row{
-    display:grid; grid-template-columns:1fr auto; align-items:center;
-    padding:16px 2px; border-bottom:1px solid var(--divider);
-  }
-  .monthly-row:first-child{ border-top:1px solid var(--divider); }
-  .monthly-row.current{ padding-left:10px; padding-right:10px; background:var(--band); border-radius:10px; }
-  .monthly-name{ font-family:'Space Grotesk',sans-serif; font-size:16px; font-weight:600; }
-  .monthly-meta{ margin-top:4px; font-family:'JetBrains Mono',monospace; font-size:9.5px; color:var(--muted); letter-spacing:.02em; }
-  .monthly-net{
-    font-family:'Space Grotesk',sans-serif; font-size:22px; font-weight:700;
-    letter-spacing:-.02em; text-align:right;
-  }
-  .monthly-net.negative{ color:var(--muted); }
-  .monthly-empty{ padding:30px 2px; text-align:center; color:var(--muted); font-size:13px; }
+
   .progress-calendar-head{
     display:flex; align-items:flex-end; justify-content:space-between;
     margin:24px 0 12px;
@@ -267,19 +288,36 @@
   function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
   function escapeHtml(str){ const div = document.createElement('div'); div.textContent = str; return div.innerHTML; }
 
-  let data = { items: [], comments: {}, customIconKeys: [], hiddenIconKeys: [], customLabels: {} };
+  // 월요일 기준 주간 시작일 계산
+  function getMonday(d) {
+    const date = new Date(d);
+    const day = date.getDay();
+    const diff = date.getDate() - day + (day === 0 ? -6 : 1);
+    const mon = new Date(date.setDate(diff));
+    mon.setHours(0,0,0,0);
+    return mon;
+  }
+
+  let data = { items: [], comments: {}, customIconKeys: [], hiddenIconKeys: [], customLabels: {}, drainTasks: [] };
   let theme = 'light';
-  let activeTab = 'today';
+  let activeTab = 'charge'; // 'charge' | 'drain' | 'progress'
   let newItemIcon = ICON_KEYS[0];
-  let newItemType = 'plan';
   let newItemText = '';
   let iconEditMode = false;
+
+  // Charge 탭 날짜
+  let selectedTodayDate = new Date();
+  selectedTodayDate.setHours(0,0,0,0);
+
+  // Drain 주간 탭 기준 날짜
+  let drainWeekMonday = getMonday(new Date());
+  let selectedDrainDate = dkeyFromDate(new Date());
+
+  // Progress 달력 기준 날짜
   let progressMonthCursor = new Date();
   progressMonthCursor.setHours(0,0,0,0);
   progressMonthCursor.setDate(1);
   let selectedProgressDay = null;
-  let selectedTodayDate = new Date();
-  selectedTodayDate.setHours(0,0,0,0);
 
   function applyTheme(){
     if(theme === 'dark') {
@@ -291,7 +329,9 @@
     }
   }
 
-  function todayItems(){ return data.items.filter(it => it.date === dkeyFromDate(selectedTodayDate)); }
+  function todayChargeItems(){
+    return data.items.filter(it => it.date === dkeyFromDate(selectedTodayDate) && it.type === 'heal');
+  }
 
   function currentStreak(){
     let streak = 0;
@@ -320,14 +360,15 @@
   async function load(){
     try{
       const raw = localStorage.getItem(STORAGE_KEY);
-      data = raw ? JSON.parse(raw) : { items: [], comments: {}, customIconKeys: [], hiddenIconKeys: [], customLabels: {} };
-    }catch(e){ data = { items: [], comments: {}, customIconKeys: [], hiddenIconKeys: [], customLabels: {} }; }
+      data = raw ? JSON.parse(raw) : { items: [], comments: {}, customIconKeys: [], hiddenIconKeys: [], customLabels: {}, drainTasks: [] };
+    }catch(e){ data = { items: [], comments: {}, customIconKeys: [], hiddenIconKeys: [], customLabels: {}, drainTasks: [] }; }
     
     if(!data.items) data.items = [];
     if(!data.comments) data.comments = {};
     if(!data.customIconKeys) data.customIconKeys = [];
     if(!data.hiddenIconKeys) data.hiddenIconKeys = [];
     if(!data.customLabels) data.customLabels = {};
+    if(!data.drainTasks) data.drainTasks = [];
 
     theme = localStorage.getItem('caru-theme-pref') === 'dark' ? 'dark' : 'light';
     render();
@@ -342,6 +383,7 @@
           if(!data.customIconKeys) data.customIconKeys = [];
           if(!data.hiddenIconKeys) data.hiddenIconKeys = [];
           if(!data.customLabels) data.customLabels = {};
+          if(!data.drainTasks) data.drainTasks = [];
           localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
           render();
         }
@@ -366,8 +408,9 @@
     return `<span class="type-pill${type==='plan'?' plan':''}">${word} ${n}</span>`;
   }
 
-  function renderTodayTab(){
-    const items = todayItems();
+  // 1) Charge 탭 (구 Today)
+  function renderChargeTab(){
+    const items = todayChargeItems();
     const { balance } = totalBalance();
 
     const listHtml = items.length
@@ -377,7 +420,7 @@
             <span class="item-text">${escapeHtml(it.text)}</span>
             <button class="del-btn" data-action="delete" data-id="${it.id}">×</button>
           </li>`).join('')
-      : `<li class="item-empty">Nothing logged yet today. Add something below.</li>`;
+      : `<li class="item-empty">No charge logged today. Add something recharging below!</li>`;
 
     const pickerKeys = allIconKeys();
     const wordGridHtml = pickerKeys.map(key => `
@@ -390,7 +433,7 @@
       <h1 class="date-title">
         <button class="today-prev-inline" id="today-prev-day" aria-label="Previous day">‹</button>${todayLabel()}${dkeyFromDate(selectedTodayDate) !== dkeyFromDate(new Date()) ? '<button class="today-prev-inline" id="today-present" aria-label="Next day" style="margin-left:8px;">›</button>' : ''}
       </h1>
-      <p class="frac">${items.length} logged today</p>
+      <p class="frac">${items.length} charged today</p>
       <p class="mini-balance">Balance: ${balance >= 0 ? '+' : ''}${balance}</p>
       
       <div class="comment-block main-note">
@@ -411,16 +454,87 @@
           </div>
         ` : ''}
         <div class="add-row">
-          <input class="add-input" id="add-input" type="text" placeholder="What did you do?" value="${escapeHtml(newItemText)}" />
+          <input class="add-input" id="add-input" type="text" placeholder="What energized you?" value="${escapeHtml(newItemText)}" />
         </div>
-        <div class="quick-add-row">
-          <button class="quick-add-btn drain${newItemType==='plan'?' active':''}" data-itemtype="plan">− Drain</button>
-          <button class="quick-add-btn charge${newItemType==='heal'?' active':''}" data-itemtype="heal">+ Charge</button>
-        </div>
+        <button class="single-charge-btn" id="charge-submit-btn">+ Charge (+1)</button>
       </div>
     `;
   }
 
+  // 2) Drain 탭 (Weekly 주간 루틴 & 할 일 플래너)
+  function renderDrainTab(){
+    const days = [];
+    for(let i = 0; i < 7; i++){
+      const d = new Date(drainWeekMonday);
+      d.setDate(d.getDate() + i);
+      days.push(d);
+    }
+
+    const startStr = `${MONTHS_SHORT[days[0].getMonth()]} ${days[0].getDate()}`;
+    const endStr = `${MONTHS_SHORT[days[6].getMonth()]} ${days[6].getDate()}`;
+    const currentTodayStr = todayKey();
+
+    const weekGridHtml = days.map(d => {
+      const dkey = dkeyFromDate(d);
+      const isSelected = (dkey === selectedDrainDate);
+      const isToday = (dkey === currentTodayStr);
+      const dayTasks = (data.drainTasks || []).filter(t => t.date === dkey);
+      const doneCount = dayTasks.filter(t => t.done).length;
+
+      return `
+        <div class="week-cell${isSelected ? ' active' : ''}${isToday ? ' today' : ''}" data-drain-day="${dkey}">
+          <span class="week-dow">${DAY_NAMES_SHORT[d.getDay()]}</span>
+          <span class="week-daynum">${d.getDate()}</span>
+          <span class="week-dot-count">${dayTasks.length ? `${doneCount}/${dayTasks.length}` : ''}</span>
+        </div>
+      `;
+    }).join('');
+
+    const currentDayTasks = (data.drainTasks || []).filter(t => t.date === selectedDrainDate);
+    const listHtml = currentDayTasks.length
+      ? currentDayTasks.map(t => `
+          <li class="drain-item${t.done ? ' done' : ''}" data-taskid="${t.id}">
+            <button class="drain-check-btn" data-action="toggle-drain" data-taskid="${t.id}">${t.done ? '✓' : ''}</button>
+            <span class="drain-text">${escapeHtml(t.text)}</span>
+            <button class="del-btn" data-action="delete-drain" data-taskid="${t.id}">×</button>
+          </li>
+        `).join('')
+      : `<li class="item-empty">No plans set for this day. Plan a routine or task below!</li>`;
+
+    const [yy, mm, dd] = selectedDrainDate.split('-').map(Number);
+    const selectedDateObj = new Date(yy, mm-1, dd);
+    const selectedDateTitle = `${DAY_NAMES_SHORT[selectedDateObj.getDay()]}, ${MONTHS_SHORT[mm-1]} ${dd}`;
+
+    const pickerKeys = allIconKeys();
+    const wordGridHtml = pickerKeys.map(key => `
+      <div class="word-item${key===newItemIcon?' active':''}" data-wordkey="${key}">
+        <span>${escapeHtml(labelForIcon(key))}</span>
+      </div>`).join('');
+
+    return `
+      <div class="week-nav-bar">
+        <button class="nav-btn" id="drain-prev-week">‹</button>
+        <span class="week-nav-title">${startStr} – ${endStr}</span>
+        <button class="nav-btn" id="drain-next-week">›</button>
+      </div>
+
+      <div class="week-grid">${weekGridHtml}</div>
+
+      <h2 class="date-title" style="font-size:22px; margin-bottom:12px;">${selectedDateTitle}</h2>
+      <ul class="list">${listHtml}</ul>
+
+      <div class="add-block">
+        <div class="picker-label">Routine / Category</div>
+        <div class="word-grid">${wordGridHtml}</div>
+        <div class="add-row">
+          <input class="add-input" id="drain-add-input" type="text" placeholder="Add a routine or task to do…" value="${escapeHtml(newItemText)}" />
+        </div>
+        <button class="single-charge-btn" id="drain-submit-btn" style="background:var(--paper); color:var(--ink);">+ Add Drain Plan</button>
+      </div>
+    `;
+  }
+
+  // 3) Progress 탭 (Calendar & History)
   function renderProgressTab(){
     const { balance, healDone, planDone } = totalBalance();
     const streak = currentStreak();
@@ -483,7 +597,7 @@
 
       dayDetailHtml = `
         <div class="day-detail">
-          <div class="day-detail-title">${dateLabel}</div>
+          <div class="day-detail-title">${dateLabel} — What you did</div>
           ${itemsHtml}
           ${commentHtml}
         </div>`;
@@ -493,7 +607,7 @@
       <div class="balance-banner">
         <div class="label">Remaining Balance</div>
         <div class="value">${balance >= 0 ? '+' : ''}${balance}</div>
-        <div class="note">${balance >= 0 ? 'You have credit to spend on Drain items.' : "You're in debt — do some Charge items!"}</div>
+        <div class="note">${balance >= 0 ? 'You have energy credit for your Drain plans.' : "You're in debt — do some Charge activities!"}</div>
       </div>
       <p class="sub-counts">Charge: ${healDone} · Drain: ${planDone} (all-time)</p>
       <div class="streak-row">
@@ -536,10 +650,11 @@
         <button class="theme-toggle" id="theme-toggle">${theme === 'dark' ? 'Light' : 'Dark'}</button>
       </div>
       <div class="tabs">
-        <button class="tab-btn${activeTab==='today'?' active':''}" data-tab="today">Today</button>
+        <button class="tab-btn${activeTab==='charge'?' active':''}" data-tab="charge">Charge</button>
+        <button class="tab-btn${activeTab==='drain'?' active':''}" data-tab="drain">Drain</button>
         <button class="tab-btn${activeTab==='progress'?' active':''}" data-tab="progress">Progress</button>
       </div>
-      ${activeTab === 'today' ? renderTodayTab() : renderProgressTab()}
+      ${activeTab === 'charge' ? renderChargeTab() : (activeTab === 'drain' ? renderDrainTab() : renderProgressTab())}
     `;
     bindEvents();
   }
@@ -558,6 +673,181 @@
       btn.addEventListener('click', () => { activeTab = btn.dataset.tab; render(); });
     });
 
+    // 1) Charge 탭 이벤트
+    if(activeTab === 'charge'){
+      document.getElementById('today-prev-day')?.addEventListener('click', () => {
+        selectedTodayDate.setDate(selectedTodayDate.getDate() - 1);
+        render();
+      });
+      document.getElementById('today-present')?.addEventListener('click', () => {
+        selectedTodayDate.setDate(selectedTodayDate.getDate() + 1);
+        render();
+      });
+
+      root.querySelectorAll('[data-action="delete"]').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          data.items = data.items.filter(it => it.id !== btn.dataset.id);
+          render(); await save();
+        });
+      });
+
+      async function submitCharge(){
+        const input = document.getElementById('add-input');
+        const text = (input ? input.value.trim() : '') || labelForIcon(newItemIcon) || 'Recharge';
+        data.items.push({ id: uid(), icon: newItemIcon, type: 'heal', text, date: dkeyFromDate(selectedTodayDate) });
+        newItemText = '';
+        render(); await save();
+      }
+
+      document.getElementById('charge-submit-btn')?.addEventListener('click', submitCharge);
+
+      const input = document.getElementById('add-input');
+      if(input){
+        input.addEventListener('input', () => { newItemText = input.value; });
+        input.addEventListener('keydown', async (e) => { if(e.key === 'Enter') await submitCharge(); });
+      }
+
+      root.querySelectorAll('[data-wordkey]').forEach(el => {
+        el.addEventListener('click', () => {
+          newItemIcon = el.dataset.wordkey;
+          render();
+        });
+      });
+
+      document.getElementById('icon-edit-toggle-btn')?.addEventListener('click', () => {
+        iconEditMode = !iconEditMode; render();
+      });
+
+      async function addCustomCategory(){
+        const catInput = document.getElementById('icon-search-input');
+        const name = (catInput?.value || '').trim();
+        if(!name) return;
+        const key = name.toLowerCase().replace(/\s+/g,'-');
+        data.customIconKeys = data.customIconKeys || [];
+        data.customLabels = data.customLabels || {};
+        if(!data.customIconKeys.includes(key)) data.customIconKeys.push(key);
+        data.customLabels[key] = name;
+        newItemIcon = key;
+        await save(); render();
+      }
+
+      document.getElementById('icon-search-btn')?.addEventListener('click', addCustomCategory);
+      document.getElementById('icon-search-input')?.addEventListener('keydown', (e) => {
+        if(e.key === 'Enter') { e.preventDefault(); addCustomCategory(); }
+      });
+
+      root.querySelectorAll('[data-removeword]').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+          e.stopPropagation();
+          const key = btn.dataset.removeword;
+          if(ICON_KEYS.includes(key)){
+            if(!data.hiddenIconKeys.includes(key)) data.hiddenIconKeys.push(key);
+          }else{
+            data.customIconKeys = (data.customIconKeys || []).filter(k => k !== key);
+            if(data.customLabels) delete data.customLabels[key];
+          }
+          if(newItemIcon === key) newItemIcon = allIconKeys()[0] || 'run';
+          await save(); render();
+        });
+      });
+
+      const commentArea = document.getElementById('comment-textarea');
+      if(commentArea){
+        commentArea.addEventListener('blur', async () => {
+          data.comments[dkeyFromDate(selectedTodayDate)] = commentArea.value;
+          await save();
+        });
+      }
+      return;
+    }
+
+    // 2) Drain 탭 이벤트
+    if(activeTab === 'drain'){
+      document.getElementById('drain-prev-week')?.addEventListener('click', () => {
+        drainWeekMonday.setDate(drainWeekMonday.getDate() - 7);
+        selectedDrainDate = dkeyFromDate(drainWeekMonday);
+        render();
+      });
+      document.getElementById('drain-next-week')?.addEventListener('click', () => {
+        drainWeekMonday.setDate(drainWeekMonday.getDate() + 7);
+        selectedDrainDate = dkeyFromDate(drainWeekMonday);
+        render();
+      });
+
+      root.querySelectorAll('[data-drain-day]').forEach(cell => {
+        cell.addEventListener('click', () => {
+          selectedDrainDate = cell.dataset.drainDay;
+          render();
+        });
+      });
+
+      root.querySelectorAll('[data-wordkey]').forEach(el => {
+        el.addEventListener('click', () => {
+          newItemIcon = el.dataset.wordkey;
+          render();
+        });
+      });
+
+      async function submitDrainTask(){
+        const input = document.getElementById('drain-add-input');
+        const text = (input ? input.value.trim() : '') || labelForIcon(newItemIcon) || 'Task';
+        data.drainTasks = data.drainTasks || [];
+        data.drainTasks.push({
+          id: uid(),
+          icon: newItemIcon,
+          text,
+          date: selectedDrainDate,
+          done: false
+        });
+        newItemText = '';
+        render(); await save();
+      }
+
+      document.getElementById('drain-submit-btn')?.addEventListener('click', submitDrainTask);
+      const drainInput = document.getElementById('drain-add-input');
+      if(drainInput){
+        drainInput.addEventListener('input', () => { newItemText = drainInput.value; });
+        drainInput.addEventListener('keydown', async (e) => { if(e.key === 'Enter') await submitDrainTask(); });
+      }
+
+      // 할 일 완료 체크 토글 -> Progress 탭의 items(type: plan, Drain -1)와 자동 연동!
+      root.querySelectorAll('[data-action="toggle-drain"]').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const tid = btn.dataset.taskid;
+          const task = data.drainTasks.find(t => t.id === tid);
+          if(!task) return;
+
+          task.done = !task.done;
+          if(task.done){
+            // 완료 시 Progress 및 전체 밸런스에 반영 (-1 Drain)
+            data.items.push({
+              id: 'drain_' + task.id,
+              icon: task.icon,
+              type: 'plan',
+              text: task.text,
+              date: task.date
+            });
+          }else{
+            // 해제 시 제거
+            data.items = data.items.filter(it => it.id !== ('drain_' + task.id));
+          }
+          render(); await save();
+        });
+      });
+
+      // 할 일 삭제
+      root.querySelectorAll('[data-action="delete-drain"]').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const tid = btn.dataset.taskid;
+          data.drainTasks = data.drainTasks.filter(t => t.id !== tid);
+          data.items = data.items.filter(it => it.id !== ('drain_' + tid));
+          render(); await save();
+        });
+      });
+      return;
+    }
+
+    // 3) Progress 탭 이벤트
     if(activeTab === 'progress'){
       document.getElementById('progress-prev-month')?.addEventListener('click', () => {
         progressMonthCursor = new Date(progressMonthCursor.getFullYear(), progressMonthCursor.getMonth() - 1, 1);
@@ -574,98 +864,6 @@
           selectedProgressDay = (selectedProgressDay === key) ? null : key;
           render();
         });
-      });
-      return;
-    }
-
-    document.getElementById('today-prev-day')?.addEventListener('click', () => {
-      selectedTodayDate.setDate(selectedTodayDate.getDate() - 1);
-      render();
-    });
-    document.getElementById('today-present')?.addEventListener('click', () => {
-      selectedTodayDate.setDate(selectedTodayDate.getDate() + 1);
-      render();
-    });
-
-    root.querySelectorAll('[data-action="delete"]').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        data.items = data.items.filter(it => it.id !== btn.dataset.id);
-        render(); await save();
-      });
-    });
-
-    async function submitItem(){
-      const input = document.getElementById('add-input');
-      const text = (input ? input.value.trim() : '') || labelForIcon(newItemIcon) || 'Task';
-      data.items.push({ id: uid(), icon: newItemIcon, type: newItemType, text, date: dkeyFromDate(selectedTodayDate) });
-      newItemText = '';
-      render(); await save();
-    }
-
-    root.querySelectorAll('[data-itemtype]').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        newItemType = btn.dataset.itemtype;
-        await submitItem();
-      });
-    });
-
-    root.querySelectorAll('[data-wordkey]').forEach(el => {
-      el.addEventListener('click', () => {
-        newItemIcon = el.dataset.wordkey;
-        render();
-      });
-    });
-
-    const input = document.getElementById('add-input');
-    if(input){
-      input.addEventListener('input', () => { newItemText = input.value; });
-      input.addEventListener('keydown', async (e) => { if(e.key === 'Enter') await submitItem(); });
-    }
-
-    document.getElementById('icon-edit-toggle-btn')?.addEventListener('click', () => {
-      iconEditMode = !iconEditMode; render();
-    });
-
-    async function addCustomCategory(){
-      const catInput = document.getElementById('icon-search-input');
-      const name = (catInput?.value || '').trim();
-      if(!name) return;
-      const key = name.toLowerCase().replace(/\s+/g,'-');
-      data.customIconKeys = data.customIconKeys || [];
-      data.customLabels = data.customLabels || {};
-      if(!data.customIconKeys.includes(key)) data.customIconKeys.push(key);
-      data.customLabels[key] = name;
-      newItemIcon = key;
-      await save();
-      render();
-    }
-
-    document.getElementById('icon-search-btn')?.addEventListener('click', addCustomCategory);
-    document.getElementById('icon-search-input')?.addEventListener('keydown', (e) => {
-      if(e.key === 'Enter') { e.preventDefault(); addCustomCategory(); }
-    });
-
-    root.querySelectorAll('[data-removeword]').forEach(btn => {
-      btn.addEventListener('click', async (e) => {
-        e.stopPropagation();
-        const key = btn.dataset.removeword;
-        if(ICON_KEYS.includes(key)){
-          if(!data.hiddenIconKeys.includes(key)) data.hiddenIconKeys.push(key);
-        }else{
-          data.customIconKeys = (data.customIconKeys || []).filter(k => k !== key);
-          if(data.customLabels) delete data.customLabels[key];
-        }
-        if(newItemIcon === key) newItemIcon = allIconKeys()[0] || 'run';
-        await save();
-        render();
-      });
-    });
-
-    const commentArea = document.getElementById('comment-textarea');
-    if(commentArea){
-      commentArea.addEventListener('blur', async () => {
-        data.comments[dkeyFromDate(selectedTodayDate)] = commentArea.value;
-        await save();
       });
     }
   }
