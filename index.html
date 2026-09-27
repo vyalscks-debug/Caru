@@ -71,7 +71,7 @@
   .comment-block{ margin-top:16px; }
   .main-note{ margin:6px 0 18px; }
   
-  /* Daily Note 박스 축소 */
+  /* Daily Note 축소 */
   .main-note .comment-textarea{ min-height:48px; height:48px; font-size:13.5px; padding:9px 12px; }
   .comment-textarea{
     width:100%; border:1.3px solid var(--ink); border-radius:10px;
@@ -81,7 +81,7 @@
   .comment-textarea::placeholder{ color:var(--muted); }
   .picker-label{ font-family:'JetBrains Mono', monospace; font-size:9.5px; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); margin-bottom:8px; }
 
-  /* 카테고리 칩: 검은색(#000000) 테두리 */
+  /* 카테고리 칩: 검은색(#000000) 테두리 유지 */
   .word-grid{
     display:flex; flex-wrap:wrap; gap:6px 7px; margin-bottom:14px;
     align-items:center;
@@ -111,13 +111,15 @@
   .add-input::placeholder{ color:var(--muted); }
   .add-submit-btn{ flex:none; border:1px solid var(--ink); background:var(--ink); color:var(--paper); font-family:'JetBrains Mono', monospace; font-size:11px; padding:9px 16px; border-radius:16px; cursor:pointer; }
 
-  .single-charge-btn{
-    width:100%; border:1.3px solid var(--ink); background:var(--ink); color:var(--paper);
+  .single-btn{
+    width:100%; border:1.3px solid var(--ink);
     font-family:'JetBrains Mono', monospace; font-size:13px; font-weight:600;
     padding:12px 10px; border-radius:12px; cursor:pointer; margin-top:14px;
     transition:opacity .15s, transform .1s;
   }
-  .single-charge-btn:active{ transform:scale(0.98); opacity:0.9; }
+  .single-btn.charge{ background:var(--ink); color:var(--paper); }
+  .single-btn.drain{ background:var(--paper); color:var(--ink); }
+  .single-btn:active{ transform:scale(0.98); opacity:0.9; }
 
   /* Weekly Routine 전용 스타일 */
   .week-nav-bar{
@@ -151,16 +153,20 @@
   .drain-text{ flex:1; font-size:15px; line-height:1.4; word-break:break-word; }
   .drain-item.done .drain-text{ text-decoration:line-through; color:var(--muted); }
 
-  /* 요일 반복 선택 바 (Mon ~ Sun) */
+  /* 요일 반복 선택 패널 */
+  .routine-edit-panel{
+    margin:12px 0 16px; padding:14px; border:1px solid var(--ink); border-radius:12px;
+    background:var(--band);
+  }
   .days-picker-row{ display:flex; gap:5px; margin-bottom:8px; }
   .day-pick-btn{
     flex:1; padding:7px 2px; border:1.5px solid #000000; border-radius:6px;
-    background:transparent; cursor:pointer; font-family:'JetBrains Mono', monospace;
+    background:var(--paper); cursor:pointer; font-family:'JetBrains Mono', monospace;
     font-size:11px; font-weight:600; color:var(--muted); text-align:center; transition:all .12s;
   }
   .day-pick-btn.active{ background:var(--ink); color:var(--paper); border-color:var(--ink); }
   
-  .presets-row{ display:flex; gap:12px; margin-bottom:14px; }
+  .presets-row{ display:flex; gap:12px; margin-bottom:10px; }
   .preset-link{
     background:none; border:none; padding:0; font-family:'JetBrains Mono', monospace;
     font-size:10px; letter-spacing:.02em; color:var(--muted); text-decoration:underline;
@@ -172,6 +178,13 @@
     font-family:'JetBrains Mono', monospace; font-size:9.5px; color:var(--muted);
     border:1px solid var(--divider); padding:1px 5px; border-radius:6px; margin-left:6px;
   }
+
+  .text-toggle-btn{
+    border:0; background:none; color:var(--ink); padding:0; margin:0 0 12px 1px;
+    font-family:'Space Grotesk',sans-serif; font-size:13px; font-weight:700;
+    line-height:1; cursor:pointer; -webkit-appearance:none; appearance:none;
+  }
+  .text-toggle-btn.active{ text-decoration:underline; text-underline-offset:3px; }
 
   /* Progress 탭 스타일 */
   .balance-banner{ border:1px solid var(--ink); border-radius:14px; padding:18px; margin-bottom:20px; background:var(--band); }
@@ -224,12 +237,6 @@
     letter-spacing:-.02em; margin:0 2px;
   }
 
-  .edit-icons-btn{
-    border:0; background:none; color:var(--ink); padding:0; margin:0 0 12px 1px;
-    font-family:'Space Grotesk',sans-serif; font-size:13px; font-weight:700;
-    line-height:1; cursor:pointer; -webkit-appearance:none; appearance:none;
-  }
-  .edit-icons-btn.active{ text-decoration:underline; text-underline-offset:3px; }
   .status{ font-family:'JetBrains Mono', monospace; font-size:12px; color:var(--muted); text-align:center; padding:60px 0; }
   .icon-search-row{ display:flex; gap:8px; margin-bottom:10px; }
   .icon-search-row .add-input{ border:1.3px solid var(--faint); border-radius:10px; padding:9px 12px; }
@@ -279,24 +286,41 @@
   const MONTHS_FULL = ['January','February','March','April','May','June','July','August','September','October','November','December'];
   const MONTHS_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   const DAY_NAMES_SHORT = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-  // 주간 순서: 월(1) ~ 일(0)
-  const WEEKDAY_ORDER = [1, 2, 3, 4, 5, 6, 0];
+  const WEEKDAY_ORDER = [1, 2, 3, 4, 5, 6, 0]; // Mon ~ Sun
 
-  const ICON_KEYS = ['run','book','cook','music','sleep','brief','brush','broom','pill','pencil','home','heart','users','car','tv','shirt'];
-  const ICON_LABELS = {
-    run:'Exercise', book:'Study', cook:'Cooking', music:'Music', sleep:'Sleep',
-    brief:'Work', brush:'Hobby', broom:'Chores', pill:'Medicine', pencil:'Journal',
-    heart:'Self-care', users:'Hang out', car:'Commute', tv:'Watch', shirt:'Laundry'
+  // ==========================================
+  // 카테고리 분리 정의 (Charge 전용 vs Drain 전용)
+  // ==========================================
+  const CHARGE_DEFAULT_KEYS = ['sleep','music','brush','heart','users','cook','walk','coffee','game','plant'];
+  const CHARGE_DEFAULT_LABELS = {
+    sleep:'Sleep', music:'Music', brush:'Hobby', heart:'Self-care', users:'Hang out',
+    cook:'Cooking', walk:'Walk', coffee:'Break', game:'Gaming', plant:'Garden'
   };
 
-  function labelForIcon(key){
-    if(data.customLabels && data.customLabels[key]) return data.customLabels[key];
-    if(ICON_LABELS[key]) return ICON_LABELS[key];
-    return key.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+  const DRAIN_DEFAULT_KEYS = ['brief','car','book','run','broom','shirt','pill','pencil','home','tv'];
+  const DRAIN_DEFAULT_LABELS = {
+    brief:'Work', car:'Commute', book:'Study', run:'Exercise', broom:'Chores',
+    shirt:'Laundry', pill:'Medicine', pencil:'Journal', home:'Housework', tv:'Watch'
+  };
+
+  function getChargeCategories(){
+    const hidden = data.chargeHiddenIconKeys || [];
+    return CHARGE_DEFAULT_KEYS.filter(k => !hidden.includes(k)).concat(data.chargeCustomIconKeys || []);
   }
-  function allIconKeys(){
-    const hidden = data.hiddenIconKeys || [];
-    return ICON_KEYS.filter(k => !hidden.includes(k)).concat(data.customIconKeys || []);
+  function getDrainCategories(){
+    const hidden = data.drainHiddenIconKeys || [];
+    return DRAIN_DEFAULT_KEYS.filter(k => !hidden.includes(k)).concat(data.drainCustomIconKeys || []);
+  }
+
+  function labelForCategory(key, type){
+    if(type === 'charge'){
+      if(data.chargeCustomLabels && data.chargeCustomLabels[key]) return data.chargeCustomLabels[key];
+      if(CHARGE_DEFAULT_LABELS[key]) return CHARGE_DEFAULT_LABELS[key];
+    } else {
+      if(data.drainCustomLabels && data.drainCustomLabels[key]) return data.drainCustomLabels[key];
+      if(DRAIN_DEFAULT_LABELS[key]) return DRAIN_DEFAULT_LABELS[key];
+    }
+    return key.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
   }
 
   function dkeyFromDate(d){
@@ -320,26 +344,37 @@
     return mon;
   }
 
-  let data = { items: [], comments: {}, customIconKeys: [], hiddenIconKeys: [], customLabels: {}, routines: [] };
+  let data = {
+    items: [],
+    comments: {},
+    routines: [],
+    chargeCustomIconKeys: [], chargeHiddenIconKeys: [], chargeCustomLabels: {},
+    drainCustomIconKeys: [], drainHiddenIconKeys: [], drainCustomLabels: {}
+  };
+
   let theme = 'light';
   let activeTab = 'charge';
-  let newItemIcon = ICON_KEYS[0];
   let newItemText = '';
-  let iconEditMode = false;
-  let routineManageMode = false;
 
-  // 루틴 생성 시 선택된 요일들 (기본: 월-금 평일 매일)
+  // 각 탭별 선택된 카테고리
+  let currentChargeIcon = CHARGE_DEFAULT_KEYS[0];
+  let currentDrainIcon = DRAIN_DEFAULT_KEYS[0];
+
+  // 편집 모드 토글
+  let chargeIconEditMode = false;
+  let drainIconEditMode = false;
+  let editRoutineMode = false; // "Edit as a routine" 토글
+
+  // 루틴 요일 선택
   let selectedRoutineDays = [1, 2, 3, 4, 5];
 
-  // Charge 탭 날짜
+  // 날짜 커서
   let selectedTodayDate = new Date();
   selectedTodayDate.setHours(0,0,0,0);
 
-  // Drain 주간 탭 기준 날짜
   let drainWeekMonday = getMonday(new Date());
   let selectedDrainDate = dkeyFromDate(new Date());
 
-  // Progress 달력 날짜
   let progressMonthCursor = new Date();
   progressMonthCursor.setHours(0,0,0,0);
   progressMonthCursor.setDate(1);
@@ -386,20 +421,22 @@
   async function load(){
     try{
       const raw = localStorage.getItem(STORAGE_KEY);
-      data = raw ? JSON.parse(raw) : { items: [], comments: {}, customIconKeys: [], hiddenIconKeys: [], customLabels: {}, routines: [] };
-    }catch(e){ data = { items: [], comments: {}, customIconKeys: [], hiddenIconKeys: [], customLabels: {}, routines: [] }; }
+      data = raw ? JSON.parse(raw) : {};
+    }catch(e){ data = {}; }
     
     if(!data.items) data.items = [];
     if(!data.comments) data.comments = {};
-    if(!data.customIconKeys) data.customIconKeys = [];
-    if(!data.hiddenIconKeys) data.hiddenIconKeys = [];
-    if(!data.customLabels) data.customLabels = {};
     if(!data.routines) {
-      // 초기 기본 루틴 예시 제공
       data.routines = [
         { id: 'rt_commute', text: 'Commute', icon: 'car', days: [1,2,3,4,5] }
       ];
     }
+    if(!data.chargeCustomIconKeys) data.chargeCustomIconKeys = [];
+    if(!data.chargeHiddenIconKeys) data.chargeHiddenIconKeys = [];
+    if(!data.chargeCustomLabels) data.chargeCustomLabels = {};
+    if(!data.drainCustomIconKeys) data.drainCustomIconKeys = [];
+    if(!data.drainHiddenIconKeys) data.drainHiddenIconKeys = [];
+    if(!data.drainCustomLabels) data.drainCustomLabels = {};
 
     theme = localStorage.getItem('caru-theme-pref') === 'dark' ? 'dark' : 'light';
     render();
@@ -411,10 +448,13 @@
           data = val;
           if(!data.items) data.items = [];
           if(!data.comments) data.comments = {};
-          if(!data.customIconKeys) data.customIconKeys = [];
-          if(!data.hiddenIconKeys) data.hiddenIconKeys = [];
-          if(!data.customLabels) data.customLabels = {};
           if(!data.routines) data.routines = [];
+          if(!data.chargeCustomIconKeys) data.chargeCustomIconKeys = [];
+          if(!data.chargeHiddenIconKeys) data.chargeHiddenIconKeys = [];
+          if(!data.chargeCustomLabels) data.chargeCustomLabels = {};
+          if(!data.drainCustomIconKeys) data.drainCustomIconKeys = [];
+          if(!data.drainHiddenIconKeys) data.drainHiddenIconKeys = [];
+          if(!data.drainCustomLabels) data.drainCustomLabels = {};
           localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
           render();
         }
@@ -439,7 +479,9 @@
     return `<span class="type-pill${type==='plan'?' plan':''}">${word} ${n}</span>`;
   }
 
-  // 1) Charge 탭
+  // ==========================================
+  // 1) Charge 탭 (충전 전용 카테고리)
+  // ==========================================
   function renderChargeTab(){
     const items = todayChargeItems();
     const { balance } = totalBalance();
@@ -453,11 +495,11 @@
           </li>`).join('')
       : `<li class="item-empty">No charge logged today. Add something recharging below!</li>`;
 
-    const pickerKeys = allIconKeys();
+    const pickerKeys = getChargeCategories();
     const wordGridHtml = pickerKeys.map(key => `
-      <div class="word-item${key===newItemIcon?' active':''}" data-wordkey="${key}">
-        <span>${escapeHtml(labelForIcon(key))}</span>
-        ${iconEditMode ? `<button class="word-item-remove" data-removeword="${key}" title="Remove">×</button>` : ''}
+      <div class="word-item${key===currentChargeIcon?' active':''}" data-charge-word="${key}">
+        <span>${escapeHtml(labelForCategory(key, 'charge'))}</span>
+        ${chargeIconEditMode ? `<button class="word-item-remove" data-remove-charge-word="${key}">×</button>` : ''}
       </div>`).join('');
 
     return `
@@ -475,24 +517,26 @@
       <ul class="list">${listHtml}</ul>
 
       <div class="add-block">
-        <div class="picker-label">Category</div>
+        <div class="picker-label">Charge Category</div>
         <div class="word-grid">${wordGridHtml}</div>
-        <button class="edit-icons-btn${iconEditMode ? ' active' : ''}" id="icon-edit-toggle-btn">Edit Categories</button>
-        ${iconEditMode ? `
+        <button class="text-toggle-btn${chargeIconEditMode ? ' active' : ''}" id="charge-icon-edit-btn">Edit Categories</button>
+        ${chargeIconEditMode ? `
           <div class="icon-search-row">
-            <input class="add-input" id="icon-search-input" type="text" placeholder="Add custom category…" />
-            <button class="add-submit-btn" id="icon-search-btn">Add</button>
+            <input class="add-input" id="charge-cat-input" type="text" placeholder="Add custom charge category…" />
+            <button class="add-submit-btn" id="charge-cat-add-btn">Add</button>
           </div>
         ` : ''}
         <div class="add-row">
-          <input class="add-input" id="add-input" type="text" placeholder="What energized you?" value="${escapeHtml(newItemText)}" />
+          <input class="add-input" id="charge-add-input" type="text" placeholder="What energized you?" value="${escapeHtml(newItemText)}" />
         </div>
-        <button class="single-charge-btn" id="charge-submit-btn">+ Charge (+1)</button>
+        <button class="single-btn charge" id="charge-submit-btn">+ Charge (+1)</button>
       </div>
     `;
   }
 
-  // 2) Drain 탭 (Weekly Routine 플래너)
+  // ==========================================
+  // 2) Drain 탭 (Weekly Routine & Drain 전용 카테고리)
+  // ==========================================
   function renderDrainTab(){
     const days = [];
     for(let i = 0; i < 7; i++){
@@ -508,11 +552,10 @@
     // 상단 7개 요일 바
     const weekGridHtml = days.map(d => {
       const dkey = dkeyFromDate(d);
-      const dow = d.getDay(); // 0~6
+      const dow = d.getDay();
       const isSelected = (dkey === selectedDrainDate);
       const isToday = (dkey === currentTodayStr);
 
-      // 해당 요일에 배정된 루틴들
       const scheduledRoutines = (data.routines || []).filter(r => (r.days || []).includes(dow));
       const doneCount = scheduledRoutines.filter(r => {
         const itemId = `rt_${r.id}_${dkey}`;
@@ -528,13 +571,11 @@
       `;
     }).join('');
 
-    // 현재 선택된 날짜의 요일 구하기
     const [yy, mm, dd] = selectedDrainDate.split('-').map(Number);
     const selectedDateObj = new Date(yy, mm-1, dd);
     const selectedDow = selectedDateObj.getDay();
     const selectedDateTitle = `${DAY_NAMES_SHORT[selectedDow]}, ${MONTHS_SHORT[mm-1]} ${dd}`;
 
-    // 선택된 요일에 해당하는 루틴 목록
     const dayRoutines = (data.routines || []).filter(r => (r.days || []).includes(selectedDow));
 
     const routinesListHtml = dayRoutines.length
@@ -550,15 +591,29 @@
             </li>
           `;
         }).join('')
-      : `<li class="item-empty">No routines scheduled for ${DAY_NAMES_SHORT[selectedDow]}.<br>Add a weekly routine below!</li>`;
+      : `<li class="item-empty">No plans set for ${DAY_NAMES_SHORT[selectedDow]}. Add one below!</li>`;
 
-    // 등록된 모든 루틴 관리 목록
+    // Drain 전용 카테고리
+    const pickerKeys = getDrainCategories();
+    const wordGridHtml = pickerKeys.map(key => `
+      <div class="word-item${key===currentDrainIcon?' active':''}" data-drain-word="${key}">
+        <span>${escapeHtml(labelForCategory(key, 'drain'))}</span>
+        ${drainIconEditMode ? `<button class="word-item-remove" data-remove-drain-word="${key}">×</button>` : ''}
+      </div>`).join('');
+
+    // 요일 토글 버튼 (Mon ~ Sun)
+    const dayButtonsHtml = WEEKDAY_ORDER.map(dow => {
+      const isPick = selectedRoutineDays.includes(dow);
+      return `<button type="button" class="day-pick-btn${isPick ? ' active' : ''}" data-dow="${dow}">${DAY_NAMES_SHORT[dow]}</button>`;
+    }).join('');
+
+    // 등록된 루틴 관리 목록
     const allRoutinesManageHtml = (data.routines || []).length
       ? (data.routines || []).map(r => {
           const daysLabel = (r.days || []).map(d => DAY_NAMES_SHORT[d]).join(', ');
           return `
-            <li class="item" style="padding:10px 2px;">
-              <span class="item-text" style="font-size:14px; font-weight:500;">
+            <li class="item" style="padding:8px 2px;">
+              <span class="item-text" style="font-size:13.5px;">
                 ${escapeHtml(r.text)}
                 <span class="routine-badge">${daysLabel}</span>
               </span>
@@ -566,19 +621,7 @@
             </li>
           `;
         }).join('')
-      : `<li class="item-empty">No routines added yet.</li>`;
-
-    const pickerKeys = allIconKeys();
-    const wordGridHtml = pickerKeys.map(key => `
-      <div class="word-item${key===newItemIcon?' active':''}" data-wordkey="${key}">
-        <span>${escapeHtml(labelForIcon(key))}</span>
-      </div>`).join('');
-
-    // 요일 토글 버튼 렌더링 (Mon ~ Sun)
-    const dayButtonsHtml = WEEKDAY_ORDER.map(dow => {
-      const isPick = selectedRoutineDays.includes(dow);
-      return `<button type="button" class="day-pick-btn${isPick ? ' active' : ''}" data-dow="${dow}">${DAY_NAMES_SHORT[dow]}</button>`;
-    }).join('');
+      : `<li class="item-empty" style="padding:10px 0;">No recurring routines yet.</li>`;
 
     return `
       <div class="week-nav-bar">
@@ -593,40 +636,48 @@
       <ul class="list">${routinesListHtml}</ul>
 
       <div class="add-block">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-          <div class="picker-label" style="margin-bottom:0;">Add Weekly Routine</div>
-          <button class="edit-icons-btn${routineManageMode ? ' active' : ''}" id="routine-manage-btn" style="margin:0; font-size:11px;">
-            ${routineManageMode ? 'Done Editing' : 'Manage All Routines'}
+        <div class="picker-label">Drain Category</div>
+        <div class="word-grid">${wordGridHtml}</div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+          <button class="text-toggle-btn${drainIconEditMode ? ' active' : ''}" id="drain-icon-edit-btn" style="margin:0;">Edit Categories</button>
+          <button class="text-toggle-btn${editRoutineMode ? ' active' : ''}" id="edit-as-routine-btn" style="margin:0;">
+            ${editRoutineMode ? '✓ Close routine setup' : 'Edit as a routine'}
           </button>
         </div>
 
-        ${routineManageMode ? `
-          <div style="margin-bottom:18px; border:1px solid var(--divider); border-radius:10px; padding:10px;">
-            <p class="picker-label">All Recurring Routines</p>
-            <ul class="list">${allRoutinesManageHtml}</ul>
+        ${drainIconEditMode ? `
+          <div class="icon-search-row">
+            <input class="add-input" id="drain-cat-input" type="text" placeholder="Add custom drain category…" />
+            <button class="add-submit-btn" id="drain-cat-add-btn">Add</button>
           </div>
         ` : ''}
 
-        <div class="picker-label">Repeat on (Select Days)</div>
-        <div class="days-picker-row">${dayButtonsHtml}</div>
-        <div class="presets-row">
-          <button class="preset-link" data-preset="weekdays">Weekdays (Mon–Fri)</button>
-          <button class="preset-link" data-preset="everyday">Everyday (All 7)</button>
-          <button class="preset-link" data-preset="weekends">Weekends (Sat–Sun)</button>
-        </div>
-
-        <div class="picker-label">Routine Category</div>
-        <div class="word-grid">${wordGridHtml}</div>
+        ${editRoutineMode ? `
+          <div class="routine-edit-panel">
+            <div class="picker-label">Repeat on (Select Days)</div>
+            <div class="days-picker-row">${dayButtonsHtml}</div>
+            <div class="presets-row">
+              <button class="preset-link" data-preset="weekdays">Weekdays (Mon–Fri)</button>
+              <button class="preset-link" data-preset="everyday">Everyday</button>
+              <button class="preset-link" data-preset="weekends">Weekends</button>
+            </div>
+            
+            <p class="picker-label" style="margin-top:14px; margin-bottom:6px;">Current Recurring Routines</p>
+            <ul class="list" style="max-height:120px; overflow-y:auto;">${allRoutinesManageHtml}</ul>
+          </div>
+        ` : ''}
 
         <div class="add-row">
-          <input class="add-input" id="routine-add-input" type="text" placeholder="e.g. Commute, Gym, Study…" value="${escapeHtml(newItemText)}" />
+          <input class="add-input" id="drain-add-input" type="text" placeholder="e.g. Commute, Gym, Study…" value="${escapeHtml(newItemText)}" />
         </div>
-        <button class="single-charge-btn" id="routine-submit-btn" style="background:var(--paper); color:var(--ink);">+ Add Weekly Routine</button>
+        <button class="single-btn drain" id="drain-submit-btn">- Drain</button>
       </div>
     `;
   }
 
+  // ==========================================
   // 3) Progress 탭 (Calendar & History)
+  // ==========================================
   function renderProgressTab(){
     const { balance, healDone, planDone } = totalBalance();
     const streak = currentStreak();
@@ -784,61 +835,61 @@
       });
 
       async function submitCharge(){
-        const input = document.getElementById('add-input');
-        const text = (input ? input.value.trim() : '') || labelForIcon(newItemIcon) || 'Recharge';
-        data.items.push({ id: uid(), icon: newItemIcon, type: 'heal', text, date: dkeyFromDate(selectedTodayDate) });
+        const input = document.getElementById('charge-add-input');
+        const text = (input ? input.value.trim() : '') || labelForCategory(currentChargeIcon, 'charge') || 'Recharge';
+        data.items.push({ id: uid(), icon: currentChargeIcon, type: 'heal', text, date: dkeyFromDate(selectedTodayDate) });
         newItemText = '';
         render(); await save();
       }
 
       document.getElementById('charge-submit-btn')?.addEventListener('click', submitCharge);
-
-      const input = document.getElementById('add-input');
-      if(input){
-        input.addEventListener('input', () => { newItemText = input.value; });
-        input.addEventListener('keydown', async (e) => { if(e.key === 'Enter') await submitCharge(); });
+      const chargeInput = document.getElementById('charge-add-input');
+      if(chargeInput){
+        chargeInput.addEventListener('input', () => { newItemText = chargeInput.value; });
+        chargeInput.addEventListener('keydown', async (e) => { if(e.key === 'Enter') await submitCharge(); });
       }
 
-      root.querySelectorAll('[data-wordkey]').forEach(el => {
+      root.querySelectorAll('[data-charge-word]').forEach(el => {
         el.addEventListener('click', () => {
-          newItemIcon = el.dataset.wordkey;
+          currentChargeIcon = el.dataset.chargeWord;
           render();
         });
       });
 
-      document.getElementById('icon-edit-toggle-btn')?.addEventListener('click', () => {
-        iconEditMode = !iconEditMode; render();
+      document.getElementById('charge-icon-edit-btn')?.addEventListener('click', () => {
+        chargeIconEditMode = !chargeIconEditMode; render();
       });
 
-      async function addCustomCategory(){
-        const catInput = document.getElementById('icon-search-input');
+      async function addCustomChargeCat(){
+        const catInput = document.getElementById('charge-cat-input');
         const name = (catInput?.value || '').trim();
         if(!name) return;
         const key = name.toLowerCase().replace(/\s+/g,'-');
-        data.customIconKeys = data.customIconKeys || [];
-        data.customLabels = data.customLabels || {};
-        if(!data.customIconKeys.includes(key)) data.customIconKeys.push(key);
-        data.customLabels[key] = name;
-        newItemIcon = key;
+        data.chargeCustomIconKeys = data.chargeCustomIconKeys || [];
+        data.chargeCustomLabels = data.chargeCustomLabels || {};
+        if(!data.chargeCustomIconKeys.includes(key)) data.chargeCustomIconKeys.push(key);
+        data.chargeCustomLabels[key] = name;
+        currentChargeIcon = key;
         await save(); render();
       }
 
-      document.getElementById('icon-search-btn')?.addEventListener('click', addCustomCategory);
-      document.getElementById('icon-search-input')?.addEventListener('keydown', (e) => {
-        if(e.key === 'Enter') { e.preventDefault(); addCustomCategory(); }
+      document.getElementById('charge-cat-add-btn')?.addEventListener('click', addCustomChargeCat);
+      document.getElementById('charge-cat-input')?.addEventListener('keydown', (e) => {
+        if(e.key === 'Enter') { e.preventDefault(); addCustomChargeCat(); }
       });
 
-      root.querySelectorAll('[data-removeword]').forEach(btn => {
+      root.querySelectorAll('[data-remove-charge-word]').forEach(btn => {
         btn.addEventListener('click', async (e) => {
           e.stopPropagation();
-          const key = btn.dataset.removeword;
-          if(ICON_KEYS.includes(key)){
-            if(!data.hiddenIconKeys.includes(key)) data.hiddenIconKeys.push(key);
+          const key = btn.dataset.removeChargeWord;
+          if(CHARGE_DEFAULT_KEYS.includes(key)){
+            data.chargeHiddenIconKeys = data.chargeHiddenIconKeys || [];
+            if(!data.chargeHiddenIconKeys.includes(key)) data.chargeHiddenIconKeys.push(key);
           }else{
-            data.customIconKeys = (data.customIconKeys || []).filter(k => k !== key);
-            if(data.customLabels) delete data.customLabels[key];
+            data.chargeCustomIconKeys = (data.chargeCustomIconKeys || []).filter(k => k !== key);
+            if(data.chargeCustomLabels) delete data.chargeCustomLabels[key];
           }
-          if(newItemIcon === key) newItemIcon = allIconKeys()[0] || 'run';
+          if(currentChargeIcon === key) currentChargeIcon = getChargeCategories()[0] || 'sleep';
           await save(); render();
         });
       });
@@ -853,7 +904,7 @@
       return;
     }
 
-    // 2) Drain 탭 이벤트 (Weekly Routine)
+    // 2) Drain 탭 이벤트
     if(activeTab === 'drain'){
       document.getElementById('drain-prev-week')?.addEventListener('click', () => {
         drainWeekMonday.setDate(drainWeekMonday.getDate() - 7);
@@ -873,7 +924,7 @@
         });
       });
 
-      // 루틴 완료 체크 토글 -> Progress 탭의 items(type: plan, Drain -1) 연동
+      // 루틴 완료 체크 토글 -> Progress 탭의 items(-1 Drain) 연동
       root.querySelectorAll('[data-action="toggle-routine"]').forEach(btn => {
         btn.addEventListener('click', async () => {
           const rid = btn.dataset.routineId;
@@ -884,10 +935,8 @@
           const existingIndex = data.items.findIndex(it => it.id === itemId);
 
           if(existingIndex >= 0){
-            // 이미 체크된 경우 취소
             data.items.splice(existingIndex, 1);
           } else {
-            // 완료 처리: -1 Drain 항목으로 기록
             data.items.push({
               id: itemId,
               icon: routine.icon,
@@ -900,7 +949,63 @@
         });
       });
 
-      // 요일 토글 버튼 클릭
+      // Drain 카테고리 선택
+      root.querySelectorAll('[data-drain-word]').forEach(el => {
+        el.addEventListener('click', () => {
+          currentDrainIcon = el.dataset.drainWord;
+          render();
+        });
+      });
+
+      // Edit as a routine 토글
+      document.getElementById('edit-as-routine-btn')?.addEventListener('click', () => {
+        editRoutineMode = !editRoutineMode;
+        render();
+      });
+
+      // Drain 카테고리 편집 모드 토글
+      document.getElementById('drain-icon-edit-btn')?.addEventListener('click', () => {
+        drainIconEditMode = !drainIconEditMode;
+        render();
+      });
+
+      // Drain 커스텀 카테고리 추가
+      async function addCustomDrainCat(){
+        const catInput = document.getElementById('drain-cat-input');
+        const name = (catInput?.value || '').trim();
+        if(!name) return;
+        const key = name.toLowerCase().replace(/\s+/g,'-');
+        data.drainCustomIconKeys = data.drainCustomIconKeys || [];
+        data.drainCustomLabels = data.drainCustomLabels || {};
+        if(!data.drainCustomIconKeys.includes(key)) data.drainCustomIconKeys.push(key);
+        data.drainCustomLabels[key] = name;
+        currentDrainIcon = key;
+        await save(); render();
+      }
+
+      document.getElementById('drain-cat-add-btn')?.addEventListener('click', addCustomDrainCat);
+      document.getElementById('drain-cat-input')?.addEventListener('keydown', (e) => {
+        if(e.key === 'Enter') { e.preventDefault(); addCustomDrainCat(); }
+      });
+
+      // Drain 카테고리 삭제
+      root.querySelectorAll('[data-remove-drain-word]').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+          e.stopPropagation();
+          const key = btn.dataset.removeDrainWord;
+          if(DRAIN_DEFAULT_KEYS.includes(key)){
+            data.drainHiddenIconKeys = data.drainHiddenIconKeys || [];
+            if(!data.drainHiddenIconKeys.includes(key)) data.drainHiddenIconKeys.push(key);
+          }else{
+            data.drainCustomIconKeys = (data.drainCustomIconKeys || []).filter(k => k !== key);
+            if(data.drainCustomLabels) delete data.drainCustomLabels[key];
+          }
+          if(currentDrainIcon === key) currentDrainIcon = getDrainCategories()[0] || 'brief';
+          await save(); render();
+        });
+      });
+
+      // 요일 토글 버튼
       root.querySelectorAll('.day-pick-btn').forEach(btn => {
         btn.addEventListener('click', () => {
           const dow = parseInt(btn.dataset.dow, 10);
@@ -915,7 +1020,7 @@
         });
       });
 
-      // 프리셋 링크
+      // 프리셋
       root.querySelectorAll('[data-preset]').forEach(btn => {
         btn.addEventListener('click', () => {
           const p = btn.dataset.preset;
@@ -926,48 +1031,41 @@
         });
       });
 
-      // 카테고리 칩 선택
-      root.querySelectorAll('[data-wordkey]').forEach(el => {
-        el.addEventListener('click', () => {
-          newItemIcon = el.dataset.wordkey;
-          render();
-        });
-      });
+      // - Drain 버튼 클릭 시 (루틴 등록)
+      async function submitDrainTask(){
+        const input = document.getElementById('drain-add-input');
+        const text = (input ? input.value.trim() : '') || labelForCategory(currentDrainIcon, 'drain') || 'Task';
+        
+        const [yy, mm, dd] = selectedDrainDate.split('-').map(Number);
+        const currentSelectedDow = new Date(yy, mm-1, dd).getDay();
 
-      // 새 루틴 추가
-      async function submitRoutine(){
-        const input = document.getElementById('routine-add-input');
-        const text = (input ? input.value.trim() : '') || labelForIcon(newItemIcon) || 'Routine';
+        // Edit as a routine 모드가 켜져있으면 설정한 요일들, 꺼져있으면 현재 선택된 요일로 등록
+        const targetDays = editRoutineMode ? [...selectedRoutineDays] : [currentSelectedDow];
+
         data.routines = data.routines || [];
         data.routines.push({
           id: 'rt_' + uid(),
           text,
-          icon: newItemIcon,
-          days: [...selectedRoutineDays]
+          icon: currentDrainIcon,
+          days: targetDays
         });
+
         newItemText = '';
         render(); await save();
       }
 
-      document.getElementById('routine-submit-btn')?.addEventListener('click', submitRoutine);
-      const routineInput = document.getElementById('routine-add-input');
-      if(routineInput){
-        routineInput.addEventListener('input', () => { newItemText = routineInput.value; });
-        routineInput.addEventListener('keydown', async (e) => { if(e.key === 'Enter') await submitRoutine(); });
+      document.getElementById('drain-submit-btn')?.addEventListener('click', submitDrainTask);
+      const drainInput = document.getElementById('drain-add-input');
+      if(drainInput){
+        drainInput.addEventListener('input', () => { newItemText = drainInput.value; });
+        drainInput.addEventListener('keydown', async (e) => { if(e.key === 'Enter') await submitDrainTask(); });
       }
-
-      // 루틴 전체 관리 모드 토글
-      document.getElementById('routine-manage-btn')?.addEventListener('click', () => {
-        routineManageMode = !routineManageMode;
-        render();
-      });
 
       // 루틴 삭제
       root.querySelectorAll('[data-action="delete-routine"]').forEach(btn => {
         btn.addEventListener('click', async () => {
           const rid = btn.dataset.routineId;
           data.routines = (data.routines || []).filter(r => r.id !== rid);
-          // 연동된 완료 기록들도 함께 정리
           data.items = data.items.filter(it => !it.id.startsWith(`rt_${rid}_`));
           render(); await save();
         });
