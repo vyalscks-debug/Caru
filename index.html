@@ -48,30 +48,37 @@
   .tab-btn{ background:none; border:none; cursor:pointer; padding:0 0 10px; font-family:'JetBrains Mono', monospace; font-size:12.5px; letter-spacing:0.05em; color:var(--muted); border-bottom:2px solid transparent; margin-bottom:-1px; transition:color .15s; }
   .tab-btn.active{ color:var(--ink); border-bottom-color:var(--ink); font-weight:600; }
 
-  .today-prev-inline{display:inline-block;border:0;background:none;color:inherit;font:inherit;font-weight:700;font-size:22px;line-height:1;padding:0 7px 0 0;margin:0;cursor:pointer;vertical-align:2px;-webkit-appearance:none;appearance:none;}
-  .date-title{ font-family:'Space Grotesk', sans-serif; font-weight:700; font-size:26px; letter-spacing:-0.01em; margin:0 0 4px; }
-  .frac{ font-family:'JetBrains Mono', monospace; font-size:13px; color:var(--muted); margin-bottom:14px; }
+  .date-title{ font-family:'Space Grotesk', sans-serif; font-weight:700; font-size:22px; letter-spacing:-0.01em; margin:0 0 12px; }
 
   .list{ list-style:none; margin:0 0 4px; padding:0; }
-  .item{ display:flex; align-items:center; gap:10px; padding:12px 2px; border-bottom:1px solid var(--divider); }
+  .item{ display:flex; align-items:center; gap:8px; padding:12px 2px; border-bottom:1px solid var(--divider); }
+  
   .type-pill{
     flex:none; font-family:'JetBrains Mono', monospace; font-size:10.5px; font-weight:700;
     padding:3px 8px; border-radius:10px; border:1.3px solid var(--ink); color:var(--ink); background:transparent;
     white-space:nowrap;
   }
-  /* Drain -1 뱃지: 라이트모드 검은배경 / 다크모드 밝은배경 자동 반전 */
   .type-pill.plan{ background:var(--ink); color:var(--paper); }
+  
   .item-text{ flex:1; font-size:15px; line-height:1.4; word-break:break-word; }
+  .item.done .item-text{ text-decoration:line-through; color:var(--muted); }
+
+  /* 네모 체크박스 공통 스타일 */
+  .check-btn{
+    flex:none; width:22px; height:22px; border-radius:6px; border:1.5px solid var(--ink);
+    background:transparent; cursor:pointer; display:flex; align-items:center; justify-content:center;
+    font-size:12px; padding:0; color:transparent; transition:all .12s;
+  }
+  .item.done .check-btn{ background:var(--ink); color:var(--paper); font-weight:700; }
+
   .del-btn{ flex:none; width:24px; height:24px; border:none; background:none; color:var(--muted); font-size:18px; cursor:pointer; line-height:1; }
   .del-btn:hover{ color:var(--ink); }
 
   .item-empty{ padding:24px 2px; color:var(--muted); font-size:13.5px; text-align:center; }
 
   .add-block{ margin-top:18px; padding-top:18px; border-top:1px solid var(--ink); }
-  .comment-block{ margin-top:16px; }
-  .main-note{ margin:6px 0 18px; }
+  .comment-block{ margin-top:8px; margin-bottom:18px; }
   
-  /* Daily Note 축소 */
   .main-note .comment-textarea{ min-height:48px; height:48px; font-size:13.5px; padding:9px 12px; }
   .comment-textarea{
     width:100%; border:1.3px solid var(--ink); border-radius:10px;
@@ -121,7 +128,7 @@
   .single-btn.drain{ background:var(--paper); color:var(--ink); }
   .single-btn:active{ transform:scale(0.98); opacity:0.9; }
 
-  /* Weekly Routine & Drain 아이템 */
+  /* 주간 네비 & 7개 요일 바 */
   .week-nav-bar{
     display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;
   }
@@ -140,18 +147,6 @@
   .week-dow{ font-family:'JetBrains Mono', monospace; font-size:9.5px; color:var(--muted); margin-bottom:2px; }
   .week-daynum{ font-family:'Space Grotesk', sans-serif; font-size:14px; font-weight:600; }
   .week-dot-count{ font-size:9.5px; font-family:'JetBrains Mono', monospace; margin-top:2px; }
-
-  .drain-item{
-    display:flex; align-items:center; gap:8px; padding:12px 2px; border-bottom:1px solid var(--divider);
-  }
-  .drain-check-btn{
-    flex:none; width:22px; height:22px; border-radius:6px; border:1.5px solid var(--ink);
-    background:transparent; cursor:pointer; display:flex; align-items:center; justify-content:center;
-    font-size:12px; padding:0; color:transparent; transition:all .12s;
-  }
-  .drain-item.done .drain-check-btn{ background:var(--ink); color:var(--paper); font-weight:700; }
-  .drain-text{ flex:1; font-size:15px; line-height:1.4; word-break:break-word; }
-  .drain-item.done .drain-text{ text-decoration:line-through; color:var(--muted); }
 
   /* 요일 반복 선택 패널 */
   .routine-edit-panel{
@@ -236,7 +231,7 @@
     letter-spacing:-.02em; margin:0 2px;
   }
 
-  /* Insights / 통계 섹션 */
+  /* 통계 섹션 */
   .stats-section{ margin-top:28px; }
   .stats-toggle-row{ display:flex; gap:8px; margin-bottom:14px; }
   .stats-tab-btn{
@@ -342,10 +337,6 @@
     return `${y}-${m}-${day}`;
   }
   function todayKey(){ return dkeyFromDate(new Date()); }
-  function todayLabel(){
-    const d = selectedTodayDate;
-    return `${DAY_NAMES_SHORT[d.getDay()]}, ${MONTHS_SHORT[d.getMonth()]} ${d.getDate()}`;
-  }
   function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
   function escapeHtml(str){ const div = document.createElement('div'); div.textContent = str; return div.innerHTML; }
 
@@ -361,7 +352,8 @@
   let data = {
     items: [],
     comments: {},
-    routines: [],
+    chargeRoutines: [],
+    drainRoutines: [],
     chargeCustomIconKeys: [], chargeHiddenIconKeys: [], chargeCustomLabels: {},
     drainCustomIconKeys: [], drainHiddenIconKeys: [], drainCustomLabels: {}
   };
@@ -375,22 +367,24 @@
 
   let chargeIconEditMode = false;
   let drainIconEditMode = false;
-  let editRoutineMode = false;
 
-  let selectedRoutineDays = [1, 2, 3, 4, 5];
+  // Charge / Drain 각각의 Edit as a routine 토글 모드
+  let chargeEditRoutineMode = false;
+  let drainEditRoutineMode = false;
 
-  let selectedTodayDate = new Date();
-  selectedTodayDate.setHours(0,0,0,0);
+  let selectedChargeRoutineDays = [1, 2, 3, 4, 5, 6, 0]; // 기본: 매일
+  let selectedDrainRoutineDays = [1, 2, 3, 4, 5];         // 기본: 평일
 
-  let drainWeekMonday = getMonday(new Date());
-  let selectedDrainDate = dkeyFromDate(new Date());
+  // 주간 기준 날짜 (Charge와 Drain 공통 기준)
+  let currentWeekMonday = getMonday(new Date());
+  let selectedChargeDate = todayKey();
+  let selectedDrainDate = todayKey();
 
   let progressMonthCursor = new Date();
   progressMonthCursor.setHours(0,0,0,0);
   progressMonthCursor.setDate(1);
   let selectedProgressDay = null;
 
-  // 통계 보기 선택 ('charge' | 'drain' | null)
   let activeStatsTab = 'charge';
 
   function applyTheme(){
@@ -401,10 +395,6 @@
       document.documentElement.removeAttribute('data-theme');
       document.querySelector('meta[name="theme-color"]')?.setAttribute('content', '#fbfaf8');
     }
-  }
-
-  function todayChargeItems(){
-    return data.items.filter(it => it.date === dkeyFromDate(selectedTodayDate) && it.type === 'heal');
   }
 
   function currentStreak(){
@@ -439,9 +429,14 @@
     
     if(!data.items) data.items = [];
     if(!data.comments) data.comments = {};
-    if(!data.routines) {
-      data.routines = [
-        { id: 'rt_commute', text: 'Commute', icon: 'car', days: [1,2,3,4,5] }
+    if(!data.chargeRoutines) {
+      data.chargeRoutines = [
+        { id: 'rt_c_sleep', text: 'Sleep 8h', icon: 'sleep', days: [1,2,3,4,5,6,0] }
+      ];
+    }
+    if(!data.drainRoutines) {
+      data.drainRoutines = data.routines || [
+        { id: 'rt_d_commute', text: 'Commute', icon: 'car', days: [1,2,3,4,5] }
       ];
     }
     if(!data.chargeCustomIconKeys) data.chargeCustomIconKeys = [];
@@ -461,7 +456,8 @@
           data = val;
           if(!data.items) data.items = [];
           if(!data.comments) data.comments = {};
-          if(!data.routines) data.routines = [];
+          if(!data.chargeRoutines) data.chargeRoutines = [];
+          if(!data.drainRoutines) data.drainRoutines = data.routines || [];
           if(!data.chargeCustomIconKeys) data.chargeCustomIconKeys = [];
           if(!data.chargeHiddenIconKeys) data.chargeHiddenIconKeys = [];
           if(!data.chargeCustomLabels) data.chargeCustomLabels = {};
@@ -493,19 +489,65 @@
   }
 
   // ==========================================
-  // 1) Charge 탭
+  // 1) Charge 탭 (체크박스 + Charge 루틴 + Daily Note)
   // ==========================================
   function renderChargeTab(){
-    const items = todayChargeItems();
+    const days = [];
+    for(let i = 0; i < 7; i++){
+      const d = new Date(currentWeekMonday);
+      d.setDate(d.getDate() + i);
+      days.push(d);
+    }
 
-    const listHtml = items.length
-      ? items.map(it => `
-          <li class="item" data-id="${it.id}">
-            ${typePillMarkup(it.type)}
-            <span class="item-text">${escapeHtml(it.text)}</span>
-            <button class="del-btn" data-action="delete" data-id="${it.id}">×</button>
-          </li>`).join('')
-      : `<li class="item-empty">No charge logged today. Add something recharging below!</li>`;
+    const startStr = `${MONTHS_SHORT[days[0].getMonth()]} ${days[0].getDate()}`;
+    const endStr = `${MONTHS_SHORT[days[6].getMonth()]} ${days[6].getDate()}`;
+    const currentTodayStr = todayKey();
+
+    const weekGridHtml = days.map(d => {
+      const dkey = dkeyFromDate(d);
+      const dow = d.getDay();
+      const isSelected = (dkey === selectedChargeDate);
+      const isToday = (dkey === currentTodayStr);
+
+      const scheduledRoutines = (data.chargeRoutines || []).filter(r => (r.days || []).includes(dow));
+      const doneCount = scheduledRoutines.filter(r => {
+        const itemId = `rt_c_${r.id}_${dkey}`;
+        return data.items.some(it => it.id === itemId);
+      }).length;
+
+      return `
+        <div class="week-cell${isSelected ? ' active' : ''}${isToday ? ' today' : ''}" data-charge-day="${dkey}">
+          <span class="week-dow">${DAY_NAMES_SHORT[dow]}</span>
+          <span class="week-daynum">${d.getDate()}</span>
+          <span class="week-dot-count">${scheduledRoutines.length ? `${doneCount}/${scheduledRoutines.length}` : '·'}</span>
+        </div>
+      `;
+    }).join('');
+
+    const [yy, mm, dd] = selectedChargeDate.split('-').map(Number);
+    const selectedDateObj = new Date(yy, mm-1, dd);
+    const selectedDow = selectedDateObj.getDay();
+    const selectedDateTitle = `${DAY_NAMES_SHORT[selectedDow]}, ${MONTHS_SHORT[mm-1]} ${dd}`;
+
+    const dayRoutines = (data.chargeRoutines || []).filter(r => (r.days || []).includes(selectedDow));
+
+    // [✓ 체크박스] [Charge +1 뱃지] 텍스트 [× 삭제버튼]
+    const routinesListHtml = dayRoutines.length
+      ? dayRoutines.map(r => {
+          const itemId = `rt_c_${r.id}_${selectedChargeDate}`;
+          const isDone = data.items.some(it => it.id === itemId);
+          return `
+            <li class="item${isDone ? ' done' : ''}" data-routine-id="${r.id}">
+              <button class="check-btn" data-action="toggle-charge-routine" data-routine-id="${r.id}">
+                ${isDone ? '✓' : ''}
+              </button>
+              <span class="type-pill">Charge +1</span>
+              <span class="item-text">${escapeHtml(r.text)}</span>
+              <button class="del-btn" data-action="delete-charge-routine" data-routine-id="${r.id}">×</button>
+            </li>
+          `;
+        }).join('')
+      : `<li class="item-empty">No charge routines set for ${DAY_NAMES_SHORT[selectedDow]}. Add one below!</li>`;
 
     const pickerKeys = getChargeCategories();
     const wordGridHtml = pickerKeys.map(key => `
@@ -514,44 +556,91 @@
         ${chargeIconEditMode ? `<button class="word-item-remove" data-remove-charge-word="${key}">×</button>` : ''}
       </div>`).join('');
 
+    const dayButtonsHtml = WEEKDAY_ORDER.map(dow => {
+      const isPick = selectedChargeRoutineDays.includes(dow);
+      return `<button type="button" class="day-pick-btn${isPick ? ' active' : ''}" data-charge-dow="${dow}">${DAY_NAMES_SHORT[dow]}</button>`;
+    }).join('');
+
+    const allRoutinesManageHtml = (data.chargeRoutines || []).length
+      ? (data.chargeRoutines || []).map(r => {
+          const daysLabel = (r.days || []).map(d => DAY_NAMES_SHORT[d]).join(', ');
+          return `
+            <li class="item" style="padding:8px 2px;">
+              <span class="item-text" style="font-size:13.5px;">
+                ${escapeHtml(r.text)}
+                <span class="routine-badge">${daysLabel}</span>
+              </span>
+              <button class="del-btn" data-action="delete-charge-routine" data-routine-id="${r.id}">×</button>
+            </li>
+          `;
+        }).join('')
+      : `<li class="item-empty" style="padding:10px 0;">No recurring charge routines yet.</li>`;
+
     return `
-      <h1 class="date-title">
-        <button class="today-prev-inline" id="today-prev-day" aria-label="Previous day">‹</button>${todayLabel()}${dkeyFromDate(selectedTodayDate) !== dkeyFromDate(new Date()) ? '<button class="today-prev-inline" id="today-present" aria-label="Next day" style="margin-left:8px;">›</button>' : ''}
-      </h1>
-      <p class="frac">${items.length} charged today</p>
+      <div class="week-nav-bar">
+        <button class="nav-btn" id="charge-prev-week">‹</button>
+        <span class="week-nav-title">${startStr} – ${endStr}</span>
+        <button class="nav-btn" id="charge-next-week">›</button>
+      </div>
+
+      <div class="week-grid">${weekGridHtml}</div>
+
+      <h2 class="date-title">${selectedDateTitle}</h2>
       
       <div class="comment-block main-note">
         <div class="picker-label">Daily note</div>
-        <textarea class="comment-textarea" id="comment-textarea" placeholder="How did today go?">${escapeHtml(data.comments[dkeyFromDate(selectedTodayDate)] || '')}</textarea>
+        <textarea class="comment-textarea" id="comment-textarea" placeholder="How did today go?">${escapeHtml(data.comments[selectedChargeDate] || '')}</textarea>
       </div>
 
-      <ul class="list">${listHtml}</ul>
+      <ul class="list">${routinesListHtml}</ul>
 
       <div class="add-block">
         <div class="picker-label">Charge Category</div>
         <div class="word-grid">${wordGridHtml}</div>
-        <button class="text-toggle-btn${chargeIconEditMode ? ' active' : ''}" id="charge-icon-edit-btn">Edit Categories</button>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+          <button class="text-toggle-btn${chargeIconEditMode ? ' active' : ''}" id="charge-icon-edit-btn" style="margin:0;">Edit Categories</button>
+          <button class="text-toggle-btn${chargeEditRoutineMode ? ' active' : ''}" id="charge-edit-as-routine-btn" style="margin:0;">
+            ${chargeEditRoutineMode ? '✓ Close routine setup' : 'Edit as a routine'}
+          </button>
+        </div>
+
         ${chargeIconEditMode ? `
           <div class="icon-search-row">
             <input class="add-input" id="charge-cat-input" type="text" placeholder="Add custom charge category…" />
             <button class="add-submit-btn" id="charge-cat-add-btn">Add</button>
           </div>
         ` : ''}
+
+        ${chargeEditRoutineMode ? `
+          <div class="routine-edit-panel">
+            <div class="picker-label">Repeat on (Select Days)</div>
+            <div class="days-picker-row">${dayButtonsHtml}</div>
+            <div class="presets-row">
+              <button class="preset-link" data-charge-preset="weekdays">Weekdays (Mon–Fri)</button>
+              <button class="preset-link" data-charge-preset="everyday">Everyday</button>
+              <button class="preset-link" data-charge-preset="weekends">Weekends</button>
+            </div>
+            
+            <p class="picker-label" style="margin-top:14px; margin-bottom:6px;">Current Charge Routines</p>
+            <ul class="list" style="max-height:120px; overflow-y:auto;">${allRoutinesManageHtml}</ul>
+          </div>
+        ` : ''}
+
         <div class="add-row">
-          <input class="add-input" id="charge-add-input" type="text" placeholder="What energized you?" value="${escapeHtml(newItemText)}" />
+          <input class="add-input" id="charge-add-input" type="text" placeholder="e.g. Sleep, Walk, Reading…" value="${escapeHtml(newItemText)}" />
         </div>
-        <button class="single-btn charge" id="charge-submit-btn">+ Charge (+1)</button>
+        <button class="single-btn charge" id="charge-submit-btn">+ Charge</button>
       </div>
     `;
   }
 
   // ==========================================
-  // 2) Drain 탭 (체크박스 + Drain -1 뱃지 + X 삭제 버튼)
+  // 2) Drain 탭
   // ==========================================
   function renderDrainTab(){
     const days = [];
     for(let i = 0; i < 7; i++){
-      const d = new Date(drainWeekMonday);
+      const d = new Date(currentWeekMonday);
       d.setDate(d.getDate() + i);
       days.push(d);
     }
@@ -566,9 +655,9 @@
       const isSelected = (dkey === selectedDrainDate);
       const isToday = (dkey === currentTodayStr);
 
-      const scheduledRoutines = (data.routines || []).filter(r => (r.days || []).includes(dow));
+      const scheduledRoutines = (data.drainRoutines || []).filter(r => (r.days || []).includes(dow));
       const doneCount = scheduledRoutines.filter(r => {
-        const itemId = `rt_${r.id}_${dkey}`;
+        const itemId = `rt_d_${r.id}_${dkey}`;
         return data.items.some(it => it.id === itemId);
       }).length;
 
@@ -586,21 +675,20 @@
     const selectedDow = selectedDateObj.getDay();
     const selectedDateTitle = `${DAY_NAMES_SHORT[selectedDow]}, ${MONTHS_SHORT[mm-1]} ${dd}`;
 
-    const dayRoutines = (data.routines || []).filter(r => (r.days || []).includes(selectedDow));
+    const dayRoutines = (data.drainRoutines || []).filter(r => (r.days || []).includes(selectedDow));
 
-    // Drain 리스트 항목: [✓ 체크박스] [Drain -1 뱃지] 텍스트 [× 삭제버튼]
     const routinesListHtml = dayRoutines.length
       ? dayRoutines.map(r => {
-          const itemId = `rt_${r.id}_${selectedDrainDate}`;
+          const itemId = `rt_d_${r.id}_${selectedDrainDate}`;
           const isDone = data.items.some(it => it.id === itemId);
           return `
-            <li class="drain-item${isDone ? ' done' : ''}" data-routine-id="${r.id}">
-              <button class="drain-check-btn" data-action="toggle-routine" data-routine-id="${r.id}">
+            <li class="item${isDone ? ' done' : ''}" data-routine-id="${r.id}">
+              <button class="check-btn" data-action="toggle-drain-routine" data-routine-id="${r.id}">
                 ${isDone ? '✓' : ''}
               </button>
               <span class="type-pill plan">Drain −1</span>
-              <span class="drain-text">${escapeHtml(r.text)}</span>
-              <button class="del-btn" data-action="delete-routine" data-routine-id="${r.id}">×</button>
+              <span class="item-text">${escapeHtml(r.text)}</span>
+              <button class="del-btn" data-action="delete-drain-routine" data-routine-id="${r.id}">×</button>
             </li>
           `;
         }).join('')
@@ -614,12 +702,12 @@
       </div>`).join('');
 
     const dayButtonsHtml = WEEKDAY_ORDER.map(dow => {
-      const isPick = selectedRoutineDays.includes(dow);
-      return `<button type="button" class="day-pick-btn${isPick ? ' active' : ''}" data-dow="${dow}">${DAY_NAMES_SHORT[dow]}</button>`;
+      const isPick = selectedDrainRoutineDays.includes(dow);
+      return `<button type="button" class="day-pick-btn${isPick ? ' active' : ''}" data-drain-dow="${dow}">${DAY_NAMES_SHORT[dow]}</button>`;
     }).join('');
 
-    const allRoutinesManageHtml = (data.routines || []).length
-      ? (data.routines || []).map(r => {
+    const allRoutinesManageHtml = (data.drainRoutines || []).length
+      ? (data.drainRoutines || []).map(r => {
           const daysLabel = (r.days || []).map(d => DAY_NAMES_SHORT[d]).join(', ');
           return `
             <li class="item" style="padding:8px 2px;">
@@ -627,7 +715,7 @@
                 ${escapeHtml(r.text)}
                 <span class="routine-badge">${daysLabel}</span>
               </span>
-              <button class="del-btn" data-action="delete-routine" data-routine-id="${r.id}">×</button>
+              <button class="del-btn" data-action="delete-drain-routine" data-routine-id="${r.id}">×</button>
             </li>
           `;
         }).join('')
@@ -642,7 +730,7 @@
 
       <div class="week-grid">${weekGridHtml}</div>
 
-      <h2 class="date-title" style="font-size:20px; margin-bottom:12px;">${selectedDateTitle}</h2>
+      <h2 class="date-title">${selectedDateTitle}</h2>
       <ul class="list">${routinesListHtml}</ul>
 
       <div class="add-block">
@@ -650,8 +738,8 @@
         <div class="word-grid">${wordGridHtml}</div>
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
           <button class="text-toggle-btn${drainIconEditMode ? ' active' : ''}" id="drain-icon-edit-btn" style="margin:0;">Edit Categories</button>
-          <button class="text-toggle-btn${editRoutineMode ? ' active' : ''}" id="edit-as-routine-btn" style="margin:0;">
-            ${editRoutineMode ? '✓ Close routine setup' : 'Edit as a routine'}
+          <button class="text-toggle-btn${drainEditRoutineMode ? ' active' : ''}" id="drain-edit-as-routine-btn" style="margin:0;">
+            ${drainEditRoutineMode ? '✓ Close routine setup' : 'Edit as a routine'}
           </button>
         </div>
 
@@ -662,14 +750,14 @@
           </div>
         ` : ''}
 
-        ${editRoutineMode ? `
+        ${drainEditRoutineMode ? `
           <div class="routine-edit-panel">
             <div class="picker-label">Repeat on (Select Days)</div>
             <div class="days-picker-row">${dayButtonsHtml}</div>
             <div class="presets-row">
-              <button class="preset-link" data-preset="weekdays">Weekdays (Mon–Fri)</button>
-              <button class="preset-link" data-preset="everyday">Everyday</button>
-              <button class="preset-link" data-preset="weekends">Weekends</button>
+              <button class="preset-link" data-drain-preset="weekdays">Weekdays (Mon–Fri)</button>
+              <button class="preset-link" data-drain-preset="everyday">Everyday</button>
+              <button class="preset-link" data-drain-preset="weekends">Weekends</button>
             </div>
             
             <p class="picker-label" style="margin-top:14px; margin-bottom:6px;">Current Recurring Routines</p>
@@ -686,7 +774,7 @@
   }
 
   // ==========================================
-  // 3) Progress 탭 (Remaining Balance 배너 제거 + 상위 비율 통계 추가)
+  // 3) Progress 탭 (캘린더 + 상위 3-5개 비율 통계)
   // ==========================================
   function renderProgressTab(){
     const { healDone, planDone } = totalCounts();
@@ -756,7 +844,6 @@
         </div>`;
     }
 
-    // 통계 계산 (상위 3~5개 %)
     const targetType = (activeStatsTab === 'charge') ? 'heal' : 'plan';
     const filteredItems = data.items.filter(it => it.type === targetType);
     const totalCount = filteredItems.length;
@@ -774,7 +861,7 @@
         pct: totalCount > 0 ? Math.round((countMap[name] / totalCount) * 100) : 0
       }))
       .sort((a,b) => b.count - a.count)
-      .slice(0, 5); // 상위 5개
+      .slice(0, 5);
 
     const statsContentHtml = sortedStats.length
       ? sortedStats.map(item => `
@@ -791,7 +878,6 @@
       : `<p class="day-detail-empty" style="text-align:center; padding:12px 0;">No ${activeStatsTab} activities logged yet.</p>`;
 
     return `
-      <!-- 상단 요약 바 (Remaining Balance 배너 대신 깔끔하게 배치) -->
       <div class="progress-summary-bar">
         <span class="sub-counts">Charge: ${healDone} · Drain: ${planDone}</span>
         <div class="streak-row">
@@ -818,7 +904,6 @@
       <div class="month-grid">${cellsHtml}</div>
       ${dayDetailHtml}
 
-      <!-- 하단 상위 비율(%) 통계 섹션 -->
       <div class="stats-section">
         <p class="section-title">Top Activity Breakdown</p>
         <div class="stats-toggle-row">
@@ -870,38 +955,63 @@
       btn.addEventListener('click', () => { activeTab = btn.dataset.tab; render(); });
     });
 
+    // ==========================================
     // 1) Charge 탭 이벤트
+    // ==========================================
     if(activeTab === 'charge'){
-      document.getElementById('today-prev-day')?.addEventListener('click', () => {
-        selectedTodayDate.setDate(selectedTodayDate.getDate() - 1);
+      document.getElementById('charge-prev-week')?.addEventListener('click', () => {
+        currentWeekMonday.setDate(currentWeekMonday.getDate() - 7);
+        selectedChargeDate = dkeyFromDate(currentWeekMonday);
         render();
       });
-      document.getElementById('today-present')?.addEventListener('click', () => {
-        selectedTodayDate.setDate(selectedTodayDate.getDate() + 1);
+      document.getElementById('charge-next-week')?.addEventListener('click', () => {
+        currentWeekMonday.setDate(currentWeekMonday.getDate() + 7);
+        selectedChargeDate = dkeyFromDate(currentWeekMonday);
         render();
       });
 
-      root.querySelectorAll('[data-action="delete"]').forEach(btn => {
+      root.querySelectorAll('[data-charge-day]').forEach(cell => {
+        cell.addEventListener('click', () => {
+          selectedChargeDate = cell.dataset.chargeDay;
+          render();
+        });
+      });
+
+      // Charge 체크박스 토글
+      root.querySelectorAll('[data-action="toggle-charge-routine"]').forEach(btn => {
         btn.addEventListener('click', async () => {
-          data.items = data.items.filter(it => it.id !== btn.dataset.id);
+          const rid = btn.dataset.routineId;
+          const routine = (data.chargeRoutines || []).find(r => r.id === rid);
+          if(!routine) return;
+
+          const itemId = `rt_c_${routine.id}_${selectedChargeDate}`;
+          const existingIndex = data.items.findIndex(it => it.id === itemId);
+
+          if(existingIndex >= 0){
+            data.items.splice(existingIndex, 1);
+          } else {
+            data.items.push({
+              id: itemId,
+              icon: routine.icon,
+              type: 'heal',
+              text: routine.text,
+              date: selectedChargeDate
+            });
+          }
           render(); await save();
         });
       });
 
-      async function submitCharge(){
-        const input = document.getElementById('charge-add-input');
-        const text = (input ? input.value.trim() : '') || labelForCategory(currentChargeIcon, 'charge') || 'Recharge';
-        data.items.push({ id: uid(), icon: currentChargeIcon, type: 'heal', text, date: dkeyFromDate(selectedTodayDate) });
-        newItemText = '';
-        render(); await save();
-      }
-
-      document.getElementById('charge-submit-btn')?.addEventListener('click', submitCharge);
-      const chargeInput = document.getElementById('charge-add-input');
-      if(chargeInput){
-        chargeInput.addEventListener('input', () => { newItemText = chargeInput.value; });
-        chargeInput.addEventListener('keydown', async (e) => { if(e.key === 'Enter') await submitCharge(); });
-      }
+      // Charge 루틴 삭제
+      root.querySelectorAll('[data-action="delete-charge-routine"]').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+          e.stopPropagation();
+          const rid = btn.dataset.routineId;
+          data.chargeRoutines = (data.chargeRoutines || []).filter(r => r.id !== rid);
+          data.items = data.items.filter(it => !it.id.startsWith(`rt_c_${rid}_`));
+          render(); await save();
+        });
+      });
 
       root.querySelectorAll('[data-charge-word]').forEach(el => {
         el.addEventListener('click', () => {
@@ -910,8 +1020,14 @@
         });
       });
 
+      document.getElementById('charge-edit-as-routine-btn')?.addEventListener('click', () => {
+        chargeEditRoutineMode = !chargeEditRoutineMode;
+        render();
+      });
+
       document.getElementById('charge-icon-edit-btn')?.addEventListener('click', () => {
-        chargeIconEditMode = !chargeIconEditMode; render();
+        chargeIconEditMode = !chargeIconEditMode;
+        render();
       });
 
       async function addCustomChargeCat(){
@@ -948,26 +1064,80 @@
         });
       });
 
+      root.querySelectorAll('.day-pick-btn[data-charge-dow]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const dow = parseInt(btn.dataset.chargeDow, 10);
+          if(selectedChargeRoutineDays.includes(dow)){
+            if(selectedChargeRoutineDays.length > 1) {
+              selectedChargeRoutineDays = selectedChargeRoutineDays.filter(d => d !== dow);
+            }
+          } else {
+            selectedChargeRoutineDays.push(dow);
+          }
+          render();
+        });
+      });
+
+      root.querySelectorAll('[data-charge-preset]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const p = btn.dataset.chargePreset;
+          if(p === 'weekdays') selectedChargeRoutineDays = [1, 2, 3, 4, 5];
+          else if(p === 'everyday') selectedChargeRoutineDays = [1, 2, 3, 4, 5, 6, 0];
+          else if(p === 'weekends') selectedChargeRoutineDays = [6, 0];
+          render();
+        });
+      });
+
+      async function submitChargeTask(){
+        const input = document.getElementById('charge-add-input');
+        const text = (input ? input.value.trim() : '') || labelForCategory(currentChargeIcon, 'charge') || 'Recharge';
+        
+        const [yy, mm, dd] = selectedChargeDate.split('-').map(Number);
+        const currentSelectedDow = new Date(yy, mm-1, dd).getDay();
+
+        const targetDays = chargeEditRoutineMode ? [...selectedChargeRoutineDays] : [currentSelectedDow];
+
+        data.chargeRoutines = data.chargeRoutines || [];
+        data.chargeRoutines.push({
+          id: 'rt_' + uid(),
+          text,
+          icon: currentChargeIcon,
+          days: targetDays
+        });
+
+        newItemText = '';
+        render(); await save();
+      }
+
+      document.getElementById('charge-submit-btn')?.addEventListener('click', submitChargeTask);
+      const chargeInput = document.getElementById('charge-add-input');
+      if(chargeInput){
+        chargeInput.addEventListener('input', () => { newItemText = chargeInput.value; });
+        chargeInput.addEventListener('keydown', async (e) => { if(e.key === 'Enter') await submitChargeTask(); });
+      }
+
       const commentArea = document.getElementById('comment-textarea');
       if(commentArea){
         commentArea.addEventListener('blur', async () => {
-          data.comments[dkeyFromDate(selectedTodayDate)] = commentArea.value;
+          data.comments[selectedChargeDate] = commentArea.value;
           await save();
         });
       }
       return;
     }
 
+    // ==========================================
     // 2) Drain 탭 이벤트
+    // ==========================================
     if(activeTab === 'drain'){
       document.getElementById('drain-prev-week')?.addEventListener('click', () => {
-        drainWeekMonday.setDate(drainWeekMonday.getDate() - 7);
-        selectedDrainDate = dkeyFromDate(drainWeekMonday);
+        currentWeekMonday.setDate(currentWeekMonday.getDate() - 7);
+        selectedDrainDate = dkeyFromDate(currentWeekMonday);
         render();
       });
       document.getElementById('drain-next-week')?.addEventListener('click', () => {
-        drainWeekMonday.setDate(drainWeekMonday.getDate() + 7);
-        selectedDrainDate = dkeyFromDate(drainWeekMonday);
+        currentWeekMonday.setDate(currentWeekMonday.getDate() + 7);
+        selectedDrainDate = dkeyFromDate(currentWeekMonday);
         render();
       });
 
@@ -978,14 +1148,14 @@
         });
       });
 
-      // 루틴 완료 체크박스 토글
-      root.querySelectorAll('[data-action="toggle-routine"]').forEach(btn => {
+      // Drain 체크박스 토글
+      root.querySelectorAll('[data-action="toggle-drain-routine"]').forEach(btn => {
         btn.addEventListener('click', async () => {
           const rid = btn.dataset.routineId;
-          const routine = (data.routines || []).find(r => r.id === rid);
+          const routine = (data.drainRoutines || []).find(r => r.id === rid);
           if(!routine) return;
 
-          const itemId = `rt_${routine.id}_${selectedDrainDate}`;
+          const itemId = `rt_d_${routine.id}_${selectedDrainDate}`;
           const existingIndex = data.items.findIndex(it => it.id === itemId);
 
           if(existingIndex >= 0){
@@ -1003,13 +1173,13 @@
         });
       });
 
-      // Drain 리스트의 X 버튼으로 해당 루틴 삭제
-      root.querySelectorAll('[data-action="delete-routine"]').forEach(btn => {
+      // Drain 루틴 삭제
+      root.querySelectorAll('[data-action="delete-drain-routine"]').forEach(btn => {
         btn.addEventListener('click', async (e) => {
           e.stopPropagation();
           const rid = btn.dataset.routineId;
-          data.routines = (data.routines || []).filter(r => r.id !== rid);
-          data.items = data.items.filter(it => !it.id.startsWith(`rt_${rid}_`));
+          data.drainRoutines = (data.drainRoutines || []).filter(r => r.id !== rid);
+          data.items = data.items.filter(it => !it.id.startsWith(`rt_d_${rid}_`));
           render(); await save();
         });
       });
@@ -1021,8 +1191,8 @@
         });
       });
 
-      document.getElementById('edit-as-routine-btn')?.addEventListener('click', () => {
-        editRoutineMode = !editRoutineMode;
+      document.getElementById('drain-edit-as-routine-btn')?.addEventListener('click', () => {
+        drainEditRoutineMode = !drainEditRoutineMode;
         render();
       });
 
@@ -1065,26 +1235,26 @@
         });
       });
 
-      root.querySelectorAll('.day-pick-btn').forEach(btn => {
+      root.querySelectorAll('.day-pick-btn[data-drain-dow]').forEach(btn => {
         btn.addEventListener('click', () => {
-          const dow = parseInt(btn.dataset.dow, 10);
-          if(selectedRoutineDays.includes(dow)){
-            if(selectedRoutineDays.length > 1) {
-              selectedRoutineDays = selectedRoutineDays.filter(d => d !== dow);
+          const dow = parseInt(btn.dataset.drainDow, 10);
+          if(selectedDrainRoutineDays.includes(dow)){
+            if(selectedDrainRoutineDays.length > 1) {
+              selectedDrainRoutineDays = selectedDrainRoutineDays.filter(d => d !== dow);
             }
           } else {
-            selectedRoutineDays.push(dow);
+            selectedDrainRoutineDays.push(dow);
           }
           render();
         });
       });
 
-      root.querySelectorAll('[data-preset]').forEach(btn => {
+      root.querySelectorAll('[data-drain-preset]').forEach(btn => {
         btn.addEventListener('click', () => {
-          const p = btn.dataset.preset;
-          if(p === 'weekdays') selectedRoutineDays = [1, 2, 3, 4, 5];
-          else if(p === 'everyday') selectedRoutineDays = [1, 2, 3, 4, 5, 6, 0];
-          else if(p === 'weekends') selectedRoutineDays = [6, 0];
+          const p = btn.dataset.drainPreset;
+          if(p === 'weekdays') selectedDrainRoutineDays = [1, 2, 3, 4, 5];
+          else if(p === 'everyday') selectedDrainRoutineDays = [1, 2, 3, 4, 5, 6, 0];
+          else if(p === 'weekends') selectedDrainRoutineDays = [6, 0];
           render();
         });
       });
@@ -1096,10 +1266,10 @@
         const [yy, mm, dd] = selectedDrainDate.split('-').map(Number);
         const currentSelectedDow = new Date(yy, mm-1, dd).getDay();
 
-        const targetDays = editRoutineMode ? [...selectedRoutineDays] : [currentSelectedDow];
+        const targetDays = drainEditRoutineMode ? [...selectedDrainRoutineDays] : [currentSelectedDow];
 
-        data.routines = data.routines || [];
-        data.routines.push({
+        data.drainRoutines = data.drainRoutines || [];
+        data.drainRoutines.push({
           id: 'rt_' + uid(),
           text,
           icon: currentDrainIcon,
@@ -1119,7 +1289,9 @@
       return;
     }
 
+    // ==========================================
     // 3) Progress 탭 이벤트
+    // ==========================================
     if(activeTab === 'progress'){
       document.getElementById('progress-prev-month')?.addEventListener('click', () => {
         progressMonthCursor = new Date(progressMonthCursor.getFullYear(), progressMonthCursor.getMonth() - 1, 1);
@@ -1138,7 +1310,6 @@
         });
       });
 
-      // 통계 탭 전환 버튼 (Charge % vs Drain %)
       root.querySelectorAll('[data-stats-tab]').forEach(btn => {
         btn.addEventListener('click', () => {
           activeStatsTab = btn.dataset.statsTab;
