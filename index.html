@@ -34,162 +34,120 @@
     transition:background 0.15s ease, color 0.15s ease;
   }
   #root{ 
-    max-width:420px; margin:0 auto; 
-    padding: calc(env(safe-area-inset-top) + 20px) 22px calc(env(safe-area-inset-bottom) + 80px); 
+    max-width:400px; margin:0 auto; 
+    padding: calc(env(safe-area-inset-top) + 20px) 24px calc(env(safe-area-inset-bottom) + 80px); 
     min-height:100vh; 
   }
 
-  .top-bar{ display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+  /* 상단 탑바 */
+  .top-bar{ display:flex; align-items:center; justify-content:space-between; margin-bottom:28px; }
   .top-left{ display:flex; align-items:center; gap:8px; }
-  .eyebrow{ font-family:'JetBrains Mono', monospace; font-size:11px; letter-spacing:0.18em; text-transform:uppercase; color:var(--muted); margin:0; }
+  .eyebrow{ font-family:'JetBrains Mono', monospace; font-size:12px; letter-spacing:0.18em; text-transform:uppercase; color:var(--muted); margin:0; }
   .theme-toggle{ border:1px solid var(--ink); background:var(--paper); color:var(--ink); font-family:'JetBrains Mono', monospace; font-size:10.5px; padding:5px 11px; border-radius:12px; cursor:pointer; }
+  .notify-btn{ border:1px dashed var(--muted); background:none; color:var(--muted); font-family:'JetBrains Mono', monospace; font-size:10px; padding:3px 8px; border-radius:8px; cursor:pointer; }
+  .notify-btn.on{ border-style:solid; border-color:var(--ink); color:var(--ink); font-weight:600; }
 
-  /* 배터리 위젯 */
-  .battery-container{
-    border:1.5px solid var(--ink); border-radius:18px; padding:18px; margin-bottom:20px;
-    background:var(--band); box-shadow:0 2px 10px rgba(0,0,0,0.02);
-  }
-  .battery-top-row{ display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
-  .battery-label{ font-family:'JetBrains Mono', monospace; font-size:10.5px; letter-spacing:0.12em; text-transform:uppercase; color:var(--muted); }
-  .battery-pct-text{ font-family:'Space Grotesk', sans-serif; font-size:32px; font-weight:700; letter-spacing:-0.02em; }
-  
-  .battery-shell{ display:flex; align-items:center; gap:4px; margin-bottom:12px; }
-  .battery-bar-outer{ flex:1; height:24px; border:2px solid var(--ink); border-radius:7px; padding:2px; background:var(--paper); position:relative; }
-  .battery-bar-inner{ height:100%; border-radius:4px; background:var(--ink); transition:width 0.25s ease, background 0.2s ease; }
-  .battery-cap{ width:5px; height:12px; background:var(--ink); border-radius:0 3px 3px 0; }
-  
-  .battery-slider-row{ display:flex; align-items:center; gap:10px; margin-top:10px; }
-  .battery-slider{ flex:1; -webkit-appearance:none; height:6px; border-radius:3px; background:var(--divider); outline:none; }
-  .battery-slider::-webkit-slider-thumb{
-    -webkit-appearance:none; width:18px; height:18px; border-radius:50%; background:var(--ink);
-    border:2px solid var(--paper); cursor:pointer; box-shadow:0 1px 4px rgba(0,0,0,0.3);
-  }
-  .battery-subnote{ display:flex; justify-content:space-between; font-family:'JetBrains Mono', monospace; font-size:10px; color:var(--muted); margin-top:6px; }
-
-  /* 탭 */
-  .tabs{ display:flex; gap:18px; margin-bottom:20px; border-bottom:1px solid var(--divider); }
-  .tab-btn{ background:none; border:none; cursor:pointer; padding:0 0 10px; font-family:'JetBrains Mono', monospace; font-size:12.5px; letter-spacing:0.05em; color:var(--muted); border-bottom:2px solid transparent; margin-bottom:-1px; transition:color .15s; }
+  /* 2개 탭 (Home vs Progress) */
+  .tabs{ display:flex; gap:24px; margin-bottom:32px; border-bottom:1px solid var(--divider); }
+  .tab-btn{ background:none; border:none; cursor:pointer; padding:0 0 10px; font-family:'JetBrains Mono', monospace; font-size:13px; letter-spacing:0.05em; color:var(--muted); border-bottom:2px solid transparent; margin-bottom:-1px; transition:color .15s; }
   .tab-btn.active{ color:var(--ink); border-bottom-color:var(--ink); font-weight:700; }
 
-  .date-title{ font-family:'Space Grotesk', sans-serif; font-weight:700; font-size:20px; letter-spacing:-0.01em; margin:0 0 12px; }
+  /* ================= 1. 홈 탭 (극도의 미니멀리즘) ================= */
+  .home-center{ display:flex; flex-direction:column; align-items:center; margin:10px 0 32px; }
+  .home-status-title{ font-family:'JetBrains Mono', monospace; font-size:11px; letter-spacing:0.14em; text-transform:uppercase; color:var(--muted); margin-bottom:8px; }
+  .home-battery-num{ font-family:'Space Grotesk', sans-serif; font-size:56px; font-weight:700; letter-spacing:-0.03em; line-height:1; margin-bottom:20px; }
 
-  .list{ list-style:none; margin:0 0 4px; padding:0; }
-  .item{ display:flex; align-items:center; gap:9px; padding:12px 2px; border-bottom:1px solid var(--divider); }
-  
-  .type-pill{
-    flex:none; font-family:'JetBrains Mono', monospace; font-size:10px; font-weight:700;
-    padding:3px 8px; border-radius:10px; border:1.3px solid var(--ink); color:var(--ink); background:transparent;
-    white-space:nowrap;
+  /* 배터리 본체 (직접 터치 & 드래그 가능) */
+  .battery-touch-wrap{
+    width:100%; display:flex; align-items:center; justify-content:center; gap:5px;
+    touch-action:none; user-select:none; cursor:pointer; padding:6px 0;
   }
-  .type-pill.plan{ background:var(--ink); color:var(--paper); }
-  .item-text{ flex:1; font-size:14.5px; line-height:1.4; word-break:break-word; }
-  .item.done .item-text{ text-decoration:line-through; color:var(--muted); }
-
-  .check-btn{
-    flex:none; width:22px; height:22px; border:1.5px solid var(--ink);
-    background:transparent; cursor:pointer; display:flex; align-items:center; justify-content:center;
-    font-size:11px; padding:0; color:transparent; transition:all .12s;
+  .battery-touch-shell{
+    flex:1; height:46px; border:2.5px solid var(--ink); border-radius:12px;
+    padding:3px; background:var(--paper); position:relative; overflow:hidden;
   }
-  .check-btn.charge-round{ border-radius:50%; }
-  .check-btn.drain-square{ border-radius:4px; }
-  .item.done .check-btn{ background:var(--ink); color:var(--paper); font-weight:700; }
-
-  .del-btn{ flex:none; width:24px; height:24px; border:none; background:none; color:var(--muted); font-size:18px; cursor:pointer; line-height:1; }
-  .del-btn:hover{ color:var(--ink); }
-  .item-empty{ padding:22px 2px; color:var(--muted); font-size:13px; text-align:center; }
-
-  .add-block{ margin-top:18px; padding-top:18px; border-top:1px solid var(--ink); }
-  .comment-block{ margin-top:8px; margin-bottom:18px; }
-  .main-note .comment-textarea{ min-height:48px; height:48px; font-size:13.5px; padding:9px 12px; }
-  .comment-textarea{
-    width:100%; border:1.3px solid var(--ink); border-radius:10px;
-    font-family:'Inter', sans-serif; line-height:1.4;
-    color:var(--ink); background:var(--paper); resize:none; outline:none;
+  .battery-touch-fill{
+    height:100%; border-radius:7px; background:var(--ink);
+    transition:width 0.1s ease; pointer-events:none;
   }
-  .picker-label{ font-family:'JetBrains Mono', monospace; font-size:9.5px; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); margin-bottom:8px; }
+  .battery-touch-cap{
+    width:6px; height:18px; background:var(--ink); border-radius:0 4px 4px 0; flex:none;
+  }
+
+  .battery-hint{ font-family:'JetBrains Mono', monospace; font-size:10px; color:var(--muted); margin-top:12px; }
+
+  /* Charge / Drain 메인 버튼 2개 */
+  .action-btn-row{ display:flex; gap:12px; margin-top:24px; width:100%; }
+  .hero-btn{
+    flex:1; padding:15px 10px; border-radius:14px; font-family:'JetBrains Mono', monospace;
+    font-size:13px; font-weight:700; cursor:pointer; transition:transform .1s, opacity .15s;
+    text-align:center;
+  }
+  .hero-btn:active{ transform:scale(0.97); }
+  .hero-btn.charge{ border:1.5px solid var(--ink); background:var(--paper); color:var(--ink); }
+  .hero-btn.drain{ border:1.5px solid var(--ink); background:var(--ink); color:var(--paper); }
+
+  /* Daily Note 밑줄 스타일 */
+  .underline-note-block{ margin-top:40px; }
+  .underline-note-label{ font-family:'JetBrains Mono', monospace; font-size:10px; letter-spacing:0.14em; text-transform:uppercase; color:var(--muted); margin-bottom:10px; }
+  .underline-note-input{
+    width:100%; border:none; outline:none; background:transparent;
+    border-bottom:1.5px solid var(--ink); padding:8px 0;
+    font-family:'Inter', sans-serif; font-size:15px; color:var(--ink);
+    line-height:1.5; border-radius:0;
+  }
+  .underline-note-input::placeholder{ color:var(--muted); }
+
+  /* ================= 2. 충전/방전 기록 모달 (Action Sheet) ================= */
+  .action-sheet-overlay{
+    position:fixed; inset:0; background:rgba(0,0,0,0.4); display:flex; align-items:flex-end;
+    justify-content:center; z-index:100; opacity:0; pointer-events:none; transition:opacity .2s ease;
+  }
+  .action-sheet-overlay.active{ opacity:1; pointer-events:auto; }
+  .action-sheet{
+    width:100%; max-width:420px; background:var(--paper); border:2px solid var(--ink);
+    border-radius:24px 24px 0 0; padding:24px 22px calc(env(safe-area-inset-bottom) + 30px);
+    transform:translateY(100%); transition:transform .25s ease;
+  }
+  .action-sheet-overlay.active .action-sheet{ transform:translateY(0); }
+
+  .sheet-title{ font-family:'Space Grotesk', sans-serif; font-size:22px; font-weight:700; margin-bottom:4px; }
+  .sheet-delta-text{ font-family:'Space Grotesk', sans-serif; font-size:38px; font-weight:700; margin:10px 0 16px; }
 
   /* 카테고리 칩 */
-  .word-grid{ display:flex; flex-wrap:wrap; gap:6px 7px; margin-bottom:14px; align-items:center; }
+  .word-grid{ display:flex; flex-wrap:wrap; gap:6px 7px; margin:14px 0 18px; }
   .word-item{
-    position:relative; display:inline-flex; align-items:center; justify-content:center;
-    padding:6px 10px; border:1.5px solid #000000; border-radius:6px;
+    padding:6px 11px; border:1.5px solid #000000; border-radius:6px;
     background:transparent; cursor:pointer; font-family:'Space Grotesk', sans-serif;
-    font-size:12px; letter-spacing:.01em; color:var(--muted); text-align:center; transition:all .15s ease;
+    font-size:12px; color:var(--muted); text-align:center; transition:all .15s ease;
   }
   .word-item.active{ background:var(--ink); color:var(--paper); border-color:var(--ink); }
-  .word-item-remove{
-    position:absolute; top:-5px; right:-4px; width:16px; height:16px; border-radius:50%;
-    background:var(--ink); color:var(--paper); border:1px solid var(--paper); font-size:9px;
-    line-height:14px; text-align:center; cursor:pointer; padding:0;
+
+  .sheet-input{
+    width:100%; border:none; outline:none; background:transparent;
+    border-bottom:1.5px solid var(--ink); padding:8px 0; font-family:'Inter', sans-serif;
+    font-size:15px; color:var(--ink); margin-bottom:20px; border-radius:0;
+  }
+  .sheet-btn-row{ display:flex; gap:10px; }
+  .sheet-submit-btn{
+    flex:1; border:1.5px solid var(--ink); background:var(--ink); color:var(--paper);
+    font-family:'JetBrains Mono', monospace; font-size:13px; font-weight:700;
+    padding:13px; border-radius:14px; cursor:pointer;
+  }
+  .sheet-cancel-btn{
+    border:1.5px solid var(--divider); background:none; color:var(--muted);
+    font-family:'JetBrains Mono', monospace; font-size:13px; padding:13px 18px;
+    border-radius:14px; cursor:pointer;
   }
 
-  /* 퍼센트 조절 칩 & 슬라이더 */
-  .pct-control-panel{
-    margin:10px 0 14px; padding:10px 12px; border:1px solid var(--divider); border-radius:10px;
-    background:var(--paper);
-  }
-  .pct-chip-row{ display:flex; gap:6px; align-items:center; margin-top:6px; }
-  .pct-chip-btn{
-    padding:4px 8px; border:1.5px solid var(--divider); border-radius:6px;
-    background:transparent; color:var(--muted); font-family:'JetBrains Mono', monospace;
-    font-size:11px; font-weight:600; cursor:pointer; transition:all .12s;
-  }
-  .pct-chip-btn.active{
-    border-color:var(--ink); background:var(--ink); color:var(--paper);
-  }
-
-  .add-row{ display:flex; align-items:center; gap:10px; }
-  .add-input{ flex:1; border:none; outline:none; font-family:'Inter', sans-serif; font-size:15px; background:transparent; color:var(--ink); border-bottom:1.3px solid var(--ink); padding:6px 0; border-radius:0; }
-  .add-input::placeholder{ color:var(--muted); }
-
-  .single-btn{
-    width:100%; border:1.3px solid var(--ink); font-family:'JetBrains Mono', monospace;
-    font-size:13px; font-weight:600; padding:12px 10px; border-radius:12px; cursor:pointer; margin-top:14px;
-    transition:opacity .15s, transform .1s;
-  }
-  .single-btn.charge-btn{ background:var(--paper); color:var(--ink); }
-  .single-btn.drain-btn{ background:var(--ink); color:var(--paper); }
-  .single-btn:active{ transform:scale(0.98); opacity:0.9; }
-
-  /* 주간 네비 & 요일 바 */
-  .week-nav-bar{ display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
-  .week-nav-title{ font-family:'Space Grotesk', sans-serif; font-weight:600; font-size:15px; }
-  .week-grid{ display:grid; grid-template-columns:repeat(7, 1fr); gap:4px; margin-bottom:18px; }
-  .week-cell{
-    display:flex; flex-direction:column; align-items:center; justify-content:center;
-    padding:8px 2px; border:1px solid var(--divider); border-radius:10px;
-    background:var(--paper); cursor:pointer; transition:all .15s;
-  }
-  .week-cell.today{ border-color:var(--muted); }
-  .week-cell.active{ background:var(--ink); border-color:var(--ink); color:var(--paper); font-weight:600; }
-  .week-cell.active .week-dow{ color:var(--paper); opacity:0.8; }
-  .week-dow{ font-family:'JetBrains Mono', monospace; font-size:9.5px; color:var(--muted); margin-bottom:2px; }
-  .week-daynum{ font-family:'Space Grotesk', sans-serif; font-size:13.5px; font-weight:600; }
-  .week-dot-count{ font-size:9px; font-family:'JetBrains Mono', monospace; margin-top:2px; }
-
-  .routine-edit-panel{ margin:12px 0 16px; padding:14px; border:1px solid var(--ink); border-radius:12px; background:var(--band); }
-  .days-picker-row{ display:flex; gap:5px; margin-bottom:8px; }
-  .day-pick-btn{
-    flex:1; padding:7px 2px; border:1.5px solid #000000; border-radius:6px;
-    background:var(--paper); cursor:pointer; font-family:'JetBrains Mono', monospace;
-    font-size:11px; font-weight:600; color:var(--muted); text-align:center; transition:all .12s;
-  }
-  .day-pick-btn.active{ background:var(--ink); color:var(--paper); border-color:var(--ink); }
-  .presets-row{ display:flex; gap:12px; margin-bottom:10px; }
-  .preset-link{ background:none; border:none; padding:0; font-family:'JetBrains Mono', monospace; font-size:10px; color:var(--muted); text-decoration:underline; cursor:pointer; }
-  .routine-badge{ font-family:'JetBrains Mono', monospace; font-size:9.5px; color:var(--muted); border:1px solid var(--divider); padding:1px 5px; border-radius:6px; margin-left:6px; }
-
-  .text-toggle-btn{ border:0; background:none; color:var(--ink); padding:0; margin:0 0 12px 1px; font-family:'Space Grotesk',sans-serif; font-size:13px; font-weight:700; cursor:pointer; }
-  .text-toggle-btn.active{ text-decoration:underline; text-underline-offset:3px; }
-
-  /* Progress 탭 */
-  .progress-summary-bar{ display:flex; justify-content:space-between; align-items:baseline; padding:12px 0 16px; margin-bottom:14px; border-bottom:1px solid var(--divider); }
+  /* ================= 3. Progress 탭 ================= */
+  .progress-summary-bar{ display:flex; justify-content:space-between; align-items:baseline; padding:12px 0 16px; margin-bottom:18px; border-bottom:1px solid var(--divider); }
   .sub-counts{ font-family:'JetBrains Mono', monospace; font-size:12px; color:var(--muted); }
   .streak-row{ display:flex; align-items:baseline; gap:6px; }
   .streak-value{ font-family:'Space Grotesk', sans-serif; font-weight:700; font-size:16px; color:var(--ink); }
   .streak-label{ font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--muted); }
 
-  .section-title{ font-family:'JetBrains Mono', monospace; font-size:11px; letter-spacing:0.14em; text-transform:uppercase; color:var(--muted); margin:0 0 14px; }
+  .calendar-nav-bar{ display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
   .nav-btn{ border:1px solid var(--ink); background:var(--paper); color:var(--ink); font-family:'JetBrains Mono', monospace; font-size:11px; padding:4px 9px; border-radius:8px; cursor:pointer; }
   .month-weekday-row{ display:grid; grid-template-columns:repeat(7,1fr); margin-bottom:6px; }
   .month-weekday-label{ font-family:'JetBrains Mono', monospace; font-size:8.5px; color:var(--muted); text-transform:uppercase; text-align:center; }
@@ -200,8 +158,13 @@
   .month-dot{ width:6px; height:6px; border-radius:50%; border:1.2px solid var(--faint); }
   .month-dot.positive{ background:var(--ink); border-color:var(--ink); }
   .month-dot.negative{ background:transparent; border-color:var(--ink); }
-  .day-detail{ margin-top:18px; border:1px solid var(--ink); border-radius:14px; padding:16px; }
+
+  .day-detail{ margin-top:20px; border:1px solid var(--ink); border-radius:14px; padding:16px; }
   .day-detail-title{ font-family:'Space Grotesk', sans-serif; font-weight:600; font-size:15px; margin-bottom:10px; }
+  .day-detail-item{ display:flex; align-items:center; gap:8px; padding:7px 0; font-size:14px; border-bottom:1px solid var(--divider); }
+  .day-detail-item:last-child{ border-bottom:none; }
+  .type-pill{ font-family:'JetBrains Mono', monospace; font-size:10px; font-weight:700; padding:2px 7px; border-radius:8px; border:1.2px solid var(--ink); }
+  .type-pill.drain{ background:var(--ink); color:var(--paper); }
 
   .stats-section{ margin-top:28px; }
   .stats-toggle-row{ display:flex; gap:8px; margin-bottom:14px; }
@@ -214,28 +177,16 @@
   .stat-pct{ font-family:'JetBrains Mono', monospace; font-weight:600; color:var(--ink); }
   .stat-bar-track{ width:100%; height:6px; background:var(--divider); border-radius:3px; overflow:hidden; }
   .stat-bar-fill{ height:100%; background:var(--ink); border-radius:3px; }
-
-  .notify-btn{
-    border:1px dashed var(--muted); background:none; color:var(--muted); font-family:'JetBrains Mono', monospace;
-    font-size:10px; padding:3px 8px; border-radius:8px; cursor:pointer;
-  }
-  .notify-btn.on{ border-style:solid; border-color:var(--ink); color:var(--ink); font-weight:600; }
 </style>
 </head>
 <body>
-<div id="root"><div style="text-align:center; padding:60px 0; font-family:monospace; color:#888;">Starting Caru Battery…</div></div>
+<div id="root"><div style="text-align:center; padding:60px 0; font-family:monospace; color:#888;">Caru Loading…</div></div>
 
 <script>
-// ==========================================
-// 🔔 서비스 워커 등록 (아이폰 백그라운드 푸시)
-// ==========================================
+// 서비스 워커 등록 (아이폰 백그라운드 푸시)
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('sw.js').then((reg) => {
-      console.log('Service Worker 등록 완료:', reg);
-    }).catch((err) => {
-      console.warn('Service Worker 등록 실패:', err);
-    });
+    navigator.serviceWorker.register('sw.js').catch(()=>{});
   });
 }
 
@@ -259,13 +210,12 @@ if ('serviceWorker' in navigator) {
 
   let db = null;
   let firebaseEnabled = false;
-
   if (firebaseConfig.apiKey && firebaseConfig.apiKey !== "YOUR_API_KEY") {
     try {
       firebase.initializeApp(firebaseConfig);
       db = firebase.database();
       firebaseEnabled = true;
-    } catch(e) { console.warn("Firebase 연결 대기:", e); }
+    } catch(e){}
   }
 
   const STORAGE_KEY = 'caru_data_' + userId;
@@ -273,27 +223,9 @@ if ('serviceWorker' in navigator) {
   const MONTHS_FULL = ['January','February','March','April','May','June','July','August','September','October','November','December'];
   const MONTHS_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   const DAY_NAMES_SHORT = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-  const WEEKDAY_ORDER = [1, 2, 3, 4, 5, 6, 0];
 
-  const CHARGE_DEFAULT_KEYS = ['sleep','music','brush','heart','users','cook','walk','coffee'];
-  const CHARGE_DEFAULT_LABELS = { sleep:'Sleep', music:'Music', brush:'Hobby', heart:'Self-care', users:'Hang out', cook:'Cooking', walk:'Walk', coffee:'Break' };
-
-  const DRAIN_DEFAULT_KEYS = ['brief','car','book','run','broom','shirt','pill','pencil'];
-  const DRAIN_DEFAULT_LABELS = { brief:'Work', car:'Commute', book:'Study', run:'Exercise', broom:'Chores', shirt:'Laundry', pill:'Medicine', pencil:'Journal' };
-
-  function getChargeCategories(){
-    return CHARGE_DEFAULT_KEYS.filter(k => !(data.chargeHiddenIconKeys || []).includes(k)).concat(data.chargeCustomIconKeys || []);
-  }
-  function getDrainCategories(){
-    return DRAIN_DEFAULT_KEYS.filter(k => !(data.drainHiddenIconKeys || []).includes(k)).concat(data.drainCustomIconKeys || []);
-  }
-
-  function labelForCategory(key, type){
-    if(type === 'charge'){
-      return (data.chargeCustomLabels && data.chargeCustomLabels[key]) || CHARGE_DEFAULT_LABELS[key] || key;
-    }
-    return (data.drainCustomLabels && data.drainCustomLabels[key]) || DRAIN_DEFAULT_LABELS[key] || key;
-  }
+  const CHARGE_CATEGORIES = ['Sleep', 'Music', 'Walk', 'Hobby', 'Self-care', 'Coffee', 'Cooking', 'Gaming'];
+  const DRAIN_CATEGORIES = ['Work', 'Commute', 'Study', 'Exercise', 'Chores', 'Meeting', 'Laundry', 'Screen time'];
 
   function dkeyFromDate(d){
     const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0'), day=String(d.getDate()).padStart(2,'0');
@@ -303,15 +235,7 @@ if ('serviceWorker' in navigator) {
   function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
   function escapeHtml(str){ const div = document.createElement('div'); div.textContent = str; return div.innerHTML; }
 
-  function getMonday(d) {
-    const date = new Date(d);
-    const day = date.getDay();
-    const diff = date.getDate() - day + (day === 0 ? -6 : 1);
-    const mon = new Date(date.setDate(diff));
-    mon.setHours(0,0,0,0);
-    return mon;
-  }
-
+  // 배터리 상태 & 자연 방전
   let batteryLevel = 80;
   let lastBatteryUpdate = Date.now();
 
@@ -319,44 +243,27 @@ if ('serviceWorker' in navigator) {
     const now = Date.now();
     const elapsedHours = (now - lastBatteryUpdate) / (1000 * 60 * 60);
     if(elapsedHours >= 0.1){
-      const drainAmount = Math.round(elapsedHours * 4.5);
-      if(drainAmount > 0){
-        batteryLevel = Math.max(5, batteryLevel - drainAmount);
+      const drain = Math.round(elapsedHours * 4.5); // 시간당 4.5% 자연 방전
+      if(drain > 0){
+        batteryLevel = Math.max(5, batteryLevel - drain);
         lastBatteryUpdate = now;
         save();
       }
     }
   }
 
-  let data = {
-    items: [], comments: {},
-    chargeRoutines: [], drainRoutines: [],
-    battery: 80, lastBatteryUpdate: Date.now(),
-    chargeCustomIconKeys: [], chargeHiddenIconKeys: [], chargeCustomLabels: {},
-    drainCustomIconKeys: [], drainHiddenIconKeys: [], drainCustomLabels: {}
-  };
-
+  let data = { items: [], comments: {}, battery: 80, lastBatteryUpdate: Date.now() };
   let theme = 'light';
-  let activeTab = 'charge';
-  let newItemText = '';
-  let currentChargeIcon = CHARGE_DEFAULT_KEYS[0];
-  let currentDrainIcon = DRAIN_DEFAULT_KEYS[0];
+  let activeTab = 'home'; // 'home' | 'progress'
 
-  let currentChargePct = 15;
-  let currentDrainPct = 15;
+  // 모달(Action Sheet) 상태
+  let activeSheetMode = null; // 'charge' | 'drain' | null
+  let sheetStartBattery = 80;
+  let sheetTargetBattery = 80;
+  let selectedCategory = '';
+  let sheetMemoText = '';
 
-  let chargeIconEditMode = false;
-  let drainIconEditMode = false;
-  let chargeEditRoutineMode = false;
-  let drainEditRoutineMode = false;
-
-  let selectedChargeRoutineDays = [1, 2, 3, 4, 5, 6, 0];
-  let selectedDrainRoutineDays = [1, 2, 3, 4, 5];
-
-  let currentWeekMonday = getMonday(new Date());
-  let selectedChargeDate = todayKey();
-  let selectedDrainDate = todayKey();
-
+  // Progress 달력 상태
   let progressMonthCursor = new Date();
   progressMonthCursor.setHours(0,0,0,0);
   progressMonthCursor.setDate(1);
@@ -373,29 +280,6 @@ if ('serviceWorker' in navigator) {
     }
   }
 
-  function totalCounts(){
-    let healDone = 0, planDone = 0;
-    data.items.forEach(it => {
-      if(it.type === 'heal') healDone += 1;
-      else planDone += 1;
-    });
-    return { healDone, planDone };
-  }
-
-  function currentStreak(){
-    let streak = 0, cursor = new Date();
-    while(true){
-      const key = dkeyFromDate(cursor);
-      const dayItems = data.items.filter(it => it.date === key);
-      if(dayItems.length === 0) break;
-      const net = dayItems.reduce((s, it) => s + (it.type === 'heal' ? 1 : -1), 0);
-      if(net < 0) break;
-      streak += 1;
-      cursor.setDate(cursor.getDate() - 1);
-    }
-    return streak;
-  }
-
   async function load(){
     try{
       const raw = localStorage.getItem(STORAGE_KEY);
@@ -406,13 +290,6 @@ if ('serviceWorker' in navigator) {
     if(!data.comments) data.comments = {};
     if(typeof data.battery === 'number') batteryLevel = data.battery;
     if(data.lastBatteryUpdate) lastBatteryUpdate = data.lastBatteryUpdate;
-
-    if(!data.chargeRoutines) {
-      data.chargeRoutines = [{ id: 'rt_c_sleep', text: 'Sleep 8h', icon: 'sleep', pct: 30, days: [1,2,3,4,5,6,0] }];
-    }
-    if(!data.drainRoutines) {
-      data.drainRoutines = [{ id: 'rt_d_commute', text: 'Commute', icon: 'car', pct: 15, days: [1,2,3,4,5] }];
-    }
 
     applyNaturalDrain();
     theme = localStorage.getItem('caru-theme-pref') === 'dark' ? 'dark' : 'light';
@@ -441,57 +318,6 @@ if ('serviceWorker' in navigator) {
     }
   }
 
-  function renderBatteryWidget(){
-    let statusText = "Optimal Energy";
-    if(batteryLevel <= 20) statusText = "Critical Battery! Recharge now";
-    else if(batteryLevel <= 45) statusText = "Draining fast… take a break";
-    else if(batteryLevel >= 85) statusText = "Fully Charged & Focused";
-
-    return `
-      <div class="battery-container">
-        <div class="battery-top-row">
-          <span class="battery-label">Human Battery</span>
-          <span class="battery-pct-text">${batteryLevel}%</span>
-        </div>
-        
-        <div class="battery-shell">
-          <div class="battery-bar-outer">
-            <div class="battery-bar-inner" style="width:${batteryLevel}%; ${batteryLevel<=20 ? 'background:var(--batt-warn);':''}"></div>
-          </div>
-          <div class="battery-cap"></div>
-        </div>
-
-        <div class="battery-slider-row">
-          <input type="range" class="battery-slider" id="battery-manual-slider" min="0" max="100" value="${batteryLevel}" />
-        </div>
-
-        <div class="battery-subnote">
-          <span>${statusText}</span>
-          <span>Slide to adjust</span>
-        </div>
-      </div>
-    `;
-  }
-
-  // ==========================================
-  // 🔔 시스템 배너 알림 트리거 함수
-  // ==========================================
-  async function triggerNotification(title, body) {
-    if (!("Notification" in window)) return;
-    if (Notification.permission === 'granted') {
-      if (navigator.serviceWorker && navigator.serviceWorker.controller) {
-        navigator.serviceWorker.ready.then((reg) => {
-          reg.showNotification(title, {
-            body: body,
-            icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y="50" font-size="50">⚡</text></svg>'
-          });
-        });
-      } else {
-        new Notification(title, { body });
-      }
-    }
-  }
-
   function setupNotification(){
     if(!("Notification" in window)){
       alert("홈 화면에 추가한 후 실행해야 알림을 사용할 수 있습니다.");
@@ -499,270 +325,102 @@ if ('serviceWorker' in navigator) {
     }
     Notification.requestPermission().then(permission => {
       if(permission === 'granted'){
-        triggerNotification("Caru 배터리 알림 켜짐", `현재 배터리: ${batteryLevel}%. 실시간 방전 경고와 충전 알림을 보내드립니다.`);
+        new Notification("Caru 배터리 알림 켜짐", {
+          body: `현재 배터리: ${batteryLevel}%. 실시간 방전 경고와 충전 알림을 보내드립니다.`
+        });
         render();
       }
     });
   }
 
-  // 1) + Charge 탭
-  function renderChargeTab(){
-    const days = [];
-    for(let i = 0; i < 7; i++){
-      const d = new Date(currentWeekMonday);
-      d.setDate(d.getDate() + i);
-      days.push(d);
-    }
-    const startStr = `${MONTHS_SHORT[days[0].getMonth()]} ${days[0].getDate()}`;
-    const endStr = `${MONTHS_SHORT[days[6].getMonth()]} ${days[6].getDate()}`;
-    const currentTodayStr = todayKey();
+  // ==========================================
+  // 1. 홈 탭 (초미니멀 배터리 + 밑줄 데일리 노트)
+  // ==========================================
+  function renderHomeTab(){
+    let statusText = "NATURAL DISCHARGING (ACTIVE)";
+    if(batteryLevel <= 20) statusText = "CRITICAL BATTERY • RECHARGE NEEDED";
+    else if(batteryLevel >= 85) statusText = "OPTIMAL ENERGY LEVEL";
 
-    const weekGridHtml = days.map(d => {
-      const dkey = dkeyFromDate(d);
-      const dow = d.getDay();
-      const isSelected = (dkey === selectedChargeDate);
-      const isToday = (dkey === currentTodayStr);
-
-      const scheduled = (data.chargeRoutines || []).filter(r => (r.days || []).includes(dow));
-      const doneCount = scheduled.filter(r => data.items.some(it => it.id === `rt_c_${r.id}_${dkey}`)).length;
-
-      return `
-        <div class="week-cell${isSelected ? ' active' : ''}${isToday ? ' today' : ''}" data-charge-day="${dkey}">
-          <span class="week-dow">${DAY_NAMES_SHORT[dow]}</span>
-          <span class="week-daynum">${d.getDate()}</span>
-          <span class="week-dot-count">${scheduled.length ? `${doneCount}/${scheduled.length}` : '·'}</span>
-        </div>
-      `;
-    }).join('');
-
-    const [yy, mm, dd] = selectedChargeDate.split('-').map(Number);
-    const selectedDow = new Date(yy, mm-1, dd).getDay();
-    const dayRoutines = (data.chargeRoutines || []).filter(r => (r.days || []).includes(selectedDow));
-
-    const routinesListHtml = dayRoutines.length
-      ? dayRoutines.map(r => {
-          const isDone = data.items.some(it => it.id === `rt_c_${r.id}_${selectedChargeDate}`);
-          const pct = r.pct || 15;
-          return `
-            <li class="item${isDone ? ' done' : ''}">
-              <button class="check-btn charge-round" data-action="toggle-charge-routine" data-routine-id="${r.id}">${isDone ? '●' : ''}</button>
-              <span class="type-pill">+${pct}%</span>
-              <span class="item-text">${escapeHtml(r.text)}</span>
-              <button class="del-btn" data-action="delete-charge-routine" data-routine-id="${r.id}">×</button>
-            </li>
-          `;
-        }).join('')
-      : `<li class="item-empty">No recharge routines set for ${DAY_NAMES_SHORT[selectedDow]}.</li>`;
-
-    const pickerKeys = getChargeCategories();
-    const wordGridHtml = pickerKeys.map(key => `
-      <div class="word-item${key===currentChargeIcon?' active':''}" data-charge-word="${key}">
-        <span>${escapeHtml(labelForCategory(key, 'charge'))}</span>
-        ${chargeIconEditMode ? `<button class="word-item-remove" data-remove-charge-word="${key}">×</button>` : ''}
-      </div>`).join('');
-
-    const dayButtonsHtml = WEEKDAY_ORDER.map(dow => {
-      const isPick = selectedChargeRoutineDays.includes(dow);
-      return `<button type="button" class="day-pick-btn${isPick ? ' active' : ''}" data-charge-dow="${dow}">${DAY_NAMES_SHORT[dow]}</button>`;
-    }).join('');
-
-    const PCT_PRESETS = [5, 10, 15, 25, 40];
-    const pctChipsHtml = PCT_PRESETS.map(p => `
-      <button type="button" class="pct-chip-btn${currentChargePct===p?' active':''}" data-charge-pct="${p}">+${p}%</button>
-    `).join('');
+    const todayComment = data.comments[todayKey()] || '';
 
     return `
-      ${renderBatteryWidget()}
+      <div class="home-center">
+        <span class="home-status-title">${statusText}</span>
+        <span class="home-battery-num">${batteryLevel}%</span>
 
-      <div class="week-nav-bar">
-        <button class="nav-btn" id="charge-prev-week">‹</button>
-        <span class="week-nav-title">${startStr} – ${endStr}</span>
-        <button class="nav-btn" id="charge-next-week">›</button>
+        <!-- 배터리 본체 터치 영역 -->
+        <div class="battery-touch-wrap" id="home-battery-touch">
+          <div class="battery-touch-shell">
+            <div class="battery-touch-fill" style="width:${batteryLevel}%; ${batteryLevel<=20?'background:var(--batt-warn);':''}"></div>
+          </div>
+          <div class="battery-touch-cap"></div>
+        </div>
+        <span class="battery-hint">Tap +Charge or −Drain below to log impact</span>
+
+        <!-- 2개 메인 버튼 -->
+        <div class="action-btn-row">
+          <button class="hero-btn charge" id="open-charge-sheet">+ Charge</button>
+          <button class="hero-btn drain" id="open-drain-sheet">− Drain</button>
+        </div>
       </div>
-      <div class="week-grid">${weekGridHtml}</div>
 
-      <h2 class="date-title">${DAY_NAMES_SHORT[selectedDow]}, ${MONTHS_SHORT[mm-1]} ${dd}</h2>
-      
-      <div class="comment-block main-note">
-        <div class="picker-label">Energy Note</div>
-        <textarea class="comment-textarea" id="comment-textarea" placeholder="How did you recharge today?">${escapeHtml(data.comments[selectedChargeDate] || '')}</textarea>
-      </div>
-
-      <ul class="list">${routinesListHtml}</ul>
-
-      <div class="add-block">
-        <div class="picker-label">Recharge Category</div>
-        <div class="word-grid">${wordGridHtml}</div>
-        <div style="display:flex; justify-content:space-between; margin-bottom:12px;">
-          <button class="text-toggle-btn${chargeIconEditMode ? ' active' : ''}" id="charge-icon-edit-btn">Edit Categories</button>
-          <button class="text-toggle-btn${chargeEditRoutineMode ? ' active' : ''}" id="charge-edit-as-routine-btn">${chargeEditRoutineMode ? '✓ Close routine' : 'Edit as a routine'}</button>
-        </div>
-
-        ${chargeIconEditMode ? `
-          <div class="icon-search-row">
-            <input class="add-input" id="charge-cat-input" type="text" placeholder="Add custom charge category…" />
-            <button class="add-submit-btn" id="charge-cat-add-btn">Add</button>
-          </div>
-        ` : ''}
-
-        ${chargeEditRoutineMode ? `
-          <div class="routine-edit-panel">
-            <div class="picker-label">Repeat on</div>
-            <div class="days-picker-row">${dayButtonsHtml}</div>
-            <div class="presets-row">
-              <button class="preset-link" data-charge-preset="weekdays">Weekdays</button>
-              <button class="preset-link" data-charge-preset="everyday">Everyday</button>
-            </div>
-          </div>
-        ` : ''}
-
-        <div class="pct-control-panel">
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-            <span class="picker-label" style="margin:0;">Energy Boost Amount</span>
-            <span style="font-family:'JetBrains Mono',monospace; font-weight:700; font-size:13px; color:var(--ink);" id="charge-pct-label">+${currentChargePct}%</span>
-          </div>
-          <div class="pct-chip-row">
-            ${pctChipsHtml}
-            <input type="range" min="5" max="50" step="5" value="${currentChargePct}" class="battery-slider" id="charge-pct-slider" style="flex:1; margin-left:6px;" />
-          </div>
-        </div>
-
-        <div class="add-row">
-          <input class="add-input" id="charge-add-input" type="text" placeholder="What energized you?" value="${escapeHtml(newItemText)}" />
-        </div>
-        <button class="single-btn charge-btn" id="charge-submit-btn">+ Add Recharge (+${currentChargePct}%)</button>
+      <!-- 다이어리 밑줄 스타일 데일리 노트 -->
+      <div class="underline-note-block">
+        <div class="underline-note-label">Daily Note</div>
+        <input type="text" class="underline-note-input" id="home-daily-note" placeholder="How was your day?" value="${escapeHtml(todayComment)}" />
       </div>
     `;
   }
 
-  // 2) − Drain 탭
-  function renderDrainTab(){
-    const days = [];
-    for(let i = 0; i < 7; i++){
-      const d = new Date(currentWeekMonday);
-      d.setDate(d.getDate() + i);
-      days.push(d);
-    }
-    const startStr = `${MONTHS_SHORT[days[0].getMonth()]} ${days[0].getDate()}`;
-    const endStr = `${MONTHS_SHORT[days[6].getMonth()]} ${days[6].getDate()}`;
-    const currentTodayStr = todayKey();
+  // ==========================================
+  // 2. 충전/방전 기록 시트 (배터리 드래그 팝업)
+  // ==========================================
+  function renderActionSheet(){
+    if(!activeSheetMode) return '';
 
-    const weekGridHtml = days.map(d => {
-      const dkey = dkeyFromDate(d);
-      const dow = d.getDay();
-      const isSelected = (dkey === selectedDrainDate);
-      const isToday = (dkey === currentTodayStr);
+    const isCharge = (activeSheetMode === 'charge');
+    const delta = sheetTargetBattery - sheetStartBattery;
+    const deltaSign = delta > 0 ? `+${delta}%` : `${delta}%`;
+    const categories = isCharge ? CHARGE_CATEGORIES : DRAIN_CATEGORIES;
 
-      const scheduled = (data.drainRoutines || []).filter(r => (r.days || []).includes(dow));
-      const doneCount = scheduled.filter(r => data.items.some(it => it.id === `rt_d_${r.id}_${dkey}`)).length;
-
-      return `
-        <div class="week-cell${isSelected ? ' active' : ''}${isToday ? ' today' : ''}" data-drain-day="${dkey}">
-          <span class="week-dow">${DAY_NAMES_SHORT[dow]}</span>
-          <span class="week-daynum">${d.getDate()}</span>
-          <span class="week-dot-count">${scheduled.length ? `${doneCount}/${scheduled.length}` : '·'}</span>
-        </div>
-      `;
-    }).join('');
-
-    const [yy, mm, dd] = selectedDrainDate.split('-').map(Number);
-    const selectedDow = new Date(yy, mm-1, dd).getDay();
-    const dayRoutines = (data.drainRoutines || []).filter(r => (r.days || []).includes(selectedDow));
-
-    const routinesListHtml = dayRoutines.length
-      ? dayRoutines.map(r => {
-          const isDone = data.items.some(it => it.id === `rt_d_${r.id}_${selectedDrainDate}`);
-          const pct = r.pct || 15;
-          return `
-            <li class="item${isDone ? ' done' : ''}">
-              <button class="check-btn drain-square" data-action="toggle-drain-routine" data-routine-id="${r.id}">${isDone ? '■' : ''}</button>
-              <span class="type-pill plan">−${pct}%</span>
-              <span class="item-text">${escapeHtml(r.text)}</span>
-              <button class="del-btn" data-action="delete-drain-routine" data-routine-id="${r.id}">×</button>
-            </li>
-          `;
-        }).join('')
-      : `<li class="item-empty">No drain plans for ${DAY_NAMES_SHORT[selectedDow]}.</li>`;
-
-    const pickerKeys = getDrainCategories();
-    const wordGridHtml = pickerKeys.map(key => `
-      <div class="word-item${key===currentDrainIcon?' active':''}" data-drain-word="${key}">
-        <span>${escapeHtml(labelForCategory(key, 'drain'))}</span>
-        ${drainIconEditMode ? `<button class="word-item-remove" data-remove-drain-word="${key}">×</button>` : ''}
-      </div>`).join('');
-
-    const dayButtonsHtml = WEEKDAY_ORDER.map(dow => {
-      const isPick = selectedDrainRoutineDays.includes(dow);
-      return `<button type="button" class="day-pick-btn${isPick ? ' active' : ''}" data-drain-dow="${dow}">${DAY_NAMES_SHORT[dow]}</button>`;
-    }).join('');
-
-    const PCT_PRESETS = [5, 10, 15, 25, 40];
-    const pctChipsHtml = PCT_PRESETS.map(p => `
-      <button type="button" class="pct-chip-btn${currentDrainPct===p?' active':''}" data-drain-pct="${p}">−${p}%</button>
+    const wordsHtml = categories.map(cat => `
+      <button type="button" class="word-item${selectedCategory===cat?' active':''}" data-sheet-cat="${cat}">${cat}</button>
     `).join('');
 
     return `
-      ${renderBatteryWidget()}
+      <div class="action-sheet-overlay active" id="action-sheet-overlay">
+        <div class="action-sheet" id="action-sheet-box">
+          <div class="sheet-title">${isCharge ? '+ Charge Battery' : '− Drain Battery'}</div>
+          <p style="font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--muted); margin:0;">Drag battery bar to adjust level</p>
 
-      <div class="week-nav-bar">
-        <button class="nav-btn" id="drain-prev-week">‹</button>
-        <span class="week-nav-title">${startStr} – ${endStr}</span>
-        <button class="nav-btn" id="drain-next-week">›</button>
-      </div>
-      <div class="week-grid">${weekGridHtml}</div>
+          <div class="sheet-delta-text" style="color:${isCharge?'var(--ink)':'var(--batt-warn)'};">${deltaSign}</div>
 
-      <h2 class="date-title">${DAY_NAMES_SHORT[selectedDow]}, ${MONTHS_SHORT[mm-1]} ${dd}</h2>
-      <ul class="list">${routinesListHtml}</ul>
-
-      <div class="add-block">
-        <div class="picker-label">Drain Category</div>
-        <div class="word-grid">${wordGridHtml}</div>
-        <div style="display:flex; justify-content:space-between; margin-bottom:12px;">
-          <button class="text-toggle-btn${drainIconEditMode ? ' active' : ''}" id="drain-icon-edit-btn">Edit Categories</button>
-          <button class="text-toggle-btn${drainEditRoutineMode ? ' active' : ''}" id="drain-edit-as-routine-btn">${drainEditRoutineMode ? '✓ Close routine' : 'Edit as a routine'}</button>
-        </div>
-
-        ${drainIconEditMode ? `
-          <div class="icon-search-row">
-            <input class="add-input" id="drain-cat-input" type="text" placeholder="Add custom drain category…" />
-            <button class="add-submit-btn" id="drain-cat-add-btn">Add</button>
-          </div>
-        ` : ''}
-
-        ${drainEditRoutineMode ? `
-          <div class="routine-edit-panel">
-            <div class="picker-label">Repeat on</div>
-            <div class="days-picker-row">${dayButtonsHtml}</div>
-            <div class="presets-row">
-              <button class="preset-link" data-drain-preset="weekdays">Weekdays</button>
-              <button class="preset-link" data-drain-preset="everyday">Everyday</button>
+          <!-- 조절 가능한 배터리 바 -->
+          <div class="battery-touch-wrap" id="sheet-battery-touch" style="margin-bottom:14px;">
+            <div class="battery-touch-shell" style="height:44px;">
+              <div class="battery-touch-fill" style="width:${sheetTargetBattery}%;"></div>
             </div>
+            <div class="battery-touch-cap" style="height:16px;"></div>
           </div>
-        ` : ''}
 
-        <div class="pct-control-panel">
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-            <span class="picker-label" style="margin:0;">Energy Drain Amount</span>
-            <span style="font-family:'JetBrains Mono',monospace; font-weight:700; font-size:13px; color:var(--ink);" id="drain-pct-label">−${currentDrainPct}%</span>
-          </div>
-          <div class="pct-chip-row">
-            ${pctChipsHtml}
-            <input type="range" min="5" max="50" step="5" value="${currentDrainPct}" class="battery-slider" id="drain-pct-slider" style="flex:1; margin-left:6px;" />
+          <div style="font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--muted); text-transform:uppercase;">Select Reason</div>
+          <div class="word-grid">${wordsHtml}</div>
+
+          <input type="text" class="sheet-input" id="sheet-memo-input" placeholder="Memo (optional)…" value="${escapeHtml(sheetMemoText)}" />
+
+          <div class="sheet-btn-row">
+            <button class="sheet-cancel-btn" id="close-sheet-btn">Cancel</button>
+            <button class="sheet-submit-btn" id="submit-sheet-btn">${isCharge ? 'Done Recharge' : 'Done Drain'}</button>
           </div>
         </div>
-
-        <div class="add-row">
-          <input class="add-input" id="drain-add-input" type="text" placeholder="What drains your energy?" value="${escapeHtml(newItemText)}" />
-        </div>
-        <button class="single-btn drain-btn" id="drain-submit-btn">- Add Drain (−${currentDrainPct}%)</button>
       </div>
     `;
   }
 
-  // 3) Progress 탭
+  // ==========================================
+  // 3. Progress 탭 (월간 달력 & 과거 기록)
+  // ==========================================
   function renderProgressTab(){
-    const { healDone, planDone } = totalCounts();
-    const streak = currentStreak();
     const cursor = progressMonthCursor;
     const year = cursor.getFullYear();
     const month = cursor.getMonth();
@@ -774,7 +432,8 @@ if ('serviceWorker' in navigator) {
     const todayStr = todayKey();
 
     const monthItems = data.items.filter(it => it.date.startsWith(monthPrefix));
-    const monthNet = monthItems.reduce((s,it) => s + (it.type === 'heal' ? 1 : -1), 0);
+    const healCount = monthItems.filter(it => it.type === 'heal').length;
+    const drainCount = monthItems.filter(it => it.type === 'plan').length;
 
     const weekDayLabels = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
     const weekdayRowHtml = weekDayLabels.map(d => `<span class="month-weekday-label">${d}</span>`).join('');
@@ -795,7 +454,7 @@ if ('serviceWorker' in navigator) {
 
       cellsHtml += `
         <div class="month-cell${isToday}${isSelected}" data-daykey="${key}">
-          <span class="month-daynum">${d}</span>
+          <span style="font-family:'JetBrains Mono',monospace; font-size:12px;">${d}</span>
           <span class="month-dot ${dotClass}"></span>
         </div>`;
     }
@@ -803,24 +462,29 @@ if ('serviceWorker' in navigator) {
     let dayDetailHtml = '';
     if(selectedProgressDay){
       const dItems = data.items.filter(it => it.date === selectedProgressDay);
+      const dComment = data.comments[selectedProgressDay];
       const [yy,mm,dd] = selectedProgressDay.split('-').map(Number);
       const labelDate = new Date(yy,mm-1,dd);
 
       const itemsHtml = dItems.length
         ? dItems.map(it => `
-            <div class="item" style="padding:6px 0;">
-              <span class="type-pill${it.type==='plan'?' plan':''}">${it.type==='heal'?`+${it.pct||15}%`:`-${it.pct||15}%`}</span>
-              <span>${escapeHtml(it.text)}</span>
+            <div class="day-detail-item">
+              <span class="type-pill${it.type==='plan'?' drain':''}">${it.delta>0?`+${it.delta}%`:`${it.delta}%`}</span>
+              <span style="flex:1;">${escapeHtml(it.text)}</span>
             </div>`).join('')
-        : `<p class="item-empty">No battery activities on this day.</p>`;
+        : `<p style="padding:14px 0; text-align:center; color:var(--muted); font-size:13px;">No battery activity on this day.</p>`;
+
+      const commentHtml = dComment ? `<p style="margin-top:12px; font-size:13.5px; line-height:1.5; color:var(--ink); border-top:1px solid var(--divider); padding-top:8px;">Note: ${escapeHtml(dComment)}</p>` : '';
 
       dayDetailHtml = `
         <div class="day-detail">
           <div class="day-detail-title">${DAY_NAMES_SHORT[labelDate.getDay()]}, ${MONTHS_SHORT[mm-1]} ${dd}</div>
           ${itemsHtml}
+          ${commentHtml}
         </div>`;
     }
 
+    // 상위 통계
     const targetType = (activeStatsTab === 'charge') ? 'heal' : 'plan';
     const filteredItems = data.items.filter(it => it.type === targetType);
     const countMap = {};
@@ -843,24 +507,16 @@ if ('serviceWorker' in navigator) {
             <div class="stat-bar-track"><div class="stat-bar-fill" style="width:${item.pct}%;"></div></div>
           </div>
         `).join('')
-      : `<p class="item-empty">No ${activeStatsTab} logged yet.</p>`;
+      : `<p style="text-align:center; color:var(--muted); padding:10px 0; font-size:13px;">No records yet.</p>`;
 
     return `
-      ${renderBatteryWidget()}
-
       <div class="progress-summary-bar">
-        <span class="sub-counts">Charge: ${healDone} · Drain: ${planDone}</span>
-        <div class="streak-row">
-          <span class="streak-value">${streak}</span>
-          <span class="streak-label">day streak</span>
-        </div>
+        <span class="sub-counts">+Charge: ${healCount} · −Drain: ${drainCount}</span>
+        <span class="sub-counts">Current: ${batteryLevel}%</span>
       </div>
 
-      <div class="week-nav-bar">
-        <div>
-          <div class="section-title" style="margin-bottom:4px;">Calendar</div>
-          <span style="font-family:'Space Grotesk',sans-serif; font-size:16px; font-weight:600;">${monthLabel}</span>
-        </div>
+      <div class="calendar-nav-bar">
+        <span style="font-family:'Space Grotesk',sans-serif; font-size:16px; font-weight:600;">${monthLabel}</span>
         <div style="display:flex; gap:4px;">
           <button class="nav-btn" id="progress-prev-month">‹</button>
           <button class="nav-btn" id="progress-next-month">›</button>
@@ -872,7 +528,6 @@ if ('serviceWorker' in navigator) {
       ${dayDetailHtml}
 
       <div class="stats-section">
-        <p class="section-title">Top Activity Impact</p>
         <div class="stats-toggle-row">
           <button class="stats-tab-btn${activeStatsTab==='charge'?' active':''}" data-stats-tab="charge">⚡ Top Recharges</button>
           <button class="stats-tab-btn${activeStatsTab==='drain'?' active':''}" data-stats-tab="drain">📋 Top Drains</button>
@@ -891,16 +546,17 @@ if ('serviceWorker' in navigator) {
         <div class="top-left">
           <p class="eyebrow">CARU</p>
           <button class="notify-btn${hasNotification?' on':''}" id="notify-perm-btn">${hasNotification?'🔔 Push On':'🔔 알림 켜기'}</button>
-          ${hasNotification ? '<button class="notify-btn" id="notify-test-btn" style="border-style:solid; margin-left:4px;">⚡ 5초 뒤 알림 테스트</button>' : ''}
         </div>
         <button class="theme-toggle" id="theme-toggle">${theme === 'dark' ? 'Light' : 'Dark'}</button>
       </div>
+
       <div class="tabs">
-        <button class="tab-btn${activeTab==='charge'?' active':''}" data-tab="charge">+ Charge</button>
-        <button class="tab-btn${activeTab==='drain'?' active':''}" data-tab="drain">− Drain</button>
+        <button class="tab-btn${activeTab==='home'?' active':''}" data-tab="home">Home</button>
         <button class="tab-btn${activeTab==='progress'?' active':''}" data-tab="progress">Progress</button>
       </div>
-      ${activeTab === 'charge' ? renderChargeTab() : (activeTab === 'drain' ? renderDrainTab() : renderProgressTab())}
+
+      ${activeTab === 'home' ? renderHomeTab() : renderProgressTab()}
+      ${renderActionSheet()}
     `;
     bindEvents();
   }
@@ -914,267 +570,123 @@ if ('serviceWorker' in navigator) {
 
     document.getElementById('notify-perm-btn')?.addEventListener('click', setupNotification);
 
-    // 5초 뒤 실제 배너 알림 테스트 (화면 끄고 확인 가능)
-    document.getElementById('notify-test-btn')?.addEventListener('click', () => {
-      alert("지금 바로 아이폰 화면을 잠그거나 앱을 내려보세요! 5초 뒤 실제 배너 알림이 도착합니다.");
-      setTimeout(() => {
-        triggerNotification("⚡ Caru 배터리 경고 (오후 체크인)", `현재 배터리 잔량: ${batteryLevel}%. 방전되기 전에 작은 충전을 해주세요!`);
-      }, 5000);
-    });
-
-    const battSlider = document.getElementById('battery-manual-slider');
-    if(battSlider){
-      battSlider.addEventListener('input', (e) => {
-        batteryLevel = parseInt(e.target.value, 10);
-        lastBatteryUpdate = Date.now();
-        document.querySelector('.battery-pct-text').textContent = batteryLevel + '%';
-        const inner = document.querySelector('.battery-bar-inner');
-        if(inner) {
-          inner.style.width = batteryLevel + '%';
-          inner.style.background = batteryLevel <= 20 ? 'var(--batt-warn)' : 'var(--ink)';
-        }
-      });
-      battSlider.addEventListener('change', () => { save(); render(); });
-    }
-
     root.querySelectorAll('.tab-btn').forEach(btn => {
       btn.addEventListener('click', () => { activeTab = btn.dataset.tab; render(); });
     });
 
     // ==========================================
-    // Charge 탭 이벤트
+    // 홈 탭 이벤트
     // ==========================================
-    if(activeTab === 'charge'){
-      document.getElementById('charge-prev-week')?.addEventListener('click', () => {
-        currentWeekMonday.setDate(currentWeekMonday.getDate() - 7);
-        selectedChargeDate = dkeyFromDate(currentWeekMonday);
-        render();
-      });
-      document.getElementById('charge-next-week')?.addEventListener('click', () => {
-        currentWeekMonday.setDate(currentWeekMonday.getDate() + 7);
-        selectedChargeDate = dkeyFromDate(currentWeekMonday);
-        render();
-      });
-
-      root.querySelectorAll('[data-charge-day]').forEach(cell => {
-        cell.addEventListener('click', () => {
-          selectedChargeDate = cell.dataset.chargeDay;
-          render();
-        });
-      });
-
-      root.querySelectorAll('[data-action="toggle-charge-routine"]').forEach(btn => {
-        btn.addEventListener('click', async () => {
-          const rid = btn.dataset.routineId;
-          const routine = (data.chargeRoutines || []).find(r => r.id === rid);
-          if(!routine) return;
-
-          const pct = routine.pct || 15;
-          const itemId = `rt_c_${routine.id}_${selectedChargeDate}`;
-          const existingIndex = data.items.findIndex(it => it.id === itemId);
-
-          if(existingIndex >= 0){
-            data.items.splice(existingIndex, 1);
-            batteryLevel = Math.max(0, batteryLevel - pct);
-          } else {
-            data.items.push({ id: itemId, icon: routine.icon, pct, type: 'heal', text: routine.text, date: selectedChargeDate });
-            batteryLevel = Math.min(100, batteryLevel + pct);
-          }
-          lastBatteryUpdate = Date.now();
-          render(); await save();
-        });
-      });
-
-      root.querySelectorAll('[data-action="delete-charge-routine"]').forEach(btn => {
-        btn.addEventListener('click', async (e) => {
-          e.stopPropagation();
-          const rid = btn.dataset.routineId;
-          data.chargeRoutines = (data.chargeRoutines || []).filter(r => r.id !== rid);
-          data.items = data.items.filter(it => !it.id.startsWith(`rt_c_${rid}_`));
-          render(); await save();
-        });
-      });
-
-      root.querySelectorAll('[data-charge-pct]').forEach(btn => {
-        btn.addEventListener('click', () => {
-          currentChargePct = parseInt(btn.dataset.chargePct, 10);
-          render();
-        });
-      });
-
-      const chargeSlider = document.getElementById('charge-pct-slider');
-      if(chargeSlider){
-        chargeSlider.addEventListener('input', (e) => {
-          currentChargePct = parseInt(e.target.value, 10);
-          document.getElementById('charge-pct-label').textContent = `+${currentChargePct}%`;
-          document.getElementById('charge-submit-btn').textContent = `+ Add Recharge (+${currentChargePct}%)`;
-          root.querySelectorAll('[data-charge-pct]').forEach(b => {
-            b.classList.toggle('active', parseInt(b.dataset.chargePct, 10) === currentChargePct);
-          });
-        });
-      }
-
-      root.querySelectorAll('[data-charge-word]').forEach(el => {
-        el.addEventListener('click', () => { currentChargeIcon = el.dataset.chargeWord; render(); });
-      });
-
-      document.getElementById('charge-edit-as-routine-btn')?.addEventListener('click', () => {
-        chargeEditRoutineMode = !chargeEditRoutineMode; render();
-      });
-      document.getElementById('charge-icon-edit-btn')?.addEventListener('click', () => {
-        chargeIconEditMode = !chargeIconEditMode; render();
-      });
-
-      root.querySelectorAll('.day-pick-btn[data-charge-dow]').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const dow = parseInt(btn.dataset.chargeDow, 10);
-          if(selectedChargeRoutineDays.includes(dow)){
-            if(selectedChargeRoutineDays.length > 1) selectedChargeRoutineDays = selectedChargeRoutineDays.filter(d => d !== dow);
-          } else { selectedChargeRoutineDays.push(dow); }
-          render();
-        });
-      });
-
-      async function submitCharge(){
-        const input = document.getElementById('charge-add-input');
-        const text = (input ? input.value.trim() : '') || labelForCategory(currentChargeIcon, 'charge');
-        const [yy, mm, dd] = selectedChargeDate.split('-').map(Number);
-        const currentSelectedDow = new Date(yy, mm-1, dd).getDay();
-        const targetDays = chargeEditRoutineMode ? [...selectedChargeRoutineDays] : [currentSelectedDow];
-
-        data.chargeRoutines.push({
-          id: 'rt_' + uid(),
-          text,
-          icon: currentChargeIcon,
-          pct: currentChargePct,
-          days: targetDays
-        });
-        newItemText = '';
-        render(); await save();
-      }
-
-      document.getElementById('charge-submit-btn')?.addEventListener('click', submitCharge);
-      document.getElementById('charge-add-input')?.addEventListener('keydown', (e) => {
-        if(e.key === 'Enter') submitCharge();
-      });
-
-      const commentArea = document.getElementById('comment-textarea');
-      if(commentArea){
-        commentArea.addEventListener('blur', async () => {
-          data.comments[selectedChargeDate] = commentArea.value;
+    if(activeTab === 'home'){
+      // 밑줄 데일리 노트 자동 저장
+      const noteInput = document.getElementById('home-daily-note');
+      if(noteInput){
+        noteInput.addEventListener('blur', async () => {
+          data.comments[todayKey()] = noteInput.value.trim();
           await save();
         });
+        noteInput.addEventListener('keydown', async (e) => {
+          if(e.key === 'Enter') {
+            data.comments[todayKey()] = noteInput.value.trim();
+            await save();
+            noteInput.blur();
+          }
+        });
       }
-      return;
+
+      // + Charge 시트 열기
+      document.getElementById('open-charge-sheet')?.addEventListener('click', () => {
+        activeSheetMode = 'charge';
+        sheetStartBattery = batteryLevel;
+        sheetTargetBattery = Math.min(100, batteryLevel + 20); // 기본 +20%
+        selectedCategory = CHARGE_CATEGORIES[0];
+        sheetMemoText = '';
+        render();
+      });
+
+      // − Drain 시트 열기
+      document.getElementById('open-drain-sheet')?.addEventListener('click', () => {
+        activeSheetMode = 'drain';
+        sheetStartBattery = batteryLevel;
+        sheetTargetBattery = Math.max(0, batteryLevel - 20); // 기본 -20%
+        selectedCategory = DRAIN_CATEGORIES[0];
+        sheetMemoText = '';
+        render();
+      });
     }
 
     // ==========================================
-    // Drain 탭 이벤트
+    // 배터리 직접 터치/드래그 인터랙션 (Action Sheet 내부)
     // ==========================================
-    if(activeTab === 'drain'){
-      document.getElementById('drain-prev-week')?.addEventListener('click', () => {
-        currentWeekMonday.setDate(currentWeekMonday.getDate() - 7);
-        selectedDrainDate = dkeyFromDate(currentWeekMonday);
-        render();
+    const sheetTouchBar = document.getElementById('sheet-battery-touch');
+    if(sheetTouchBar){
+      function handleBarDrag(clientX){
+        const shell = sheetTouchBar.querySelector('.battery-touch-shell');
+        if(!shell) return;
+        const rect = shell.getBoundingClientRect();
+        const offsetX = Math.max(0, Math.min(rect.width, clientX - rect.left));
+        let pct = Math.round((offsetX / rect.width) * 100);
+
+        if(activeSheetMode === 'charge'){
+          pct = Math.max(sheetStartBattery, pct); // 충전은 현재보다 위로만
+        } else {
+          pct = Math.min(sheetStartBattery, pct); // 방전은 현재보다 아래로만
+        }
+        sheetTargetBattery = pct;
+
+        const delta = sheetTargetBattery - sheetStartBattery;
+        const deltaText = delta > 0 ? `+${delta}%` : `${delta}%`;
+        document.querySelector('.sheet-delta-text').textContent = deltaText;
+        sheetTouchBar.querySelector('.battery-touch-fill').style.width = sheetTargetBattery + '%';
+      }
+
+      let isDragging = false;
+      sheetTouchBar.addEventListener('pointerdown', (e) => {
+        isDragging = true;
+        sheetTouchBar.setPointerCapture(e.pointerId);
+        handleBarDrag(e.clientX);
       });
-      document.getElementById('drain-next-week')?.addEventListener('click', () => {
-        currentWeekMonday.setDate(currentWeekMonday.getDate() + 7);
-        selectedDrainDate = dkeyFromDate(currentWeekMonday);
-        render();
+      sheetTouchBar.addEventListener('pointermove', (e) => {
+        if(isDragging) handleBarDrag(e.clientX);
       });
+      sheetTouchBar.addEventListener('pointerup', () => { isDragging = false; });
+      sheetTouchBar.addEventListener('pointercancel', () => { isDragging = false; });
 
-      root.querySelectorAll('[data-drain-day]').forEach(cell => {
-        cell.addEventListener('click', () => {
-          selectedDrainDate = cell.dataset.drainDay;
-          render();
-        });
-      });
-
-      root.querySelectorAll('[data-action="toggle-drain-routine"]').forEach(btn => {
-        btn.addEventListener('click', async () => {
-          const rid = btn.dataset.routineId;
-          const routine = (data.drainRoutines || []).find(r => r.id === rid);
-          if(!routine) return;
-
-          const pct = routine.pct || 15;
-          const itemId = `rt_d_${routine.id}_${selectedDrainDate}`;
-          const existingIndex = data.items.findIndex(it => it.id === itemId);
-
-          if(existingIndex >= 0){
-            data.items.splice(existingIndex, 1);
-            batteryLevel = Math.min(100, batteryLevel + pct);
-          } else {
-            data.items.push({ id: itemId, icon: routine.icon, pct, type: 'plan', text: routine.text, date: selectedDrainDate });
-            batteryLevel = Math.max(0, batteryLevel - pct);
-          }
-          lastBatteryUpdate = Date.now();
-          render(); await save();
-        });
-      });
-
-      root.querySelectorAll('[data-action="delete-drain-routine"]').forEach(btn => {
-        btn.addEventListener('click', async (e) => {
-          e.stopPropagation();
-          const rid = btn.dataset.routineId;
-          data.drainRoutines = (data.drainRoutines || []).filter(r => r.id !== rid);
-          data.items = data.items.filter(it => !it.id.startsWith(`rt_d_${rid}_`));
-          render(); await save();
-        });
-      });
-
-      root.querySelectorAll('[data-drain-pct]').forEach(btn => {
+      // 카테고리 칩 선택
+      root.querySelectorAll('[data-sheet-cat]').forEach(btn => {
         btn.addEventListener('click', () => {
-          currentDrainPct = parseInt(btn.dataset.drainPct, 10);
-          render();
+          selectedCategory = btn.dataset.sheetCat;
+          root.querySelectorAll('[data-sheet-cat]').forEach(b => b.classList.toggle('active', b === btn));
         });
       });
 
-      const drainSlider = document.getElementById('drain-pct-slider');
-      if(drainSlider){
-        drainSlider.addEventListener('input', (e) => {
-          currentDrainPct = parseInt(e.target.value, 10);
-          document.getElementById('drain-pct-label').textContent = `−${currentDrainPct}%`;
-          document.getElementById('drain-submit-btn').textContent = `- Add Drain (−${currentDrainPct}%)`;
-          root.querySelectorAll('[data-drain-pct]').forEach(b => {
-            b.classList.toggle('active', parseInt(b.dataset.drainPct, 10) === currentDrainPct);
+      // 취소 버튼
+      document.getElementById('close-sheet-btn')?.addEventListener('click', () => {
+        activeSheetMode = null; render();
+      });
+
+      // 제출 버튼
+      document.getElementById('submit-sheet-btn')?.addEventListener('click', async () => {
+        const delta = sheetTargetBattery - sheetStartBattery;
+        if(delta !== 0){
+          batteryLevel = sheetTargetBattery;
+          lastBatteryUpdate = Date.now();
+
+          const memo = document.getElementById('sheet-memo-input')?.value.trim();
+          const title = memo ? `${selectedCategory}: ${memo}` : selectedCategory;
+
+          data.items.push({
+            id: uid(),
+            type: activeSheetMode === 'charge' ? 'heal' : 'plan',
+            delta: delta,
+            text: title,
+            date: todayKey()
           });
-        });
-      }
-
-      root.querySelectorAll('[data-drain-word]').forEach(el => {
-        el.addEventListener('click', () => { currentDrainIcon = el.dataset.drainWord; render(); });
+          await save();
+        }
+        activeSheetMode = null;
+        render();
       });
-
-      document.getElementById('drain-edit-as-routine-btn')?.addEventListener('click', () => {
-        drainEditRoutineMode = !drainEditRoutineMode; render();
-      });
-      document.getElementById('drain-icon-edit-btn')?.addEventListener('click', () => {
-        drainIconEditMode = !drainIconEditMode; render();
-      });
-
-      async function submitDrain(){
-        const input = document.getElementById('drain-add-input');
-        const text = (input ? input.value.trim() : '') || labelForCategory(currentDrainIcon, 'drain');
-        const [yy, mm, dd] = selectedDrainDate.split('-').map(Number);
-        const currentSelectedDow = new Date(yy, mm-1, dd).getDay();
-        const targetDays = drainEditRoutineMode ? [...selectedDrainRoutineDays] : [currentSelectedDow];
-
-        data.drainRoutines.push({
-          id: 'rt_' + uid(),
-          text,
-          icon: currentDrainIcon,
-          pct: currentDrainPct,
-          days: targetDays
-        });
-        newItemText = '';
-        render(); await save();
-      }
-
-      document.getElementById('drain-submit-btn')?.addEventListener('click', submitDrain);
-      document.getElementById('drain-add-input')?.addEventListener('keydown', (e) => {
-        if(e.key === 'Enter') submitDrain();
-      });
-      return;
     }
 
     // ==========================================
