@@ -7,6 +7,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default" />
 <meta name="apple-mobile-web-app-title" content="Caru" />
 <meta name="theme-color" content="#fbfaf8" />
+<link rel="manifest" href="manifest.json" />
 <title>Caru - Human Battery</title>
 
 <!-- Firebase App & Database (compat SDK) -->
@@ -218,17 +219,27 @@
     border:1px dashed var(--muted); background:none; color:var(--muted); font-family:'JetBrains Mono', monospace;
     font-size:10px; padding:3px 8px; border-radius:8px; cursor:pointer;
   }
-  .notify-btn.on{ border-style:solid; border-color:var(--ink); color:var(--ink); }
+  .notify-btn.on{ border-style:solid; border-color:var(--ink); color:var(--ink); font-weight:600; }
 </style>
 </head>
 <body>
 <div id="root"><div style="text-align:center; padding:60px 0; font-family:monospace; color:#888;">Starting Caru Battery…</div></div>
 
 <script>
+// ==========================================
+// 🔔 서비스 워커 등록 (아이폰 백그라운드 푸시)
+// ==========================================
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').then((reg) => {
+      console.log('Service Worker 등록 완료:', reg);
+    }).catch((err) => {
+      console.warn('Service Worker 등록 실패:', err);
+    });
+  });
+}
+
 (function(){
-  // ==========================================
-  // ⚙️ Firebase 설정
-  // ==========================================
   const firebaseConfig = {
     apiKey: "AIzaSyCitVETsMx-5ax48t4UViBT8DyIMOiB0sM",
     authDomain: "zero-3dfef.firebaseapp.com",
@@ -301,9 +312,6 @@
     return mon;
   }
 
-  // ==========================================
-  // ⚡ 배터리 자연 방전
-  // ==========================================
   let batteryLevel = 80;
   let lastBatteryUpdate = Date.now();
 
@@ -334,7 +342,6 @@
   let currentChargeIcon = CHARGE_DEFAULT_KEYS[0];
   let currentDrainIcon = DRAIN_DEFAULT_KEYS[0];
 
-  // 새로 추가할 루틴의 퍼센트(%) 조절 상태 (기본 15%)
   let currentChargePct = 15;
   let currentDrainPct = 15;
 
@@ -466,16 +473,33 @@
     `;
   }
 
+  // ==========================================
+  // 🔔 시스템 배너 알림 트리거 함수
+  // ==========================================
+  async function triggerNotification(title, body) {
+    if (!("Notification" in window)) return;
+    if (Notification.permission === 'granted') {
+      if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+        navigator.serviceWorker.ready.then((reg) => {
+          reg.showNotification(title, {
+            body: body,
+            icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y="50" font-size="50">⚡</text></svg>'
+          });
+        });
+      } else {
+        new Notification(title, { body });
+      }
+    }
+  }
+
   function setupNotification(){
     if(!("Notification" in window)){
-      alert("이 브라우저는 알림을 지원하지 않습니다.");
+      alert("홈 화면에 추가한 후 실행해야 알림을 사용할 수 있습니다.");
       return;
     }
     Notification.requestPermission().then(permission => {
       if(permission === 'granted'){
-        new Notification("Caru 배터리 알림 켜짐", {
-          body: `현재 배터리: ${batteryLevel}%. 방전 경고와 충전 알림을 보내드립니다.`
-        });
+        triggerNotification("Caru 배터리 알림 켜짐", `현재 배터리: ${batteryLevel}%. 실시간 방전 경고와 충전 알림을 보내드립니다.`);
         render();
       }
     });
@@ -592,7 +616,6 @@
           </div>
         ` : ''}
 
-        <!-- 3번: 에너지 충전량 (%) 조절 컨트롤 -->
         <div class="pct-control-panel">
           <div style="display:flex; justify-content:space-between; align-items:center;">
             <span class="picker-label" style="margin:0;">Energy Boost Amount</span>
@@ -717,7 +740,6 @@
           </div>
         ` : ''}
 
-        <!-- 3번: 에너지 소모량 (%) 조절 컨트롤 -->
         <div class="pct-control-panel">
           <div style="display:flex; justify-content:space-between; align-items:center;">
             <span class="picker-label" style="margin:0;">Energy Drain Amount</span>
@@ -869,6 +891,7 @@
         <div class="top-left">
           <p class="eyebrow">CARU</p>
           <button class="notify-btn${hasNotification?' on':''}" id="notify-perm-btn">${hasNotification?'🔔 Push On':'🔔 알림 켜기'}</button>
+          ${hasNotification ? '<button class="notify-btn" id="notify-test-btn" style="border-style:solid; margin-left:4px;">⚡ 5초 뒤 알림 테스트</button>' : ''}
         </div>
         <button class="theme-toggle" id="theme-toggle">${theme === 'dark' ? 'Light' : 'Dark'}</button>
       </div>
@@ -890,6 +913,14 @@
     });
 
     document.getElementById('notify-perm-btn')?.addEventListener('click', setupNotification);
+
+    // 5초 뒤 실제 배너 알림 테스트 (화면 끄고 확인 가능)
+    document.getElementById('notify-test-btn')?.addEventListener('click', () => {
+      alert("지금 바로 아이폰 화면을 잠그거나 앱을 내려보세요! 5초 뒤 실제 배너 알림이 도착합니다.");
+      setTimeout(() => {
+        triggerNotification("⚡ Caru 배터리 경고 (오후 체크인)", `현재 배터리 잔량: ${batteryLevel}%. 방전되기 전에 작은 충전을 해주세요!`);
+      }, 5000);
+    });
 
     const battSlider = document.getElementById('battery-manual-slider');
     if(battSlider){
@@ -932,7 +963,6 @@
         });
       });
 
-      // Charge 체크박스 토글 (지정된 pct만큼 배터리 충전!)
       root.querySelectorAll('[data-action="toggle-charge-routine"]').forEach(btn => {
         btn.addEventListener('click', async () => {
           const rid = btn.dataset.routineId;
@@ -965,7 +995,6 @@
         });
       });
 
-      // 충전 퍼센트(%) 칩 클릭
       root.querySelectorAll('[data-charge-pct]').forEach(btn => {
         btn.addEventListener('click', () => {
           currentChargePct = parseInt(btn.dataset.chargePct, 10);
@@ -973,7 +1002,6 @@
         });
       });
 
-      // 충전 퍼센트 슬라이더 조절
       const chargeSlider = document.getElementById('charge-pct-slider');
       if(chargeSlider){
         chargeSlider.addEventListener('input', (e) => {
@@ -1062,7 +1090,6 @@
         });
       });
 
-      // Drain 체크박스 토글 (지정된 pct만큼 배터리 소모!)
       root.querySelectorAll('[data-action="toggle-drain-routine"]').forEach(btn => {
         btn.addEventListener('click', async () => {
           const rid = btn.dataset.routineId;
@@ -1095,7 +1122,6 @@
         });
       });
 
-      // 소모 퍼센트(%) 칩 클릭
       root.querySelectorAll('[data-drain-pct]').forEach(btn => {
         btn.addEventListener('click', () => {
           currentDrainPct = parseInt(btn.dataset.drainPct, 10);
@@ -1103,7 +1129,6 @@
         });
       });
 
-      // 소모 퍼센트 슬라이더 조절
       const drainSlider = document.getElementById('drain-pct-slider');
       if(drainSlider){
         drainSlider.addEventListener('input', (e) => {
