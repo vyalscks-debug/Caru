@@ -88,7 +88,7 @@
   .battery-cap.debt{ background:var(--batt-debt); }
   .battery-cap.over{ background:var(--batt-over); }
 
-  /* Charge / Drain 버튼 */
+  /* Charge / Use 버튼 */
   .action-btn-row{ display:flex; gap:12px; margin-top:14px; width:100%; max-width:300px; }
   .hero-btn{
     flex:1; padding:14px 10px; border-radius:14px;
@@ -278,7 +278,7 @@
     height:100%;border-radius:21px;background:#7b7b7b;
     transition:width .08s ease-out;pointer-events:none;
   }
-  .minimal-battery-fill.low{background:#5f5f5f;}
+  .minimal-battery-fill.low{background:#ff453a;}
   .minimal-battery-cap{width:7px;height:28px;border-radius:0 4px 4px 0;background:#666;flex:none;}
   .minimal-battery-percent{
     position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
@@ -382,6 +382,20 @@
   .minimal-progress .stat-bar-fill{height:100%;background:#666;}
   .progress-home{position:fixed;right:20px;bottom:calc(env(safe-area-inset-bottom) + 18px);border:0;background:none;color:#666;font:400 12px -apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;padding:4px 0;}
   .tabs,.top-bar{display:none;}
+
+/* Category ranking */
+.ranking-section{margin-top:28px;padding-bottom:36px;}
+.rank-block{margin-top:20px;}
+.rank-subtitle{font-size:11px;color:#ddd;margin-bottom:10px;letter-spacing:.04em;}
+.rank-symbol{display:inline-flex;width:18px;height:18px;align-items:center;justify-content:center;border:1px solid #333;border-radius:50%;margin-right:6px;font-size:11px;}
+.rank-header,.rank-row{display:grid;grid-template-columns:22px 1fr 52px;gap:8px;align-items:center;}
+.rank-header{padding:0 0 8px;color:#666;font-size:9px;text-transform:uppercase;letter-spacing:.08em;border-bottom:1px solid #222;}
+.rank-row{min-height:38px;border-bottom:1px solid #181818;font-size:12px;}
+.rank-no{color:#555;font-size:10px;}
+.rank-name{color:#ddd;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.rank-total{text-align:right;color:#aaa;}
+.plus-symbol{color:#aaa}.minus-symbol{color:#777;}
+@media (max-width:520px){.rank-header,.rank-row{grid-template-columns:20px 1fr 48px;gap:6px;}}
 </style>
 </head>
 <body>
@@ -559,7 +573,7 @@ if('serviceWorker' in navigator){
         <div class="edit-panel">
           <div class="edit-mode-row">
             <button type="button" class="mode-btn${isC?' active':''}" id="btn-charge">+ Charge</button>
-            <button type="button" class="mode-btn${inlineMode==='drain'?' active':''}" id="btn-drain">− Drain</button>
+            <button type="button" class="mode-btn${inlineMode==='drain'?' active':''}" id="btn-drain">− Use</button>
           </div>
           ${inlineMode?`
           <div class="edit-step-row">
@@ -586,7 +600,7 @@ if('serviceWorker' in navigator){
           <div class="edit-actions">
             <button type="button" class="cancel-btn" id="btn-cancel">Cancel</button>
             <button type="button" class="apply-btn" id="btn-apply">Done${delta!==0?` · ${delta>0?'+':''}${delta}%`:''}</button>
-          </div>` : `<div class="edit-choose-hint">Choose Charge or Drain, then drag the battery.</div>`}
+          </div>` : `<div class="edit-choose-hint">Choose Charge or Use, then drag the battery.</div>`}
         </div>`;
     }
 
@@ -699,6 +713,44 @@ if('serviceWorker' in navigator){
           <div class="activity-section-title">Recent changes</div>
           <div class="activity-list">${recentHtml}</div>
         </div>
+        ${(()=>{
+          const ranks={};
+          (data.items||[]).forEach(it=>{
+            const name=(it.text||'').trim() || 'Untitled';
+            if(!ranks[name]) ranks[name]={plus:0,minus:0};
+            const d=Number(it.delta)||0;
+            if(d>0) ranks[name].plus+=d;
+            if(d<0) ranks[name].minus+=Math.abs(d);
+          });
+          const makeRows=(key,sign)=>{
+            const rows=Object.entries(ranks)
+              .filter(([_,r])=>r[key]>0)
+              .sort((a,b)=>b[1][key]-a[1][key])
+              .slice(0,3);
+            return rows.length ? rows.map(([name,r],i)=>`<div class="rank-row">
+              <span class="rank-no">${i+1}</span>
+              <span class="rank-name">${esc(name)}</span>
+              <span class="rank-total">${sign}${r[key]}</span>
+            </div>`).join('') : `<div class="empty-progress">No records yet.</div>`;
+          };
+          const mode = window.__caruRankMode || 'charge';
+          const isCharge = mode === 'charge';
+          const symbol = isCharge ? '+' : '−';
+          const key = isCharge ? 'plus' : 'minus';
+          return `<div class="activity-section ranking-section">
+            <div class="ranking-head-row">
+              <div class="activity-section-title">By category</div>
+              <div class="rank-switch" role="tablist">
+                <button type="button" class="rank-switch-btn ${isCharge?'active':''}" data-rank-mode="charge">+ Charge</button>
+                <button type="button" class="rank-switch-btn ${!isCharge?'active':''}" data-rank-mode="drain">− Use</button>
+              </div>
+            </div>
+            <div class="rank-block">
+              <div class="rank-header"><span></span><span>Category</span><span>Total</span></div>
+              <div class="rank-list">${makeRows(key,symbol)}</div>
+            </div>
+          </div>`;
+        })()}
       </div>
       <button type="button" class="progress-home" id="open-home">Home</button>`;
   }
@@ -834,6 +886,7 @@ if('serviceWorker' in navigator){
 
     if(activeTab==='progress'){
       document.getElementById('open-home')?.addEventListener('click',()=>{ activeTab='home'; editOpen=false; inlineMode=null; render(); });
+      root.querySelectorAll('[data-rank-mode]').forEach(btn=>btn.addEventListener('click',()=>{ window.__caruRankMode=btn.dataset.rankMode; render(); }));
       document.getElementById('prev-month')?.addEventListener('click',()=>{ progressMonth=new Date(progressMonth.getFullYear(),progressMonth.getMonth()-1,1); selectedDay=null; render(); });
       document.getElementById('next-month')?.addEventListener('click',()=>{ progressMonth=new Date(progressMonth.getFullYear(),progressMonth.getMonth()+1,1); selectedDay=null; render(); });
       root.querySelectorAll('[data-daykey]').forEach(c=>{ if(c.classList.contains('empty')) return; c.addEventListener('click',()=>{ const k=c.dataset.daykey; selectedDay=selectedDay===k?null:k; render(); }); });
@@ -845,3 +898,11 @@ if('serviceWorker' in navigator){
 </script>
 </body>
 </html>
+<style>
+.ranking-head-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+.ranking-head-row .activity-section-title{margin-bottom:0}
+.rank-switch{display:flex;border:1px solid #333;border-radius:999px;overflow:hidden}
+.rank-switch-btn{border:0;background:transparent;color:#777;font:inherit;font-size:11px;padding:5px 10px;cursor:pointer}
+.rank-switch-btn.active{background:#e8e8e8;color:#111}
+.rank-switch-btn + .rank-switch-btn{border-left:1px solid #333}
+</style>
