@@ -6,302 +6,433 @@
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="default" />
 <meta name="apple-mobile-web-app-title" content="Caru" />
-<meta name="theme-color" content="#fbfaf8" />
+<meta name="theme-color" content="#000000" />
 <link rel="manifest" href="manifest.json" />
 <title>Caru - Human Battery</title>
-
-<!-- Firebase App & Database (compat SDK) -->
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
-
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap');
-
   :root{
-    --ink:#151515; --paper:#fbfaf8; --muted:#8f8a82; --faint:#e4dfd6;
-    --hover:#f2efe9; --band:#efece5; --divider:#e6e1d8;
-    --batt-warn:#c2410c;
+    --ink:#151515; --paper:#fbfaf8; --muted:#8e8e93; --faint:#e5e5ea;
+    --hover:#f2f2f7; --band:#efede8; --divider:#e5e5ea;
+    --batt-warn:#ff3b30; --batt-over:#d97706; --batt-debt:#ef4444;
   }
   html[data-theme="dark"]{
-    --ink:#f3f1ec; --paper:#121110; --muted:#8a8378; --faint:#332f2a;
-    --hover:#1d1b18; --band:#1e1c19; --divider:#2c2925;
-    --batt-warn:#f97316;
+    --ink:#f2f2f7; --paper:#000000; --muted:#8e8e93; --faint:#2c2c2e;
+    --hover:#1c1c1e; --band:#1c1c1e; --divider:#2c2c2e;
+    --batt-warn:#ff453a; --batt-over:#f59e0b; --batt-debt:#f87171;
   }
-  *{ box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
+  *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
   html,body{
     margin:0; padding:0; background:var(--paper); color:var(--ink);
-    font-family:'Inter', -apple-system, sans-serif; -webkit-font-smoothing:antialiased;
-    transition:background 0.15s ease, color 0.15s ease;
+    font-family:-apple-system, BlinkMacSystemFont, "SF Pro Rounded", system-ui, sans-serif;
+    -webkit-font-smoothing:antialiased;
+    transition:background 0.2s ease, color 0.2s ease;
   }
-  #root{ 
-    max-width:400px; margin:0 auto; 
-    padding: calc(env(safe-area-inset-top) + 20px) 24px calc(env(safe-area-inset-bottom) + 80px); 
-    min-height:100vh; 
+  #root{
+    max-width:420px; margin:0 auto;
+    padding:calc(env(safe-area-inset-top) + 16px) 22px calc(env(safe-area-inset-bottom) + 60px);
+    min-height:100vh;
   }
-
-  /* 상단 탑바 */
-  .top-bar{ display:flex; align-items:center; justify-content:space-between; margin-bottom:28px; }
+  .top-bar{ display:flex; align-items:center; justify-content:space-between; margin-bottom:24px; }
   .top-left{ display:flex; align-items:center; gap:8px; }
-  .eyebrow{ font-family:'JetBrains Mono', monospace; font-size:12px; letter-spacing:0.18em; text-transform:uppercase; color:var(--muted); margin:0; }
-  .theme-toggle{ border:1px solid var(--ink); background:var(--paper); color:var(--ink); font-family:'JetBrains Mono', monospace; font-size:10.5px; padding:5px 11px; border-radius:12px; cursor:pointer; }
-  .notify-btn{ border:1px dashed var(--muted); background:none; color:var(--muted); font-family:'JetBrains Mono', monospace; font-size:10px; padding:3px 8px; border-radius:8px; cursor:pointer; }
+  .eyebrow{ font-family:ui-monospace,"SF Mono",Menlo,monospace; font-size:12px; letter-spacing:0.18em; text-transform:uppercase; color:var(--muted); margin:0; font-weight:600; }
+  .theme-toggle{ border:1px solid var(--ink); background:var(--paper); color:var(--ink); font-family:ui-monospace,"SF Mono",monospace; font-size:11px; padding:4px 10px; border-radius:12px; cursor:pointer; }
+  .notify-btn{ border:1px dashed var(--muted); background:none; color:var(--muted); font-family:ui-monospace,"SF Mono",monospace; font-size:10px; padding:3px 8px; border-radius:8px; cursor:pointer; }
   .notify-btn.on{ border-style:solid; border-color:var(--ink); color:var(--ink); font-weight:600; }
-
-  /* 2개 탭 (Home vs Progress) */
-  .tabs{ display:flex; gap:24px; margin-bottom:32px; border-bottom:1px solid var(--divider); }
-  .tab-btn{ background:none; border:none; cursor:pointer; padding:0 0 10px; font-family:'JetBrains Mono', monospace; font-size:13px; letter-spacing:0.05em; color:var(--muted); border-bottom:2px solid transparent; margin-bottom:-1px; transition:color .15s; }
+  .tabs{ display:flex; gap:24px; margin-bottom:28px; border-bottom:1px solid var(--divider); }
+  .tab-btn{ background:none; border:none; cursor:pointer; padding:0 0 10px; font-family:-apple-system,BlinkMacSystemFont,sans-serif; font-size:15px; font-weight:500; color:var(--muted); border-bottom:2.5px solid transparent; margin-bottom:-1px; transition:all .15s; }
   .tab-btn.active{ color:var(--ink); border-bottom-color:var(--ink); font-weight:700; }
 
-  /* ================= 1. 홈 탭 (극도의 미니멀리즘) ================= */
-  .home-center{ display:flex; flex-direction:column; align-items:center; margin:10px 0 32px; }
-  .home-status-title{ font-family:'JetBrains Mono', monospace; font-size:11px; letter-spacing:0.14em; text-transform:uppercase; color:var(--muted); margin-bottom:8px; }
-  .home-battery-num{ font-family:'Space Grotesk', sans-serif; font-size:56px; font-weight:700; letter-spacing:-0.03em; line-height:1; margin-bottom:20px; }
+  /* 홈 탭 */
+  .home-center{ display:flex; flex-direction:column; align-items:center; margin:6px 0 24px; }
+  .home-status-badge{ font-family:ui-monospace,"SF Mono",monospace; font-size:11px; letter-spacing:0.12em; text-transform:uppercase; color:var(--muted); margin-bottom:10px; font-weight:600; }
+  .home-status-badge.debt{ color:var(--batt-debt); }
+  .home-status-badge.over{ color:var(--batt-over); }
+  .battery-num-wrap{ display:flex; align-items:baseline; justify-content:center; gap:8px; margin-bottom:18px; }
+  .home-battery-num{ font-family:-apple-system,BlinkMacSystemFont,"SF Pro Rounded",system-ui,sans-serif; font-size:64px; font-weight:800; letter-spacing:-0.03em; line-height:1; }
+  .battery-delta-tag{ font-family:ui-monospace,"SF Mono",monospace; font-size:16px; font-weight:700; padding:3px 9px; border-radius:8px; background:var(--band); color:var(--ink); }
+  .battery-delta-tag.plus{ color:#16a34a; background:rgba(34,197,94,0.15); }
+  .battery-delta-tag.minus{ color:var(--batt-warn); background:rgba(255,59,48,0.12); }
 
-  /* 배터리 본체 (직접 터치 & 드래그 가능) */
-  .battery-touch-wrap{
-    width:100%; display:flex; align-items:center; justify-content:center; gap:5px;
-    touch-action:none; user-select:none; cursor:pointer; padding:6px 0;
+  /* iOS 네이티브 배터리 아이콘 */
+  .battery-container{
+    width:100%; max-width:300px; display:flex; align-items:center;
+    gap:3px; margin:4px 0 16px; user-select:none; touch-action:none;
   }
-  .battery-touch-shell{
-    flex:1; height:46px; border:2.5px solid var(--ink); border-radius:12px;
-    padding:3px; background:var(--paper); position:relative; overflow:hidden;
+  .battery-shell{
+    flex:1; height:52px; border:2.8px solid var(--ink); border-radius:14px;
+    padding:4px; background:var(--paper); position:relative; overflow:hidden;
+    transition:border-color 0.2s ease, box-shadow 0.2s ease;
   }
-  .battery-touch-fill{
-    height:100%; border-radius:7px; background:var(--ink);
-    transition:width 0.1s ease; pointer-events:none;
+  .battery-shell.draggable{ cursor:ew-resize; }
+  .battery-shell.debt-mode{ border-color:var(--batt-debt); box-shadow:0 0 10px rgba(239,68,68,0.25); }
+  .battery-shell.over-mode{ border-color:var(--batt-over); box-shadow:0 0 12px rgba(217,119,6,0.25); }
+  .battery-fill{
+    height:100%; border-radius:8px; background:var(--ink);
+    transition:width 0.08s ease-out, background-color 0.2s ease;
+    pointer-events:none;
   }
-  .battery-touch-cap{
-    width:6px; height:18px; background:var(--ink); border-radius:0 4px 4px 0; flex:none;
+  .battery-fill.warn{ background:var(--batt-warn); }
+  .battery-fill.over{ background:linear-gradient(90deg,var(--ink) 0%,var(--batt-over) 100%); }
+  .battery-debt-overlay{
+    position:absolute; inset:4px; border-radius:8px; display:flex; align-items:center;
+    justify-content:center; font-family:ui-monospace,"SF Mono",monospace;
+    font-size:11px; font-weight:700; color:var(--batt-debt);
+    background:rgba(239,68,68,0.10); pointer-events:none;
   }
+  .battery-cap{
+    width:5px; height:20px; background:var(--ink); border-radius:0 3px 3px 0;
+    flex:none; transition:background-color 0.2s ease;
+  }
+  .battery-cap.debt{ background:var(--batt-debt); }
+  .battery-cap.over{ background:var(--batt-over); }
 
-  .battery-hint{ font-family:'JetBrains Mono', monospace; font-size:10px; color:var(--muted); margin-top:12px; }
-
-  /* Charge / Drain 메인 버튼 2개 */
-  .action-btn-row{ display:flex; gap:12px; margin-top:24px; width:100%; }
+  /* Charge / Drain 버튼 */
+  .action-btn-row{ display:flex; gap:12px; margin-top:14px; width:100%; max-width:300px; }
   .hero-btn{
-    flex:1; padding:15px 10px; border-radius:14px; font-family:'JetBrains Mono', monospace;
-    font-size:13px; font-weight:700; cursor:pointer; transition:transform .1s, opacity .15s;
-    text-align:center;
+    flex:1; padding:14px 10px; border-radius:14px;
+    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",sans-serif;
+    font-size:14px; font-weight:600; cursor:pointer; transition:all .15s ease; text-align:center;
   }
   .hero-btn:active{ transform:scale(0.97); }
-  .hero-btn.charge{ border:1.5px solid var(--ink); background:var(--paper); color:var(--ink); }
-  .hero-btn.drain{ border:1.5px solid var(--ink); background:var(--ink); color:var(--paper); }
+  .hero-btn.charge{ border:1.8px solid var(--ink); background:var(--paper); color:var(--ink); }
+  .hero-btn.charge.active{ background:var(--ink); color:var(--paper); }
+  .hero-btn.drain{ border:1.8px solid var(--ink); background:var(--ink); color:var(--paper); }
+  .hero-btn.drain.active{ border-color:var(--batt-warn); background:rgba(255,59,48,0.08); color:var(--batt-warn); }
 
-  /* Daily Note 밑줄 스타일 */
-  .underline-note-block{ margin-top:40px; }
-  .underline-note-label{ font-family:'JetBrains Mono', monospace; font-size:10px; letter-spacing:0.14em; text-transform:uppercase; color:var(--muted); margin-bottom:10px; }
-  .underline-note-input{
+  /* 인라인 패널 */
+  .inline-panel{
+    width:100%; margin-top:20px; padding:18px 16px;
+    border:1.5px solid var(--divider); border-radius:18px; background:var(--band);
+    animation:panelIn 0.2s ease-out;
+  }
+  @keyframes panelIn{ from{ opacity:0; transform:translateY(10px); } to{ opacity:1; transform:translateY(0); } }
+  .panel-header{ display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; }
+  .panel-label{ font-family:ui-monospace,"SF Mono",monospace; font-size:10.5px; letter-spacing:0.14em; text-transform:uppercase; color:var(--muted); font-weight:700; }
+  .reason-edit-btn{ border:none; background:none; color:var(--ink); font-size:12px; font-weight:600; cursor:pointer; text-decoration:underline; }
+
+  /* 스텝퍼 */
+  .stepper-row{ display:flex; gap:6px; margin-bottom:16px; }
+  .step-btn{ flex:1; padding:9px 0; border:1px solid var(--divider); border-radius:10px; background:var(--paper); color:var(--ink); font-family:ui-monospace,"SF Mono",monospace; font-size:12px; font-weight:700; cursor:pointer; }
+  .step-btn:active{ background:var(--hover); }
+
+  /* Reason 칩 */
+  .reason-grid{ display:flex; flex-wrap:wrap; gap:7px; margin-bottom:14px; }
+  .reason-chip{
+    display:inline-flex; align-items:center; gap:4px;
+    padding:6px 12px; border:1.2px solid var(--divider); border-radius:9px;
+    background:var(--paper); cursor:pointer;
+    font-family:-apple-system,BlinkMacSystemFont,sans-serif; font-size:12.5px; color:var(--ink);
+    transition:all .15s;
+  }
+  .reason-chip.selected{ background:var(--ink); color:var(--paper); border-color:var(--ink); }
+  .reason-chip-del{ border:none; background:none; color:inherit; font-size:10px; padding:0 0 0 3px; cursor:pointer; opacity:0.6; }
+
+  .add-reason-row{ display:flex; gap:6px; margin-bottom:14px; }
+  .add-reason-input{ flex:1; border:1px solid var(--divider); background:var(--paper); color:var(--ink); border-radius:8px; padding:7px 10px; font-size:12.5px; outline:none; }
+  .add-reason-btn{ border:1px solid var(--ink); background:var(--ink); color:var(--paper); border-radius:8px; padding:7px 12px; font-size:12px; font-weight:600; cursor:pointer; }
+
+  .memo-input{
     width:100%; border:none; outline:none; background:transparent;
-    border-bottom:1.5px solid var(--ink); padding:8px 0;
-    font-family:'Inter', sans-serif; font-size:15px; color:var(--ink);
-    line-height:1.5; border-radius:0;
+    border-bottom:1.5px solid var(--divider); padding:8px 0;
+    font-family:-apple-system,BlinkMacSystemFont,sans-serif; font-size:14px; color:var(--ink);
+    margin-bottom:16px; border-radius:0;
   }
-  .underline-note-input::placeholder{ color:var(--muted); }
+  .memo-input:focus{ border-bottom-color:var(--ink); }
 
-  /* ================= 2. 충전/방전 기록 모달 (Action Sheet) ================= */
-  .action-sheet-overlay{
-    position:fixed; inset:0; background:rgba(0,0,0,0.4); display:flex; align-items:flex-end;
-    justify-content:center; z-index:100; opacity:0; pointer-events:none; transition:opacity .2s ease;
+  .panel-actions{ display:flex; gap:8px; }
+  .apply-btn{
+    flex:1; padding:13px 10px; border-radius:12px; border:1.5px solid var(--ink);
+    background:var(--ink); color:var(--paper);
+    font-family:-apple-system,BlinkMacSystemFont,sans-serif; font-size:13.5px; font-weight:700; cursor:pointer;
   }
-  .action-sheet-overlay.active{ opacity:1; pointer-events:auto; }
-  .action-sheet{
-    width:100%; max-width:420px; background:var(--paper); border:2px solid var(--ink);
-    border-radius:24px 24px 0 0; padding:24px 22px calc(env(safe-area-inset-bottom) + 30px);
-    transform:translateY(100%); transition:transform .25s ease;
+  .cancel-btn{
+    padding:13px 16px; border-radius:12px; border:1px solid var(--divider);
+    background:var(--paper); color:var(--muted);
+    font-family:-apple-system,BlinkMacSystemFont,sans-serif; font-size:13px; cursor:pointer;
   }
-  .action-sheet-overlay.active .action-sheet{ transform:translateY(0); }
 
-  .sheet-title{ font-family:'Space Grotesk', sans-serif; font-size:22px; font-weight:700; margin-bottom:4px; }
-  .sheet-delta-text{ font-family:'Space Grotesk', sans-serif; font-size:38px; font-weight:700; margin:10px 0 16px; }
-
-  /* 카테고리 칩 */
-  .word-grid{ display:flex; flex-wrap:wrap; gap:6px 7px; margin:14px 0 18px; }
-  .word-item{
-    padding:6px 11px; border:1.5px solid #000000; border-radius:6px;
-    background:transparent; cursor:pointer; font-family:'Space Grotesk', sans-serif;
-    font-size:12px; color:var(--muted); text-align:center; transition:all .15s ease;
-  }
-  .word-item.active{ background:var(--ink); color:var(--paper); border-color:var(--ink); }
-
-  .sheet-input{
+  /* Daily Note */
+  .daily-note-block{ margin-top:40px; }
+  .daily-note-label{ font-family:ui-monospace,"SF Mono",monospace; font-size:11px; letter-spacing:0.12em; text-transform:uppercase; color:var(--muted); margin-bottom:10px; font-weight:600; }
+  .daily-note-input{
     width:100%; border:none; outline:none; background:transparent;
-    border-bottom:1.5px solid var(--ink); padding:8px 0; font-family:'Inter', sans-serif;
-    font-size:15px; color:var(--ink); margin-bottom:20px; border-radius:0;
+    border-bottom:1.8px solid var(--ink); padding:8px 0;
+    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",sans-serif;
+    font-size:15px; color:var(--ink); line-height:1.5; border-radius:0;
   }
-  .sheet-btn-row{ display:flex; gap:10px; }
-  .sheet-submit-btn{
-    flex:1; border:1.5px solid var(--ink); background:var(--ink); color:var(--paper);
-    font-family:'JetBrains Mono', monospace; font-size:13px; font-weight:700;
-    padding:13px; border-radius:14px; cursor:pointer;
-  }
-  .sheet-cancel-btn{
-    border:1.5px solid var(--divider); background:none; color:var(--muted);
-    font-family:'JetBrains Mono', monospace; font-size:13px; padding:13px 18px;
-    border-radius:14px; cursor:pointer;
-  }
+  .daily-note-input::placeholder{ color:var(--muted); }
 
-  /* ================= 3. Progress 탭 ================= */
-  .progress-summary-bar{ display:flex; justify-content:space-between; align-items:baseline; padding:12px 0 16px; margin-bottom:18px; border-bottom:1px solid var(--divider); }
-  .sub-counts{ font-family:'JetBrains Mono', monospace; font-size:12px; color:var(--muted); }
-  .streak-row{ display:flex; align-items:baseline; gap:6px; }
-  .streak-value{ font-family:'Space Grotesk', sans-serif; font-weight:700; font-size:16px; color:var(--ink); }
-  .streak-label{ font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--muted); }
-
+  /* Progress 탭 */
+  .progress-summary-bar{ display:flex; justify-content:space-between; align-items:baseline; padding:10px 0 14px; margin-bottom:16px; border-bottom:1px solid var(--divider); }
+  .sub-counts{ font-family:ui-monospace,"SF Mono",monospace; font-size:11.5px; color:var(--muted); }
   .calendar-nav-bar{ display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
-  .nav-btn{ border:1px solid var(--ink); background:var(--paper); color:var(--ink); font-family:'JetBrains Mono', monospace; font-size:11px; padding:4px 9px; border-radius:8px; cursor:pointer; }
+  .nav-btn{ border:1px solid var(--ink); background:var(--paper); color:var(--ink); font-family:ui-monospace,"SF Mono",monospace; font-size:11px; padding:4px 9px; border-radius:8px; cursor:pointer; }
   .month-weekday-row{ display:grid; grid-template-columns:repeat(7,1fr); margin-bottom:6px; }
-  .month-weekday-label{ font-family:'JetBrains Mono', monospace; font-size:8.5px; color:var(--muted); text-transform:uppercase; text-align:center; }
+  .month-weekday-label{ font-family:ui-monospace,"SF Mono",monospace; font-size:9px; color:var(--muted); text-transform:uppercase; text-align:center; }
   .month-grid{ display:grid; grid-template-columns:repeat(7,1fr); gap:3px; margin-bottom:2px; }
   .month-cell{ aspect-ratio:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; border:1px solid transparent; border-radius:9px; cursor:pointer; background:var(--paper); }
   .month-cell.selected{ background:var(--band); border-color:var(--ink); }
   .month-cell.today{ border-color:var(--ink); }
   .month-dot{ width:6px; height:6px; border-radius:50%; border:1.2px solid var(--faint); }
   .month-dot.positive{ background:var(--ink); border-color:var(--ink); }
-  .month-dot.negative{ background:transparent; border-color:var(--ink); }
-
-  .day-detail{ margin-top:20px; border:1px solid var(--ink); border-radius:14px; padding:16px; }
-  .day-detail-title{ font-family:'Space Grotesk', sans-serif; font-weight:600; font-size:15px; margin-bottom:10px; }
-  .day-detail-item{ display:flex; align-items:center; gap:8px; padding:7px 0; font-size:14px; border-bottom:1px solid var(--divider); }
+  .month-dot.negative{ background:transparent; border-color:var(--batt-warn); }
+  .day-detail{ margin-top:20px; border:1.5px solid var(--ink); border-radius:14px; padding:16px; }
+  .day-detail-title{ font-weight:700; font-size:15px; margin-bottom:10px; }
+  .day-detail-item{ display:flex; align-items:center; gap:8px; padding:7px 0; font-size:13.5px; border-bottom:1px solid var(--divider); }
   .day-detail-item:last-child{ border-bottom:none; }
-  .type-pill{ font-family:'JetBrains Mono', monospace; font-size:10px; font-weight:700; padding:2px 7px; border-radius:8px; border:1.2px solid var(--ink); }
+  .type-pill{ font-family:ui-monospace,"SF Mono",monospace; font-size:10.5px; font-weight:700; padding:2px 7px; border-radius:6px; border:1.2px solid var(--ink); }
   .type-pill.drain{ background:var(--ink); color:var(--paper); }
-
   .stats-section{ margin-top:28px; }
   .stats-toggle-row{ display:flex; gap:8px; margin-bottom:14px; }
-  .stats-tab-btn{ flex:1; padding:9px 10px; border:1.3px solid var(--divider); border-radius:10px; background:var(--paper); color:var(--muted); font-family:'JetBrains Mono', monospace; font-size:11.5px; font-weight:600; cursor:pointer; text-align:center; }
+  .stats-tab-btn{ flex:1; padding:9px 10px; border:1.3px solid var(--divider); border-radius:10px; background:var(--paper); color:var(--muted); font-family:ui-monospace,"SF Mono",monospace; font-size:11px; font-weight:700; cursor:pointer; text-align:center; }
   .stats-tab-btn.active{ border-color:var(--ink); background:var(--band); color:var(--ink); }
   .stats-box{ border:1px solid var(--divider); border-radius:12px; padding:14px; background:var(--paper); }
   .stat-row{ margin-bottom:12px; }
   .stat-row:last-child{ margin-bottom:0; }
-  .stat-label-row{ display:flex; justify-content:space-between; font-family:'Space Grotesk', sans-serif; font-size:13.5px; margin-bottom:4px; }
-  .stat-pct{ font-family:'JetBrains Mono', monospace; font-weight:600; color:var(--ink); }
+  .stat-label-row{ display:flex; justify-content:space-between; font-size:13px; font-weight:500; margin-bottom:4px; }
+  .stat-pct{ font-family:ui-monospace,"SF Mono",monospace; font-weight:700; color:var(--ink); }
   .stat-bar-track{ width:100%; height:6px; background:var(--divider); border-radius:3px; overflow:hidden; }
   .stat-bar-fill{ height:100%; background:var(--ink); border-radius:3px; }
+  /* Minimal Caru */
+  :root{
+    --paper:#000;
+    --ink:#f5f5f5;
+    --muted:#777;
+    --faint:#262626;
+    --hover:#151515;
+    --band:#111;
+    --divider:#222;
+  }
+  html[data-theme="dark"]{
+    --paper:#000;
+    --ink:#f5f5f5;
+    --muted:#777;
+    --faint:#262626;
+    --hover:#151515;
+    --band:#111;
+    --divider:#222;
+  }
+  html,body{background:#000;color:#f5f5f5;font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;}
+  #root{max-width:420px;min-height:100vh;padding:calc(env(safe-area-inset-top) + 10px) 20px calc(env(safe-area-inset-bottom) + 20px);}
+  .minimal-home{min-height:calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 30px);position:relative;}
+  .minimal-tab{
+    position:fixed;left:20px;bottom:calc(env(safe-area-inset-bottom) + 18px);
+    border:0;background:none;color:#666;font:400 12px -apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;
+    padding:4px 0;cursor:pointer;z-index:10;
+  }
+  .minimal-tab:active{color:#aaa;}
+  .minimal-edit{
+    position:fixed;right:20px;bottom:calc(env(safe-area-inset-bottom) + 18px);
+    border:0;background:none;color:#666;font:400 12px -apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;
+    padding:4px 0;cursor:pointer;z-index:10;
+  }
+  .minimal-edit:active{color:#aaa;}
+  .day-question{
+    position:absolute;left:7%;right:7%;top:20%;
+    color:#777;font:400 13px/1.45 -apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;
+    letter-spacing:-.01em;
+  }
+  .day-question-label{display:block;color:#777;margin-bottom:7px;}
+  .day-question-text{
+    width:100%;min-height:34px;max-height:50px;resize:none;overflow:hidden;
+    border:0;border-bottom:1px solid #222;outline:none;background:transparent;color:#aaa;
+    font:400 13px/1.45 -apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;
+    padding:0 0 7px;box-sizing:border-box;
+  }
+  .day-question-text::placeholder{color:#444;}
+  .battery-stage{
+    position:absolute;left:50%;top:51%;transform:translate(-50%,-50%);
+    width:min(76vw,330px);display:flex;justify-content:center;align-items:center;
+    user-select:none;touch-action:none;
+  }
+  .minimal-battery-wrap{
+    width:100%;height:112px;position:relative;display:flex;align-items:center;
+  }
+  .minimal-battery-shell{
+    width:calc(100% - 7px);height:100%;box-sizing:border-box;
+    border:1.5px solid #666;border-radius:27px;padding:5px;
+    background:#090909;position:relative;overflow:hidden;touch-action:none;
+  }
+  .minimal-battery-fill{
+    height:100%;border-radius:21px;background:#7b7b7b;
+    transition:width .08s ease-out;pointer-events:none;
+  }
+  .minimal-battery-fill.low{background:#5f5f5f;}
+  .minimal-battery-cap{width:7px;height:28px;border-radius:0 4px 4px 0;background:#666;flex:none;}
+  .minimal-battery-percent{
+    position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    color:#ddd;font:400 20px/1 -apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;
+    letter-spacing:-.03em;pointer-events:none;z-index:2;
+  }
+  .minimal-battery-percent.empty{color:#ddd;}
+  .minimal-battery-edit-hint{
+    position:absolute;top:calc(51% + 68px);left:50%;transform:translateX(-50%);
+    color:#444;font:400 10px -apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;
+    letter-spacing:.02em;pointer-events:none;
+  }
+  .edit-panel{
+    position:fixed;left:7%;right:7%;bottom:calc(env(safe-area-inset-bottom) + 52px);
+    max-height:52vh;overflow:auto;padding:16px 0 8px;background:#000;
+    border-top:1px solid #181818;animation:panelIn .16s ease-out;z-index:9;
+  }
+  .edit-mode-row{display:flex;gap:8px;margin-bottom:12px;}
+  .edit-step-row{display:flex;gap:6px;margin-bottom:14px;}
+  .edit-step,.mode-btn{
+    flex:1;border:1px solid #222;background:#070707;color:#999;border-radius:6px;
+    padding:10px 4px;font:400 12px -apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;
+  }
+  .mode-btn.active{border-color:#777;color:#ddd;}
+  .reason-header{display:flex;justify-content:space-between;align-items:center;margin:4px 0 9px;}
+  .reason-label{color:#555;font:400 10px -apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;letter-spacing:.08em;}
+  .reason-edit-btn{border:0;background:none;color:#666;padding:2px 0;font:400 11px -apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;}
+  .reason-grid{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;}
+  .reason-chip{
+    display:flex;align-items:center;gap:5px;border:1px solid #222;background:#070707;color:#777;
+    border-radius:5px;padding:6px 8px;font:400 11px -apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;
+  }
+  .reason-chip.selected{border-color:#777;color:#ddd;background:#101010;}
+  .reason-chip-del{border:0;background:none;color:#555;padding:0;font-size:10px;line-height:1;}
+  .add-reason-row{display:flex;gap:7px;margin:7px 0 13px;}
+  .add-reason-input{
+    flex:1;border:0;border-bottom:1px solid #222;outline:none;background:transparent;color:#aaa;
+    padding:7px 0;font:400 12px -apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;
+  }
+  .add-reason-input::placeholder{color:#444;}
+  .add-reason-btn{border:0;background:none;color:#777;padding:0 2px;font:400 11px -apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;}
+  .edit-actions{display:flex;gap:7px;margin-top:14px;}
+  .cancel-btn,.apply-btn{border-radius:6px;padding:10px 12px;font:400 12px -apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;cursor:pointer;}
+  .cancel-btn{flex:0 0 70px;border:1px solid #222;background:#000;color:#666;}
+  .apply-btn{flex:1;border:1px solid #555;background:#777;color:#000;}
+  .progress-summary-bar,.calendar-nav-bar,.month-weekday-row,.month-grid,.day-detail,.stats-section{color:#aaa;}
+  .minimal-progress{min-height:calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 30px);padding-bottom:55px;}
+  .progress-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:28px;}
+  .progress-title{font:400 15px -apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;color:#aaa;}
+  .progress-current{font:400 11px -apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;color:#555;}
+  .progress-month-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
+  .progress-month-title{font:400 13px -apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;color:#888;}
+  .progress-nav-btn{border:0;background:none;color:#555;font-size:18px;padding:0 4px;}
+  .minimal-progress .month-weekday-row{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:6px;}
+  .minimal-progress .month-weekday-label{text-align:center;color:#444;font:400 9px -apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;}
+  .minimal-progress .month-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;}
+  .minimal-progress .month-cell{
+    height:39px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    border:1px solid #111;border-radius:5px;background:#050505;color:#666;cursor:pointer;
+  }
+  .minimal-progress .month-cell.today{border-color:#555;color:#aaa;}
+  .minimal-progress .month-cell.selected{border-color:#888;color:#ddd;}
+  .minimal-progress .month-cell.empty{visibility:hidden;}
+  .minimal-progress .month-dot{width:3px;height:3px;border-radius:50%;background:transparent;margin-top:4px;}
+  .minimal-progress .month-dot.positive{background:#888;}
+  .minimal-progress .month-dot.negative{background:#444;}
+  .minimal-progress .progress-counts{display:flex;gap:18px;margin:25px 0 20px;color:#555;font:400 11px -apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;}
+  .minimal-progress .day-detail{border-top:1px solid #181818;border-bottom:1px solid #181818;padding:13px 0;margin:15px 0;}
+  .minimal-progress .day-detail-title{color:#777;font-size:11px;margin-bottom:9px;}
+  .minimal-progress .day-detail-item{display:flex;gap:8px;align-items:center;padding:5px 0;font-size:11px;color:#777;}
+  .minimal-progress .type-pill{color:#999;}
+  .minimal-progress .type-pill.drain{color:#555;}
+  .minimal-progress .stats-section{margin-top:24px;}
+  .minimal-progress .stats-toggle-row{display:flex;gap:16px;border-bottom:1px solid #181818;margin-bottom:12px;}
+  .minimal-progress .stats-tab-btn{border:0;background:none;color:#444;padding:0 0 9px;font:400 10px -apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;}
+  .minimal-progress .stats-tab-btn.active{color:#999;border-bottom:1px solid #777;}
+  .minimal-progress .stats-box{padding:2px 0;}
+  .minimal-progress .stat-row{margin:12px 0;}
+  .minimal-progress .stat-label-row{display:flex;justify-content:space-between;color:#666;font-size:11px;}
+  .minimal-progress .stat-pct{color:#444;}
+  .minimal-progress .stat-bar-track{height:2px;background:#111;margin-top:6px;}
+  .minimal-progress .stat-bar-fill{height:100%;background:#666;}
+  .progress-home{position:fixed;right:20px;bottom:calc(env(safe-area-inset-bottom) + 18px);border:0;background:none;color:#666;font:400 12px -apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;padding:4px 0;}
+  .tabs,.top-bar{display:none;}
 </style>
 </head>
 <body>
-<div id="root"><div style="text-align:center; padding:60px 0; font-family:monospace; color:#888;">Caru Loading…</div></div>
-
+<div id="root"><div style="text-align:center;padding:60px 0;font-family:monospace;color:#888">Caru Loading…</div></div>
 <script>
-// 서비스 워커 등록 (아이폰 백그라운드 푸시)
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('sw.js').catch(()=>{});
-  });
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>{ navigator.serviceWorker.register('sw.js').catch(()=>{}); });
 }
 
 (function(){
-  const firebaseConfig = {
-    apiKey: "AIzaSyCitVETsMx-5ax48t4UViBT8DyIMOiB0sM",
-    authDomain: "zero-3dfef.firebaseapp.com",
-    databaseURL: "https://zero-3dfef-default-rtdb.firebaseio.com",
-    projectId: "zero-3dfef",
-    storageBucket: "zero-3dfef.firebasestorage.app",
-    messagingSenderId: "59219649844",
-    appId: "1:59219649844:web:38546f1960e27abac83161",
-    measurementId: "G-VDFG7XTY64"
+  const firebaseConfig={
+    apiKey:"AIzaSyCitVETsMx-5ax48t4UViBT8DyIMOiB0sM",
+    authDomain:"zero-3dfef.firebaseapp.com",
+    databaseURL:"https://zero-3dfef-default-rtdb.firebaseio.com",
+    projectId:"zero-3dfef",
+    storageBucket:"zero-3dfef.firebasestorage.app",
+    messagingSenderId:"59219649844",
+    appId:"1:59219649844:web:38546f1960e27abac83161"
   };
 
-  let userId = localStorage.getItem('caru_device_user_id');
-  if (!userId) {
-    userId = 'usr_' + Date.now().toString(36) + Math.random().toString(36).substring(2, 7);
-    localStorage.setItem('caru_device_user_id', userId);
+  let userId=localStorage.getItem('caru_device_user_id');
+  if(!userId){ userId='usr_'+Date.now().toString(36)+Math.random().toString(36).slice(2,7); localStorage.setItem('caru_device_user_id',userId); }
+
+  let db=null, firebaseEnabled=false;
+  try{ firebase.initializeApp(firebaseConfig); db=firebase.database(); firebaseEnabled=true; }catch(e){}
+
+  const STORAGE_KEY='caru_data_'+userId;
+  const root=document.getElementById('root');
+  const MONTHS_FULL=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const MONTHS_SHORT=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const DAYS_SHORT=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const DEF_CHARGE=['Sleep','Coffee','Walk','Music','Meal','Rest','Workout','Gaming'];
+  const DEF_DRAIN=['Work','Meeting','Commute','Study','Overtime','Chores','Stress','Screen time'];
+
+  function todayKey(){
+    const d=new Date();
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
   }
+  function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
+  function esc(s){ const d=document.createElement('div'); d.textContent=s||''; return d.innerHTML; }
 
-  let db = null;
-  let firebaseEnabled = false;
-  if (firebaseConfig.apiKey && firebaseConfig.apiKey !== "YOUR_API_KEY") {
-    try {
-      firebase.initializeApp(firebaseConfig);
-      db = firebase.database();
-      firebaseEnabled = true;
-    } catch(e){}
-  }
-
-  const STORAGE_KEY = 'caru_data_' + userId;
-  const root = document.getElementById('root');
-  const MONTHS_FULL = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-  const MONTHS_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const DAY_NAMES_SHORT = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-
-  const CHARGE_CATEGORIES = ['Sleep', 'Music', 'Walk', 'Hobby', 'Self-care', 'Coffee', 'Cooking', 'Gaming'];
-  const DRAIN_CATEGORIES = ['Work', 'Commute', 'Study', 'Exercise', 'Chores', 'Meeting', 'Laundry', 'Screen time'];
-
-  function dkeyFromDate(d){
-    const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0'), day=String(d.getDate()).padStart(2,'0');
-    return `${y}-${m}-${day}`;
-  }
-  function todayKey(){ return dkeyFromDate(new Date()); }
-  function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
-  function escapeHtml(str){ const div = document.createElement('div'); div.textContent = str; return div.innerHTML; }
-
-  // 배터리 상태 & 자연 방전
-  let batteryLevel = 80;
-  let lastBatteryUpdate = Date.now();
+  let batteryLevel=80, lastBatteryUpdate=Date.now();
 
   function applyNaturalDrain(){
-    const now = Date.now();
-    const elapsedHours = (now - lastBatteryUpdate) / (1000 * 60 * 60);
-    if(elapsedHours >= 0.1){
-      const drain = Math.round(elapsedHours * 4.5); // 시간당 4.5% 자연 방전
-      if(drain > 0){
-        batteryLevel = Math.max(5, batteryLevel - drain);
-        lastBatteryUpdate = now;
+    const now=Date.now();
+    const hrs=(now-lastBatteryUpdate)/(1000*60*60);
+    if(hrs>=0.1){
+      const drain=Math.round(hrs*4.5);
+      if(drain>0){
+        batteryLevel=Math.max(5,batteryLevel-drain);
+        lastBatteryUpdate=now;
         save();
       }
     }
   }
 
-  let data = { items: [], comments: {}, battery: 80, lastBatteryUpdate: Date.now() };
-  let theme = 'light';
-  let activeTab = 'home'; // 'home' | 'progress'
-
-  // 모달(Action Sheet) 상태
-  let activeSheetMode = null; // 'charge' | 'drain' | null
-  let sheetStartBattery = 80;
-  let sheetTargetBattery = 80;
-  let selectedCategory = '';
-  let sheetMemoText = '';
-
-  // Progress 달력 상태
-  let progressMonthCursor = new Date();
-  progressMonthCursor.setHours(0,0,0,0);
-  progressMonthCursor.setDate(1);
-  let selectedProgressDay = null;
-  let activeStatsTab = 'charge';
+  let data={ items:[], comments:{}, battery:80, lastBatteryUpdate:Date.now(), chargeReasons:[...DEF_CHARGE], drainReasons:[...DEF_DRAIN] };
+  let theme='dark', activeTab='home';
+  let inlineMode=null, editOpen=false, targetBattery=80, selectedReason='', memoText='', editingReasons=false;
+  let progressMonth=new Date(new Date().getFullYear(),new Date().getMonth(),1);
+  let selectedDay=null, activeStatsTab='charge';
 
   function applyTheme(){
-    if(theme === 'dark') {
-      document.documentElement.setAttribute('data-theme','dark');
-      document.querySelector('meta[name="theme-color"]')?.setAttribute('content', '#121110');
-    } else {
-      document.documentElement.removeAttribute('data-theme');
-      document.querySelector('meta[name="theme-color"]')?.setAttribute('content', '#fbfaf8');
-    }
+    if(theme==='dark'){ document.documentElement.setAttribute('data-theme','dark'); document.querySelector('meta[name="theme-color"]')?.setAttribute('content','#000'); }
+    else{ document.documentElement.removeAttribute('data-theme'); document.querySelector('meta[name="theme-color"]')?.setAttribute('content','#fbfaf8'); }
   }
 
   async function load(){
-    try{
-      const raw = localStorage.getItem(STORAGE_KEY);
-      data = raw ? JSON.parse(raw) : {};
-    }catch(e){ data = {}; }
-    
-    if(!data.items) data.items = [];
-    if(!data.comments) data.comments = {};
-    if(typeof data.battery === 'number') batteryLevel = data.battery;
-    if(data.lastBatteryUpdate) lastBatteryUpdate = data.lastBatteryUpdate;
-
+    try{ const raw=localStorage.getItem(STORAGE_KEY); data=raw?JSON.parse(raw):{};  }catch(e){ data={}; }
+    if(!data.items) data.items=[];
+    if(!data.comments) data.comments={};
+    if(typeof data.battery==='number') batteryLevel=data.battery;
+    if(data.lastBatteryUpdate) lastBatteryUpdate=data.lastBatteryUpdate;
+    if(!Array.isArray(data.chargeReasons)||!data.chargeReasons.length) data.chargeReasons=[...DEF_CHARGE];
+    if(!Array.isArray(data.drainReasons)||!data.drainReasons.length) data.drainReasons=[...DEF_DRAIN];
     applyNaturalDrain();
-    theme = localStorage.getItem('caru-theme-pref') === 'dark' ? 'dark' : 'light';
+    theme=localStorage.getItem('caru-theme-pref')==='light'?'light':'dark';
     render();
-
-    if (firebaseEnabled && db) {
-      db.ref('users/' + userId).on('value', (snapshot) => {
-        const val = snapshot.val();
-        if (val) {
-          data = val;
-          if(typeof data.battery === 'number') batteryLevel = data.battery;
-          if(data.lastBatteryUpdate) lastBatteryUpdate = data.lastBatteryUpdate;
+    if(firebaseEnabled&&db){
+      db.ref('users/'+userId).on('value',snap=>{
+        const val=snap.val();
+        if(val){
+          data=val;
+          if(!data.items) data.items=[];
+          if(!data.comments) data.comments={};
+          if(typeof data.battery==='number') batteryLevel=data.battery;
+          if(data.lastBatteryUpdate) lastBatteryUpdate=data.lastBatteryUpdate;
+          if(!Array.isArray(data.chargeReasons)||!data.chargeReasons.length) data.chargeReasons=[...DEF_CHARGE];
+          if(!Array.isArray(data.drainReasons)||!data.drainReasons.length) data.drainReasons=[...DEF_DRAIN];
           applyNaturalDrain();
           render();
         }
@@ -310,411 +441,279 @@ if ('serviceWorker' in navigator) {
   }
 
   async function save(){
-    data.battery = batteryLevel;
-    data.lastBatteryUpdate = lastBatteryUpdate;
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-    if (firebaseEnabled && db) {
-      try { await db.ref('users/' + userId).set(data); } catch(e){}
-    }
+    data.battery=batteryLevel; data.lastBatteryUpdate=lastBatteryUpdate;
+    localStorage.setItem(STORAGE_KEY,JSON.stringify(data));
+    if(firebaseEnabled&&db){ try{ await db.ref('users/'+userId).set(data); }catch(e){} }
   }
 
   function setupNotification(){
-    if(!("Notification" in window)){
-      alert("홈 화면에 추가한 후 실행해야 알림을 사용할 수 있습니다.");
-      return;
-    }
-    Notification.requestPermission().then(permission => {
-      if(permission === 'granted'){
-        new Notification("Caru 배터리 알림 켜짐", {
-          body: `현재 배터리: ${batteryLevel}%. 실시간 방전 경고와 충전 알림을 보내드립니다.`
-        });
-        render();
-      }
-    });
+    if(!('Notification' in window)){ alert('홈 화면에 추가한 후 실행해야 알림을 사용할 수 있습니다.'); return; }
+    Notification.requestPermission().then(p=>{ if(p==='granted'){ new Notification('Caru 알림 켜짐',{body:`현재 배터리: ${batteryLevel}%`}); render(); } });
   }
 
-  // ==========================================
-  // 1. 홈 탭 (초미니멀 배터리 + 밑줄 데일리 노트)
-  // ==========================================
-  function renderHomeTab(){
-    let statusText = "NATURAL DISCHARGING (ACTIVE)";
-    if(batteryLevel <= 20) statusText = "CRITICAL BATTERY • RECHARGE NEEDED";
-    else if(batteryLevel >= 85) statusText = "OPTIMAL ENERGY LEVEL";
+  function renderHome(){
+    const cur=inlineMode?targetBattery:batteryLevel;
+    const fill=Math.max(0,Math.min(100,cur));
+    const isEditing=editOpen;
+    const isC=inlineMode==='charge';
+    const reasons=isC?(data.chargeReasons||DEF_CHARGE):(data.drainReasons||DEF_DRAIN);
+    const note=data.comments?.[todayKey()]||'';
 
-    const todayComment = data.comments[todayKey()] || '';
-
-    return `
-      <div class="home-center">
-        <span class="home-status-title">${statusText}</span>
-        <span class="home-battery-num">${batteryLevel}%</span>
-
-        <!-- 배터리 본체 터치 영역 -->
-        <div class="battery-touch-wrap" id="home-battery-touch">
-          <div class="battery-touch-shell">
-            <div class="battery-touch-fill" style="width:${batteryLevel}%; ${batteryLevel<=20?'background:var(--batt-warn);':''}"></div>
+    let panelHtml='';
+    if(isEditing){
+      const chipsHtml=inlineMode?reasons.map(r=>`
+        <button type="button" class="reason-chip${selectedReason===r?' selected':''}" data-reason-click="${esc(r)}">
+          <span>${esc(r)}</span>
+          ${editingReasons?`<span class="reason-chip-del" data-reason-del="${esc(r)}">×</span>`:''}
+        </button>`).join('') : '';
+      const delta=inlineMode?(targetBattery-batteryLevel):0;
+      panelHtml=`
+        <div class="edit-panel">
+          <div class="edit-mode-row">
+            <button type="button" class="mode-btn${isC?' active':''}" id="btn-charge">+ Charge</button>
+            <button type="button" class="mode-btn${!isC?' active':''}" id="btn-drain">− Drain</button>
           </div>
-          <div class="battery-touch-cap"></div>
-        </div>
-        <span class="battery-hint">Tap +Charge or −Drain below to log impact</span>
-
-        <!-- 2개 메인 버튼 -->
-        <div class="action-btn-row">
-          <button class="hero-btn charge" id="open-charge-sheet">+ Charge</button>
-          <button class="hero-btn drain" id="open-drain-sheet">− Drain</button>
-        </div>
-      </div>
-
-      <!-- 다이어리 밑줄 스타일 데일리 노트 -->
-      <div class="underline-note-block">
-        <div class="underline-note-label">Daily Note</div>
-        <input type="text" class="underline-note-input" id="home-daily-note" placeholder="How was your day?" value="${escapeHtml(todayComment)}" />
-      </div>
-    `;
-  }
-
-  // ==========================================
-  // 2. 충전/방전 기록 시트 (배터리 드래그 팝업)
-  // ==========================================
-  function renderActionSheet(){
-    if(!activeSheetMode) return '';
-
-    const isCharge = (activeSheetMode === 'charge');
-    const delta = sheetTargetBattery - sheetStartBattery;
-    const deltaSign = delta > 0 ? `+${delta}%` : `${delta}%`;
-    const categories = isCharge ? CHARGE_CATEGORIES : DRAIN_CATEGORIES;
-
-    const wordsHtml = categories.map(cat => `
-      <button type="button" class="word-item${selectedCategory===cat?' active':''}" data-sheet-cat="${cat}">${cat}</button>
-    `).join('');
-
-    return `
-      <div class="action-sheet-overlay active" id="action-sheet-overlay">
-        <div class="action-sheet" id="action-sheet-box">
-          <div class="sheet-title">${isCharge ? '+ Charge Battery' : '− Drain Battery'}</div>
-          <p style="font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--muted); margin:0;">Drag battery bar to adjust level</p>
-
-          <div class="sheet-delta-text" style="color:${isCharge?'var(--ink)':'var(--batt-warn)'};">${deltaSign}</div>
-
-          <!-- 조절 가능한 배터리 바 -->
-          <div class="battery-touch-wrap" id="sheet-battery-touch" style="margin-bottom:14px;">
-            <div class="battery-touch-shell" style="height:44px;">
-              <div class="battery-touch-fill" style="width:${sheetTargetBattery}%;"></div>
-            </div>
-            <div class="battery-touch-cap" style="height:16px;"></div>
+          ${inlineMode?`
+          <div class="edit-step-row">
+            <button type="button" class="edit-step" data-step="-10">−10</button>
+            <button type="button" class="edit-step" data-step="-5">−5</button>
+            <button type="button" class="edit-step" data-step="+5">+5</button>
+            <button type="button" class="edit-step" data-step="+10">+10</button>
           </div>
-
-          <div style="font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--muted); text-transform:uppercase;">Select Reason</div>
-          <div class="word-grid">${wordsHtml}</div>
-
-          <input type="text" class="sheet-input" id="sheet-memo-input" placeholder="Memo (optional)…" value="${escapeHtml(sheetMemoText)}" />
-
-          <div class="sheet-btn-row">
-            <button class="sheet-cancel-btn" id="close-sheet-btn">Cancel</button>
-            <button class="sheet-submit-btn" id="submit-sheet-btn">${isCharge ? 'Done Recharge' : 'Done Drain'}</button>
+          <div class="reason-header">
+            <span class="reason-label">SELECT REASON</span>
+            <button type="button" class="reason-edit-btn" id="btn-edit-reasons">${editingReasons?'Done':'Edit'}</button>
           </div>
-        </div>
-      </div>
-    `;
-  }
-
-  // ==========================================
-  // 3. Progress 탭 (월간 달력 & 과거 기록)
-  // ==========================================
-  function renderProgressTab(){
-    const cursor = progressMonthCursor;
-    const year = cursor.getFullYear();
-    const month = cursor.getMonth();
-    const monthLabel = `${MONTHS_FULL[month]} ${year}`;
-    const monthPrefix = `${year}-${String(month+1).padStart(2,'0')}-`;
-    const daysInMonth = new Date(year, month+1, 0).getDate();
-    const firstDow = new Date(year, month, 1).getDay();
-    const leadBlanks = (firstDow + 6) % 7;
-    const todayStr = todayKey();
-
-    const monthItems = data.items.filter(it => it.date.startsWith(monthPrefix));
-    const healCount = monthItems.filter(it => it.type === 'heal').length;
-    const drainCount = monthItems.filter(it => it.type === 'plan').length;
-
-    const weekDayLabels = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
-    const weekdayRowHtml = weekDayLabels.map(d => `<span class="month-weekday-label">${d}</span>`).join('');
-
-    let cellsHtml = '';
-    for(let i = 0; i < leadBlanks; i++) cellsHtml += `<div class="month-cell empty"></div>`;
-
-    for(let d = 1; d <= daysInMonth; d++){
-      const key = `${monthPrefix}${String(d).padStart(2,'0')}`;
-      const dayItems = data.items.filter(it => it.date === key);
-      let dotClass = '';
-      if(dayItems.length > 0){
-        const net = dayItems.reduce((s,it) => s + (it.type === 'heal' ? 1 : -1), 0);
-        dotClass = net >= 0 ? 'positive' : 'negative';
-      }
-      const isToday = key === todayStr ? ' today' : '';
-      const isSelected = key === selectedProgressDay ? ' selected' : '';
-
-      cellsHtml += `
-        <div class="month-cell${isToday}${isSelected}" data-daykey="${key}">
-          <span style="font-family:'JetBrains Mono',monospace; font-size:12px;">${d}</span>
-          <span class="month-dot ${dotClass}"></span>
+          <div class="reason-grid">${chipsHtml}</div>
+          ${editingReasons?`<div class="add-reason-row">
+            <input type="text" id="new-reason-input" class="add-reason-input" placeholder="Add item…"/>
+            <button type="button" id="btn-add-reason" class="add-reason-btn">+ Add</button>
+          </div>`:''}
+          <div class="edit-actions">
+            <button type="button" class="cancel-btn" id="btn-cancel">Cancel</button>
+            <button type="button" class="apply-btn" id="btn-apply">Done${delta!==0?` · ${delta>0?'+':''}${delta}%`:''}</button>
+          </div>` : `<div style="color:#444;font-size:11px;padding:6px 0 2px">Choose Charge or Drain, then drag the battery.</div>`}
         </div>`;
     }
 
-    let dayDetailHtml = '';
-    if(selectedProgressDay){
-      const dItems = data.items.filter(it => it.date === selectedProgressDay);
-      const dComment = data.comments[selectedProgressDay];
-      const [yy,mm,dd] = selectedProgressDay.split('-').map(Number);
-      const labelDate = new Date(yy,mm-1,dd);
+    return `
+      <div class="minimal-home">
+        <button type="button" class="minimal-tab" id="open-progress">Progress</button>
+        <div class="day-question">
+          <span class="day-question-label">How was your day?</span>
+          <textarea class="day-question-text" id="daily-note" rows="2" maxlength="120" placeholder="">${esc(note)}</textarea>
+        </div>
+        <div class="battery-stage">
+          <div class="minimal-battery-wrap" id="batt-touch">
+            <div class="minimal-battery-shell">
+              <div class="minimal-battery-fill ${cur<=20?'low':''}" style="width:${fill}%"></div>
+              <div class="minimal-battery-percent">${cur}%</div>
+            </div>
+            <div class="minimal-battery-cap"></div>
+          </div>
+        </div>
+        ${isEditing?'<div class="minimal-battery-edit-hint">drag to change</div>':''}
+        <button type="button" class="minimal-edit" id="minimal-edit">${isEditing?'Close':'Edit'}</button>
+        ${panelHtml}
+      </div>`;
+  }
 
-      const itemsHtml = dItems.length
-        ? dItems.map(it => `
-            <div class="day-detail-item">
-              <span class="type-pill${it.type==='plan'?' drain':''}">${it.delta>0?`+${it.delta}%`:`${it.delta}%`}</span>
-              <span style="flex:1;">${escapeHtml(it.text)}</span>
-            </div>`).join('')
-        : `<p style="padding:14px 0; text-align:center; color:var(--muted); font-size:13px;">No battery activity on this day.</p>`;
-
-      const commentHtml = dComment ? `<p style="margin-top:12px; font-size:13.5px; line-height:1.5; color:var(--ink); border-top:1px solid var(--divider); padding-top:8px;">Note: ${escapeHtml(dComment)}</p>` : '';
-
-      dayDetailHtml = `
-        <div class="day-detail">
-          <div class="day-detail-title">${DAY_NAMES_SHORT[labelDate.getDay()]}, ${MONTHS_SHORT[mm-1]} ${dd}</div>
-          ${itemsHtml}
-          ${commentHtml}
-        </div>`;
+  function renderProgress(){
+    const yr=progressMonth.getFullYear(), mo=progressMonth.getMonth();
+    const pfx=`${yr}-${String(mo+1).padStart(2,'0')}-`;
+    const days=new Date(yr,mo+1,0).getDate();
+    const leadBlanks=(new Date(yr,mo,1).getDay()+6)%7;
+    const todayStr=todayKey();
+    const mitems=(data.items||[]).filter(it=>it.date&&it.date.startsWith(pfx));
+    const hC=mitems.filter(it=>it.type==='heal').length;
+    const dC=mitems.filter(it=>it.type==='plan').length;
+    const wkHtml=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(d=>`<span class="month-weekday-label">${d}</span>`).join('');
+    let cells='';
+    for(let i=0;i<leadBlanks;i++) cells+=`<div class="month-cell empty"></div>`;
+    for(let d=1;d<=days;d++){
+      const k=`${pfx}${String(d).padStart(2,'0')}`;
+      const di=(data.items||[]).filter(it=>it.date===k);
+      let dotCls='';
+      if(di.length){ const net=di.reduce((sum,it)=>sum+(it.type==='heal'?1:-1),0); dotCls=net>=0?'positive':'negative'; }
+      cells+=`<div class="month-cell${k===todayStr?' today':''}${k===selectedDay?' selected':''}" data-daykey="${k}">
+        <span style="font-size:11px">${d}</span><span class="month-dot ${dotCls}"></span>
+      </div>`;
     }
 
-    // 상위 통계
-    const targetType = (activeStatsTab === 'charge') ? 'heal' : 'plan';
-    const filteredItems = data.items.filter(it => it.type === targetType);
-    const countMap = {};
-    filteredItems.forEach(it => { countMap[it.text] = (countMap[it.text] || 0) + 1; });
+    let detailHtml='';
+    if(selectedDay){
+      const di2=(data.items||[]).filter(it=>it.date===selectedDay);
+      const [yy,mm,dd]=selectedDay.split('-').map(Number);
+      const ld=new Date(yy,mm-1,dd);
+      const iHtml=di2.length
+        ?di2.map(it=>`<div class="day-detail-item"><span class="type-pill${it.type==='plan'?' drain':''}">${it.delta>0?'+'+it.delta+'%':it.delta+'%'}</span><span>${esc(it.text)}</span></div>`).join('')
+        :`<div style="padding:7px 0;color:#444;font-size:11px">No activity this day.</div>`;
+      const cmt=data.comments?.[selectedDay];
+      detailHtml=`<div class="day-detail"><div class="day-detail-title">${DAYS_SHORT[ld.getDay()]}, ${MONTHS_SHORT[mm-1]} ${dd}</div>${iHtml}${cmt?`<div style="margin-top:9px;color:#555;font-size:11px;line-height:1.5">${esc(cmt)}</div>`:''}</div>`;
+    }
 
-    const sortedStats = Object.keys(countMap)
-      .map(name => ({
-        name, count: countMap[name],
-        pct: filteredItems.length > 0 ? Math.round((countMap[name] / filteredItems.length) * 100) : 0
-      }))
-      .sort((a,b) => b.count - a.count).slice(0, 5);
-
-    const statsContentHtml = sortedStats.length
-      ? sortedStats.map(item => `
-          <div class="stat-row">
-            <div class="stat-label-row">
-              <span>${escapeHtml(item.name)} <span style="font-size:11px; color:var(--muted);">(${item.count}회)</span></span>
-              <span class="stat-pct">${item.pct}%</span>
-            </div>
-            <div class="stat-bar-track"><div class="stat-bar-fill" style="width:${item.pct}%;"></div></div>
-          </div>
-        `).join('')
-      : `<p style="text-align:center; color:var(--muted); padding:10px 0; font-size:13px;">No records yet.</p>`;
+    const tType=activeStatsTab==='charge'?'heal':'plan';
+    const fItems=(data.items||[]).filter(it=>it.type===tType);
+    const cmap={}; fItems.forEach(it=>{ cmap[it.text]=(cmap[it.text]||0)+1; });
+    const stats=Object.keys(cmap).map(n=>({n,c:cmap[n],p:fItems.length?Math.round(cmap[n]/fItems.length*100):0})).sort((a,b)=>b.c-a.c).slice(0,5);
+    const statsHtml=stats.length
+      ?stats.map(x=>`<div class="stat-row"><div class="stat-label-row"><span>${esc(x.n)} <span style="font-size:10px;color:#444">(${x.c})</span></span><span class="stat-pct">${x.p}%</span></div><div class="stat-bar-track"><div class="stat-bar-fill" style="width:${x.p}%"></div></div></div>`).join('')
+      :`<div style="color:#444;font-size:11px">No records yet.</div>`;
 
     return `
-      <div class="progress-summary-bar">
-        <span class="sub-counts">+Charge: ${healCount} · −Drain: ${drainCount}</span>
-        <span class="sub-counts">Current: ${batteryLevel}%</span>
-      </div>
-
-      <div class="calendar-nav-bar">
-        <span style="font-family:'Space Grotesk',sans-serif; font-size:16px; font-weight:600;">${monthLabel}</span>
-        <div style="display:flex; gap:4px;">
-          <button class="nav-btn" id="progress-prev-month">‹</button>
-          <button class="nav-btn" id="progress-next-month">›</button>
+      <div class="minimal-progress">
+        <div class="progress-head">
+          <span class="progress-title">Progress</span>
+          <span class="progress-current">${batteryLevel}%</span>
+        </div>
+        <div class="progress-month-nav">
+          <span class="progress-month-title">${MONTHS_FULL[mo]} ${yr}</span>
+          <div><button class="progress-nav-btn" id="prev-month">‹</button><button class="progress-nav-btn" id="next-month">›</button></div>
+        </div>
+        <div class="month-weekday-row">${wkHtml}</div>
+        <div class="month-grid">${cells}</div>
+        <div class="progress-counts"><span>+ Charge ${hC}</span><span>− Drain ${dC}</span></div>
+        ${detailHtml}
+        <div class="stats-section">
+          <div class="stats-toggle-row">
+            <button class="stats-tab-btn${activeStatsTab==='charge'?' active':''}" data-stats-tab="charge">Charge</button>
+            <button class="stats-tab-btn${activeStatsTab==='drain'?' active':''}" data-stats-tab="drain">Drain</button>
+          </div>
+          <div class="stats-box">${statsHtml}</div>
         </div>
       </div>
-
-      <div class="month-weekday-row">${weekdayRowHtml}</div>
-      <div class="month-grid">${cellsHtml}</div>
-      ${dayDetailHtml}
-
-      <div class="stats-section">
-        <div class="stats-toggle-row">
-          <button class="stats-tab-btn${activeStatsTab==='charge'?' active':''}" data-stats-tab="charge">⚡ Top Recharges</button>
-          <button class="stats-tab-btn${activeStatsTab==='drain'?' active':''}" data-stats-tab="drain">📋 Top Drains</button>
-        </div>
-        <div class="stats-box">${statsContentHtml}</div>
-      </div>
-    `;
+      <button type="button" class="progress-home" id="open-home">Home</button>`;
   }
 
   function render(){
     applyTheme();
-    const hasNotification = ("Notification" in window) && Notification.permission === 'granted';
-
-    root.innerHTML = `
-      <div class="top-bar">
-        <div class="top-left">
-          <p class="eyebrow">CARU</p>
-          <button class="notify-btn${hasNotification?' on':''}" id="notify-perm-btn">${hasNotification?'🔔 Push On':'🔔 알림 켜기'}</button>
-        </div>
-        <button class="theme-toggle" id="theme-toggle">${theme === 'dark' ? 'Light' : 'Dark'}</button>
-      </div>
-
-      <div class="tabs">
-        <button class="tab-btn${activeTab==='home'?' active':''}" data-tab="home">Home</button>
-        <button class="tab-btn${activeTab==='progress'?' active':''}" data-tab="progress">Progress</button>
-      </div>
-
-      ${activeTab === 'home' ? renderHomeTab() : renderProgressTab()}
-      ${renderActionSheet()}
-    `;
+    root.innerHTML=`
+      ${activeTab==='home'?renderHome():renderProgress()}`;
     bindEvents();
   }
 
   function bindEvents(){
-    document.getElementById('theme-toggle')?.addEventListener('click', async () => {
-      theme = theme === 'dark' ? 'light' : 'dark';
-      localStorage.setItem('caru-theme-pref', theme);
-      render();
-    });
+    root.querySelectorAll('.tab-btn').forEach(b=>b.addEventListener('click',()=>{ activeTab=b.dataset.tab; inlineMode=null; render(); }));
 
-    document.getElementById('notify-perm-btn')?.addEventListener('click', setupNotification);
-
-    root.querySelectorAll('.tab-btn').forEach(btn => {
-      btn.addEventListener('click', () => { activeTab = btn.dataset.tab; render(); });
-    });
-
-    // ==========================================
-    // 홈 탭 이벤트
-    // ==========================================
-    if(activeTab === 'home'){
-      // 밑줄 데일리 노트 자동 저장
-      const noteInput = document.getElementById('home-daily-note');
-      if(noteInput){
-        noteInput.addEventListener('blur', async () => {
-          data.comments[todayKey()] = noteInput.value.trim();
-          await save();
-        });
-        noteInput.addEventListener('keydown', async (e) => {
-          if(e.key === 'Enter') {
-            data.comments[todayKey()] = noteInput.value.trim();
-            await save();
-            noteInput.blur();
-          }
-        });
-      }
-
-      // + Charge 시트 열기
-      document.getElementById('open-charge-sheet')?.addEventListener('click', () => {
-        activeSheetMode = 'charge';
-        sheetStartBattery = batteryLevel;
-        sheetTargetBattery = Math.min(100, batteryLevel + 20); // 기본 +20%
-        selectedCategory = CHARGE_CATEGORIES[0];
-        sheetMemoText = '';
+    if(activeTab==='home'){
+      document.getElementById('minimal-edit')?.addEventListener('click',()=>{
+        editOpen=!editOpen;
+        if(!editOpen){ inlineMode=null; editingReasons=false; }
+        else{ inlineMode=null; editingReasons=false; }
         render();
       });
 
-      // − Drain 시트 열기
-      document.getElementById('open-drain-sheet')?.addEventListener('click', () => {
-        activeSheetMode = 'drain';
-        sheetStartBattery = batteryLevel;
-        sheetTargetBattery = Math.max(0, batteryLevel - 20); // 기본 -20%
-        selectedCategory = DRAIN_CATEGORIES[0];
-        sheetMemoText = '';
+      document.getElementById('open-progress')?.addEventListener('click',()=>{
+        activeTab='progress'; editOpen=false; inlineMode=null; editingReasons=false; render();
+      });
+
+      const noteEl=document.getElementById('daily-note');
+      noteEl?.addEventListener('input',()=>{
+        data.comments[todayKey()]=noteEl.value;
+        clearTimeout(window.__caruNoteTimer);
+        window.__caruNoteTimer=setTimeout(()=>save(),250);
+      });
+
+      const bt=document.getElementById('batt-touch');
+      if(bt && inlineMode){
+        const shell=bt.querySelector('.minimal-battery-shell');
+        let dragging=false;
+        const doDrag=(clientX)=>{
+          if(!shell) return;
+          const rect=shell.getBoundingClientRect();
+          let pct=Math.round(((clientX-rect.left)/rect.width)*100);
+          pct=Math.max(0,Math.min(100,pct));
+          if(inlineMode==='charge') targetBattery=Math.max(batteryLevel,pct);
+          else targetBattery=Math.min(batteryLevel,pct);
+          const fillEl=bt.querySelector('.minimal-battery-fill');
+          const pctEl=bt.querySelector('.minimal-battery-percent');
+          if(fillEl) fillEl.style.width=Math.max(0,Math.min(100,targetBattery))+'%';
+          if(pctEl) pctEl.textContent=targetBattery+'%';
+        };
+        bt.addEventListener('pointerdown',e=>{ dragging=true; bt.setPointerCapture?.(e.pointerId); doDrag(e.clientX); });
+        bt.addEventListener('pointermove',e=>{ if(dragging) doDrag(e.clientX); });
+        bt.addEventListener('pointerup',()=>{ dragging=false; });
+        bt.addEventListener('pointercancel',()=>{ dragging=false; });
+      }
+
+      document.getElementById('btn-charge')?.addEventListener('click',()=>{
+        editOpen=true; inlineMode='charge'; targetBattery=batteryLevel;
+        selectedReason=(data.chargeReasons||DEF_CHARGE)[0]||''; editingReasons=false; render();
+      });
+      document.getElementById('btn-drain')?.addEventListener('click',()=>{
+        editOpen=true; inlineMode='drain'; targetBattery=batteryLevel;
+        selectedReason=(data.drainReasons||DEF_DRAIN)[0]||''; editingReasons=false; render();
+      });
+
+      root.querySelectorAll('[data-step]').forEach(btn=>btn.addEventListener('click',()=>{
+        const step=parseInt(btn.dataset.step,10);
+        targetBattery+=step;
+        if(inlineMode==='charge') targetBattery=Math.max(batteryLevel,Math.min(100,targetBattery));
+        else targetBattery=Math.min(batteryLevel,Math.max(0,targetBattery));
         render();
+      }));
+
+      root.querySelectorAll('[data-reason-click]').forEach(chip=>chip.addEventListener('click',e=>{
+        if(e.target.closest('[data-reason-del]')) return;
+        selectedReason=chip.dataset.reasonClick; render();
+      }));
+
+      document.getElementById('btn-edit-reasons')?.addEventListener('click',()=>{
+        editingReasons=!editingReasons; render();
+      });
+
+      root.querySelectorAll('[data-reason-del]').forEach(btn=>btn.addEventListener('click',async e=>{
+        e.stopPropagation();
+        const v=btn.dataset.reasonDel;
+        if(inlineMode==='charge'){
+          data.chargeReasons=(data.chargeReasons||DEF_CHARGE).filter(r=>r!==v);
+          if(selectedReason===v) selectedReason=data.chargeReasons[0]||'';
+        }else{
+          data.drainReasons=(data.drainReasons||DEF_DRAIN).filter(r=>r!==v);
+          if(selectedReason===v) selectedReason=data.drainReasons[0]||'';
+        }
+        await save(); render();
+      }));
+
+      const addBtn=document.getElementById('btn-add-reason');
+      const addInp=document.getElementById('new-reason-input');
+      async function addReason(){
+        if(!addInp) return;
+        const v=addInp.value.trim(); if(!v) return;
+        if(inlineMode==='charge'){
+          if(!data.chargeReasons) data.chargeReasons=[...DEF_CHARGE];
+          if(!data.chargeReasons.includes(v)) data.chargeReasons.push(v);
+        }else{
+          if(!data.drainReasons) data.drainReasons=[...DEF_DRAIN];
+          if(!data.drainReasons.includes(v)) data.drainReasons.push(v);
+        }
+        selectedReason=v; await save(); render();
+      }
+      addBtn?.addEventListener('click',addReason);
+      addInp?.addEventListener('keydown',e=>{ if(e.key==='Enter'){e.preventDefault(); addReason();} });
+
+      document.getElementById('btn-cancel')?.addEventListener('click',()=>{
+        editOpen=false; inlineMode=null; editingReasons=false; render();
+      });
+
+      document.getElementById('btn-apply')?.addEventListener('click',async()=>{
+        const delta=targetBattery-batteryLevel;
+        if(delta!==0){
+          batteryLevel=targetBattery; lastBatteryUpdate=Date.now();
+          if(!data.items) data.items=[];
+          data.items.push({id:uid(),type:inlineMode==='charge'?'heal':'plan',delta,text:selectedReason,date:todayKey(),timestamp:Date.now()});
+          await save();
+        }
+        editOpen=false; inlineMode=null; editingReasons=false; render();
       });
     }
 
-    // ==========================================
-    // 배터리 직접 터치/드래그 인터랙션 (Action Sheet 내부)
-    // ==========================================
-    const sheetTouchBar = document.getElementById('sheet-battery-touch');
-    if(sheetTouchBar){
-      function handleBarDrag(clientX){
-        const shell = sheetTouchBar.querySelector('.battery-touch-shell');
-        if(!shell) return;
-        const rect = shell.getBoundingClientRect();
-        const offsetX = Math.max(0, Math.min(rect.width, clientX - rect.left));
-        let pct = Math.round((offsetX / rect.width) * 100);
-
-        if(activeSheetMode === 'charge'){
-          pct = Math.max(sheetStartBattery, pct); // 충전은 현재보다 위로만
-        } else {
-          pct = Math.min(sheetStartBattery, pct); // 방전은 현재보다 아래로만
-        }
-        sheetTargetBattery = pct;
-
-        const delta = sheetTargetBattery - sheetStartBattery;
-        const deltaText = delta > 0 ? `+${delta}%` : `${delta}%`;
-        document.querySelector('.sheet-delta-text').textContent = deltaText;
-        sheetTouchBar.querySelector('.battery-touch-fill').style.width = sheetTargetBattery + '%';
-      }
-
-      let isDragging = false;
-      sheetTouchBar.addEventListener('pointerdown', (e) => {
-        isDragging = true;
-        sheetTouchBar.setPointerCapture(e.pointerId);
-        handleBarDrag(e.clientX);
-      });
-      sheetTouchBar.addEventListener('pointermove', (e) => {
-        if(isDragging) handleBarDrag(e.clientX);
-      });
-      sheetTouchBar.addEventListener('pointerup', () => { isDragging = false; });
-      sheetTouchBar.addEventListener('pointercancel', () => { isDragging = false; });
-
-      // 카테고리 칩 선택
-      root.querySelectorAll('[data-sheet-cat]').forEach(btn => {
-        btn.addEventListener('click', () => {
-          selectedCategory = btn.dataset.sheetCat;
-          root.querySelectorAll('[data-sheet-cat]').forEach(b => b.classList.toggle('active', b === btn));
-        });
-      });
-
-      // 취소 버튼
-      document.getElementById('close-sheet-btn')?.addEventListener('click', () => {
-        activeSheetMode = null; render();
-      });
-
-      // 제출 버튼
-      document.getElementById('submit-sheet-btn')?.addEventListener('click', async () => {
-        const delta = sheetTargetBattery - sheetStartBattery;
-        if(delta !== 0){
-          batteryLevel = sheetTargetBattery;
-          lastBatteryUpdate = Date.now();
-
-          const memo = document.getElementById('sheet-memo-input')?.value.trim();
-          const title = memo ? `${selectedCategory}: ${memo}` : selectedCategory;
-
-          data.items.push({
-            id: uid(),
-            type: activeSheetMode === 'charge' ? 'heal' : 'plan',
-            delta: delta,
-            text: title,
-            date: todayKey()
-          });
-          await save();
-        }
-        activeSheetMode = null;
-        render();
-      });
-    }
-
-    // ==========================================
-    // Progress 탭 이벤트
-    // ==========================================
-    if(activeTab === 'progress'){
-      document.getElementById('progress-prev-month')?.addEventListener('click', () => {
-        progressMonthCursor = new Date(progressMonthCursor.getFullYear(), progressMonthCursor.getMonth() - 1, 1);
-        selectedProgressDay = null; render();
-      });
-      document.getElementById('progress-next-month')?.addEventListener('click', () => {
-        progressMonthCursor = new Date(progressMonthCursor.getFullYear(), progressMonthCursor.getMonth() + 1, 1);
-        selectedProgressDay = null; render();
-      });
-      root.querySelectorAll('[data-daykey]').forEach(cell => {
-        if(cell.classList.contains('empty')) return;
-        cell.addEventListener('click', () => {
-          const key = cell.dataset.daykey;
-          selectedProgressDay = (selectedProgressDay === key) ? null : key;
-          render();
-        });
-      });
-      root.querySelectorAll('[data-stats-tab]').forEach(btn => {
-        btn.addEventListener('click', () => {
-          activeStatsTab = btn.dataset.statsTab;
-          render();
-        });
-      });
+    if(activeTab==='progress'){
+      document.getElementById('open-home')?.addEventListener('click',()=>{ activeTab='home'; editOpen=false; inlineMode=null; render(); });
+      document.getElementById('prev-month')?.addEventListener('click',()=>{ progressMonth=new Date(progressMonth.getFullYear(),progressMonth.getMonth()-1,1); selectedDay=null; render(); });
+      document.getElementById('next-month')?.addEventListener('click',()=>{ progressMonth=new Date(progressMonth.getFullYear(),progressMonth.getMonth()+1,1); selectedDay=null; render(); });
+      root.querySelectorAll('[data-daykey]').forEach(c=>{ if(c.classList.contains('empty')) return; c.addEventListener('click',()=>{ const k=c.dataset.daykey; selectedDay=selectedDay===k?null:k; render(); }); });
+      root.querySelectorAll('[data-stats-tab]').forEach(b=>b.addEventListener('click',()=>{ activeStatsTab=b.dataset.statsTab; render(); }));
     }
   }
 
