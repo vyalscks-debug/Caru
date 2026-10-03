@@ -518,6 +518,7 @@ if('serviceWorker' in navigator){
 
   let data={ items:[], comments:{}, battery:80, lastBatteryUpdate:Date.now(), chargeReasons:[...DEF_CHARGE], drainReasons:[...DEF_DRAIN] };
   let theme='dark', activeTab='home';
+  let isTypingNote=false;
   let inlineMode=null, editOpen=false, targetBattery=80, selectedReason='', memoText='', editingReasons=false;
   let progressMonth=new Date(new Date().getFullYear(),new Date().getMonth(),1);
   let selectedDay=null, activeStatsTab='charge';
@@ -574,7 +575,7 @@ if('serviceWorker' in navigator){
           if(!data.naturalDay){ data.naturalDay=todayKey(); data.naturalBaseBattery=batteryLevel; data.naturalBaseAt=Date.now(); }
           const naturalChanged=applyNaturalDrain();
           if(naturalChanged){ data.battery=batteryLevel; data.lastBatteryUpdate=lastBatteryUpdate; }
-          render();
+         if(!isTypingNote) render();
         }
       });
     }
@@ -834,12 +835,23 @@ if('serviceWorker' in navigator){
         activeTab='progress'; editOpen=false; inlineMode=null; editingReasons=false; render();
       });
 
-      const noteEl=document.getElementById('daily-note');
-      noteEl?.addEventListener('input',()=>{
-        data.comments[todayKey()]=noteEl.value;
-        clearTimeout(window.__caruNoteTimer);
-        window.__caruNoteTimer=setTimeout(()=>save(),250);
-      });
+    const noteEl=document.getElementById('daily-note');
+
+    noteEl?.addEventListener('focus',()=>{
+    isTypingNote=true;
+    });
+
+    noteEl?.addEventListener('blur',()=>{
+    isTypingNote=false;
+    clearTimeout(window.__caruNoteTimer);
+    save();
+    });
+
+    noteEl?.addEventListener('input',()=>{
+    data.comments[todayKey()]=noteEl.value;
+    clearTimeout(window.__caruNoteTimer);
+    window.__caruNoteTimer=setTimeout(()=>save(),500);
+    });
 
       root.querySelectorAll('[data-condition]').forEach(btn=>btn.addEventListener('click',async()=>{
         setTodayCondition(btn.dataset.condition);
