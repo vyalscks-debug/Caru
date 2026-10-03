@@ -178,12 +178,12 @@
   .month-dot{ width:6px; height:6px; border-radius:50%; border:1.2px solid var(--faint); }
   .month-dot.positive{ background:var(--ink); border-color:var(--ink); }
   .month-dot.negative{ background:transparent; border-color:var(--batt-warn); }
-  .day-detail{ margin-top:20px; border:1.5px solid var(--ink); border-radius:14px; padding:16px; }
+  .day-detail{ margin-top:20px; border:1px solid #222; border-radius:14px; padding:16px; }
   .day-detail-title{ font-weight:700; font-size:15px; margin-bottom:10px; }
   .day-detail-item{ display:flex; align-items:center; gap:8px; padding:7px 0; font-size:13.5px; border-bottom:1px solid var(--divider); }
   .day-detail-item:last-child{ border-bottom:none; }
-  .type-pill{ font-family:ui-monospace,"SF Mono",monospace; font-size:10.5px; font-weight:700; padding:2px 7px; border-radius:6px; border:1.2px solid var(--ink); }
-  .type-pill.drain{ background:var(--ink); color:var(--paper); }
+  .type-pill{ font-family:ui-monospace,"SF Mono",monospace; font-size:10.5px; font-weight:700; padding:2px 7px; border-radius:6px; border:1px solid #444; color:#aaa; }
+  .type-pill.drain{ background:#333; color:#ddd; border-color:#444; }
   .stats-section{ margin-top:28px; }
   .stats-toggle-row{ display:flex; gap:8px; margin-bottom:14px; }
   .stats-tab-btn{ flex:1; padding:9px 10px; border:1.3px solid var(--divider); border-radius:10px; background:var(--paper); color:var(--muted); font-family:ui-monospace,"SF Mono",monospace; font-size:11px; font-weight:700; cursor:pointer; text-align:center; }
@@ -223,32 +223,32 @@
     padding:0 4px;box-sizing:border-box;z-index:10;
   }
   .minimal-tab{
-    border:0;background:none;color:#666;font:400 12px -apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;
+    border:0;background:none;color:#666;font:400 13px -apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;
     padding:4px 0;cursor:pointer;
   }
   .minimal-tab:active{color:#aaa;}
   .minimal-edit{
-    position:static;border:0;background:none;color:#666;font:400 12px -apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;
+    position:static;border:0;background:none;color:#666;font:400 13px -apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;
     padding:4px 0;cursor:pointer;
   }
   .minimal-edit:active{color:#aaa;}
   .day-question{
     position:absolute;left:7%;right:7%;top:20%;
-    color:#777;font:400 13px/1.45 -apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;
+    color:#777;font:400 14px/1.45 -apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;
     letter-spacing:-.01em;
   }
   .day-question-label{display:block;color:#777;margin-bottom:7px;}
   .day-question-text{
     width:100%;min-height:34px;max-height:50px;resize:none;overflow:hidden;
     border:0;border-bottom:1px solid #222;outline:none;background:transparent;color:#aaa;
-    font:400 13px/1.45 -apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;
+    font:400 14px/1.45 -apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;
     padding:0 0 7px;box-sizing:border-box;
   }
   .day-question-text::placeholder{color:#444;}
   .condition-row{
     position:absolute;left:7%;right:7%;top:35%;
     display:flex;align-items:center;justify-content:space-between;gap:12px;
-    color:#555;font:400 10px/1 -apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;
+    color:#555;font:400 11px/1 -apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;
     letter-spacing:.04em;
   }
   .condition-label{color:#555;white-space:nowrap;}
@@ -256,11 +256,19 @@
   .condition-btn{
     border:1px solid #222;background:transparent;color:#555;
     border-radius:10px;padding:5px 9px;cursor:pointer;
-    font:400 10px -apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;
+    font:400 11px -apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;
   }
   .condition-btn.active{border-color:#666;color:#aaa;}
   .condition-btn:active{color:#ddd;border-color:#888;}
   .condition-rate{color:#444;white-space:nowrap;font-size:9px;}
+  .battery-status{
+    position:absolute;left:50%;top:43%;
+    transform:translateX(-50%);
+    color:#666;font:400 9px/1 -apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;
+    letter-spacing:.08em;text-align:center;white-space:nowrap;
+  }
+  .battery-status.danger{color:#ff453a;}
+  .battery-status.high{color:#9ab39b;}
   .battery-stage{
     position:absolute;left:50%;top:51%;transform:translate(-50%,-50%);
     width:min(76vw,330px);display:flex;justify-content:center;align-items:center;
@@ -279,10 +287,12 @@
     transition:width .08s ease-out;pointer-events:none;
   }
   .minimal-battery-fill.low{background:#ff453a;}
+  .minimal-battery-fill.over{background:#9ab39b;}
+  .minimal-battery-cap.over{background:#9ab39b;}
   .minimal-battery-cap{width:7px;height:28px;border-radius:0 4px 4px 0;background:#666;flex:none;}
   .minimal-battery-percent{
     position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
-    color:#ddd;font:400 20px/1 -apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;
+    color:#ddd;font:400 21px/1 -apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;
     letter-spacing:-.03em;pointer-events:none;z-index:2;
   }
   .minimal-battery-percent.empty{color:#ddd;}
@@ -365,11 +375,12 @@
   .minimal-progress .month-dot.positive{background:#888;}
   .minimal-progress .month-dot.negative{background:#444;}
   .minimal-progress .progress-counts{display:flex;gap:18px;margin:25px 0 20px;color:#555;font:400 11px -apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;}
-  .minimal-progress .day-detail{border-top:1px solid #181818;border-bottom:1px solid #181818;padding:13px 0;margin:15px 0;}
+  .minimal-progress .day-detail{border:1px solid #222 !important;border-radius:14px;padding:13px;margin:15px 0;}
   .minimal-progress .day-detail-title{color:#777;font-size:11px;margin-bottom:9px;}
-  .minimal-progress .day-detail-item{display:flex;gap:8px;align-items:center;padding:5px 0;font-size:11px;color:#777;}
-  .minimal-progress .type-pill{color:#999;}
-  .minimal-progress .type-pill.drain{color:#555;}
+  .minimal-progress .day-detail-item{display:flex;gap:8px;align-items:center;padding:5px 0;font-size:11px;color:#777;border-bottom:1px solid #181818 !important;}
+  .minimal-progress .type-pill{color:#999;border-color:#333;background:transparent;}
+  .minimal-progress .type-pill.drain{color:#aaa;background:#2b2b2b;border-color:#333;}
+  .minimal-progress .day-detail-item:last-child{border-bottom:none !important;}
   .minimal-progress .stats-section{margin-top:24px;}
   .minimal-progress .stats-toggle-row{display:flex;gap:16px;border-bottom:1px solid #181818;margin-bottom:12px;}
   .minimal-progress .stats-tab-btn{border:0;background:none;color:#444;padding:0 0 9px;font:400 10px -apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;}
@@ -380,7 +391,7 @@
   .minimal-progress .stat-pct{color:#444;}
   .minimal-progress .stat-bar-track{height:2px;background:#111;margin-top:6px;}
   .minimal-progress .stat-bar-fill{height:100%;background:#666;}
-  .progress-home{position:fixed;right:20px;bottom:calc(env(safe-area-inset-bottom) + 18px);border:0;background:none;color:#666;font:400 12px -apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;padding:4px 0;}
+  .progress-home{position:fixed;right:20px;top:max(14px,calc(env(safe-area-inset-top) + 8px));bottom:auto;z-index:99999;display:block !important;border:0;background:#000;color:#777;font:400 14px -apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;padding:8px 2px;cursor:pointer;}
   .tabs,.top-bar{display:none;}
 
 /* Category ranking */
@@ -388,7 +399,7 @@
 .rank-block{margin-top:20px;}
 .rank-subtitle{font-size:11px;color:#ddd;margin-bottom:10px;letter-spacing:.04em;}
 .rank-symbol{display:inline-flex;width:18px;height:18px;align-items:center;justify-content:center;border:1px solid #333;border-radius:50%;margin-right:6px;font-size:11px;}
-.rank-header,.rank-row{display:grid;grid-template-columns:22px 1fr 52px;gap:8px;align-items:center;}
+.rank-header,.rank-row{display:grid;grid-template-columns:22px 1fr 52px;gap:8px;align-items:center;} .rank-empty{color:#444;}
 .rank-header{padding:0 0 8px;color:#666;font-size:9px;text-transform:uppercase;letter-spacing:.08em;border-bottom:1px solid #222;}
 .rank-row{min-height:38px;border-bottom:1px solid #181818;font-size:12px;}
 .rank-no{color:#555;font-size:10px;}
@@ -396,6 +407,13 @@
 .rank-total{text-align:right;color:#aaa;}
 .plus-symbol{color:#aaa}.minus-symbol{color:#777;}
 @media (max-width:520px){.rank-header,.rank-row{grid-template-columns:20px 1fr 48px;gap:6px;}}
+
+  .ranking-head-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;}
+  .ranking-head-row .activity-section-title{margin-bottom:0;}
+  .rank-switch{display:flex;border:1px solid #333;border-radius:999px;overflow:hidden;}
+  .rank-switch-btn{border:0;background:transparent;color:#777;font:inherit;font-size:11px;padding:5px 10px;cursor:pointer;}
+  .rank-switch-btn.active{background:transparent;color:#ddd;}
+  .rank-switch-btn + .rank-switch-btn{border-left:1px solid #333;}
 </style>
 </head>
 <body>
@@ -517,7 +535,27 @@ if('serviceWorker' in navigator){
     if(data.lastBatteryUpdate) lastBatteryUpdate=data.lastBatteryUpdate;
     if(!Array.isArray(data.chargeReasons)||!data.chargeReasons.length) data.chargeReasons=[...DEF_CHARGE];
     if(!Array.isArray(data.drainReasons)||!data.drainReasons.length) data.drainReasons=[...DEF_DRAIN];
-    if(!data.naturalDay){ data.naturalDay=todayKey(); data.naturalBaseBattery=batteryLevel; data.naturalBaseAt=Date.now(); }
+    // Natural-drain baseline is established from the battery level that exists
+    // when the day is first opened. Never assume a fixed 80% starting point.
+    // Migrate older data once so a stale baseline cannot overwrite the user's
+    // current battery on first open of the updated version.
+    const today=todayKey();
+    if(data.naturalSchemaVersion!==2){
+      data.naturalSchemaVersion=2;
+      data.naturalDay=today;
+      data.naturalBaseBattery=batteryLevel;
+      data.naturalBaseAt=Date.now();
+      data.conditionDate=today;
+      if(!CONDITION_RATES[data.condition]) data.condition='normal';
+      data.battery=batteryLevel;
+      data.lastBatteryUpdate=Date.now();
+      lastBatteryUpdate=data.lastBatteryUpdate;
+      localStorage.setItem(STORAGE_KEY,JSON.stringify(data));
+    } else if(!data.naturalDay){
+      data.naturalDay=today;
+      data.naturalBaseBattery=batteryLevel;
+      data.naturalBaseAt=Date.now();
+    }
     const naturalChanged=applyNaturalDrain();
     if(naturalChanged){ data.battery=batteryLevel; data.lastBatteryUpdate=lastBatteryUpdate; localStorage.setItem(STORAGE_KEY,JSON.stringify(data)); }
     theme=localStorage.getItem('caru-theme-pref')==='light'?'light':'dark';
@@ -563,12 +601,23 @@ if('serviceWorker' in navigator){
 
     let panelHtml='';
     if(isEditing){
-      const chipsHtml=inlineMode?reasons.map(r=>`
+      const isC=inlineMode==='charge';
+      const reasons=inlineMode?(isC?(data.chargeReasons||DEF_CHARGE):(data.drainReasons||DEF_DRAIN)):[];
+      const chipsHtml=reasons.map(r=>`
         <button type="button" class="reason-chip${selectedReason===r?' selected':''}" data-reason-click="${esc(r)}">
           <span>${esc(r)}</span>
-          ${editingReasons?`<span class="reason-chip-del" data-reason-del="${esc(r)}">×</span>`:''}
-        </button>`).join('') : '';
+          ${editingReasons&&inlineMode?`<span class="reason-chip-del" data-reason-del="${esc(r)}">×</span>`:''}
+        </button>`).join('');
       const delta=inlineMode?(targetBattery-batteryLevel):0;
+      const stepHtml=isC
+        ? `<button type="button" class="edit-step" data-step="+5">+5</button>
+           <button type="button" class="edit-step" data-step="+10">+10</button>
+           <button type="button" class="edit-step" data-step="+15">+15</button>
+           <button type="button" class="edit-step" data-step="+20">+20</button>`
+        : `<button type="button" class="edit-step" data-step="-5">−5</button>
+           <button type="button" class="edit-step" data-step="-10">−10</button>
+           <button type="button" class="edit-step" data-step="-15">−15</button>
+           <button type="button" class="edit-step" data-step="-20">−20</button>`;
       panelHtml=`
         <div class="edit-panel">
           <div class="edit-mode-row">
@@ -576,31 +625,24 @@ if('serviceWorker' in navigator){
             <button type="button" class="mode-btn${inlineMode==='drain'?' active':''}" id="btn-drain">− Use</button>
           </div>
           ${inlineMode?`
-          <div class="edit-step-row">
-            ${isC
-              ? `<button type="button" class="edit-step" data-step="+5">+5</button>
-                 <button type="button" class="edit-step" data-step="+10">+10</button>
-                 <button type="button" class="edit-step" data-step="+15">+15</button>
-                 <button type="button" class="edit-step" data-step="+20">+20</button>`
-              : `<button type="button" class="edit-step" data-step="-5">−5</button>
-                 <button type="button" class="edit-step" data-step="-10">−10</button>
-                 <button type="button" class="edit-step" data-step="-15">−15</button>
-                 <button type="button" class="edit-step" data-step="-20">−20</button>`}
-          </div>
-          <div class="edit-drag-label">Drag the battery for any amount</div>
-          <div class="reason-header">
-            <span class="reason-label">SELECT REASON</span>
-            <button type="button" class="reason-edit-btn" id="btn-edit-reasons">${editingReasons?'Done':'Edit'}</button>
-          </div>
-          <div class="reason-grid">${chipsHtml}</div>
-          ${editingReasons?`<div class="add-reason-row">
-            <input type="text" id="new-reason-input" class="add-reason-input" placeholder="Add item…"/>
-            <button type="button" id="btn-add-reason" class="add-reason-btn">+ Add</button>
-          </div>`:''}
-          <div class="edit-actions">
-            <button type="button" class="cancel-btn" id="btn-cancel">Cancel</button>
-            <button type="button" class="apply-btn" id="btn-apply">Done${delta!==0?` · ${delta>0?'+':''}${delta}%`:''}</button>
-          </div>` : `<div class="edit-choose-hint">Choose Charge or Use, then drag the battery.</div>`}
+            <div class="reason-header">
+              <span class="reason-label">SELECT CATEGORY</span>
+              <button type="button" class="reason-edit-btn" id="btn-edit-reasons">${editingReasons?'Done':'Edit'}</button>
+            </div>
+            <div class="reason-grid">${chipsHtml}</div>
+            ${editingReasons?`<div class="add-reason-row">
+              <input type="text" id="new-reason-input" class="add-reason-input" placeholder="Add item…"/>
+              <button type="button" id="btn-add-reason" class="add-reason-btn">+ Add</button>
+            </div>`:''}
+            ${selectedReason?`
+              <div class="edit-step-row">${stepHtml}</div>
+              <div class="edit-drag-label">Drag the battery for any amount</div>
+              <div class="edit-actions">
+                <button type="button" class="cancel-btn" id="btn-cancel">Cancel</button>
+                <button type="button" class="apply-btn" id="btn-apply">Done${delta!==0?` · ${delta>0?'+':''}${delta}%`:''}</button>
+              </div>`
+            :`<div class="edit-choose-hint">Choose a category first.</div>`}`
+          :`<div class="edit-choose-hint">Choose Charge or Use first.</div>`}
         </div>`;
     }
 
@@ -617,13 +659,18 @@ if('serviceWorker' in navigator){
           </div>
           <span class="condition-rate">${CONDITION_RATES[getTodayCondition()].toFixed(1)}%/h</span>
         </div>
+        ${cur<=20
+          ? `<div class="battery-status danger">DANGER · LOW ENERGY</div>`
+          : cur>=80
+            ? `<div class="battery-status high">CAREFUL · ENERGY IS HIGH</div>`
+            : ''}
         <div class="battery-stage">
           <div class="minimal-battery-wrap" id="batt-touch">
             <div class="minimal-battery-shell">
-              <div class="minimal-battery-fill ${cur<=20?'low':''}" style="width:${fill}%"></div>
+              <div class="minimal-battery-fill ${cur<=20?'low':cur>=80?'over':''}" style="width:${fill}%"></div>
               <div class="minimal-battery-percent">${cur}%</div>
             </div>
-            <div class="minimal-battery-cap"></div>
+            <div class="minimal-battery-cap ${cur>=80?'over':'' }"></div>
           </div>
         </div>
         <div class="home-actions">
@@ -727,11 +774,21 @@ if('serviceWorker' in navigator){
               .filter(([_,r])=>r[key]>0)
               .sort((a,b)=>b[1][key]-a[1][key])
               .slice(0,3);
-            return rows.length ? rows.map(([name,r],i)=>`<div class="rank-row">
-              <span class="rank-no">${i+1}</span>
-              <span class="rank-name">${esc(name)}</span>
-              <span class="rank-total">${sign}${r[key]}</span>
-            </div>`).join('') : `<div class="empty-progress">No records yet.</div>`;
+            return Array.from({length:3},(_,i)=>{
+              if(rows[i]){
+                const [name,r]=rows[i];
+                return `<div class="rank-row">
+                  <span class="rank-no">${i+1}</span>
+                  <span class="rank-name">${esc(name)}</span>
+                  <span class="rank-total">${sign}${r[key]}</span>
+                </div>`;
+              }
+              return `<div class="rank-row rank-empty">
+                <span class="rank-no">${i+1}</span>
+                <span class="rank-name">—</span>
+                <span class="rank-total">—</span>
+              </div>`;
+            }).join('');
           };
           const mode = window.__caruRankMode || 'charge';
           const isCharge = mode === 'charge';
@@ -813,19 +870,20 @@ if('serviceWorker' in navigator){
       }
 
       document.getElementById('btn-charge')?.addEventListener('click',()=>{
-        editOpen=true; inlineMode='charge'; targetBattery=batteryLevel;
-        selectedReason=(data.chargeReasons||DEF_CHARGE)[0]||''; editingReasons=false; render();
+        editOpen=true; inlineMode='charge'; selectedReason=''; targetBattery=batteryLevel;
+        editingReasons=false; render();
       });
       document.getElementById('btn-drain')?.addEventListener('click',()=>{
-        editOpen=true; inlineMode='drain'; targetBattery=batteryLevel;
-        selectedReason=(data.drainReasons||DEF_DRAIN)[0]||''; editingReasons=false; render();
+        editOpen=true; inlineMode='drain'; selectedReason=''; targetBattery=batteryLevel;
+        editingReasons=false; render();
       });
 
       root.querySelectorAll('[data-step]').forEach(btn=>btn.addEventListener('click',()=>{
         const step=parseInt(btn.dataset.step,10);
-        targetBattery+=step;
-        if(inlineMode==='charge') targetBattery=Math.max(batteryLevel,Math.min(100,targetBattery));
-        else targetBattery=Math.min(batteryLevel,Math.max(0,targetBattery));
+        // Preset buttons set a fresh amount from the current battery;
+        // they do not accumulate with previous preset clicks.
+        targetBattery=batteryLevel+step;
+        targetBattery=Math.max(0,Math.min(100,targetBattery));
         render();
       }));
 
@@ -835,6 +893,7 @@ if('serviceWorker' in navigator){
       }));
 
       document.getElementById('btn-edit-reasons')?.addEventListener('click',()=>{
+        if(!inlineMode) return;
         editingReasons=!editingReasons; render();
       });
 
@@ -876,7 +935,20 @@ if('serviceWorker' in navigator){
         const delta=targetBattery-batteryLevel;
         if(delta!==0){
           batteryLevel=targetBattery;
+          // Keep manual changes in the same natural-drain baseline so the
+          // battery changes immediately and continues to decay from the
+          // morning baseline rather than being overwritten on reload.
+          const currentBase=Number(data.naturalBaseBattery);
+          if(Number.isFinite(currentBase)) {
+            data.naturalBaseBattery=Math.max(0,Math.min(100,currentBase+delta));
+          } else {
+            data.naturalBaseBattery=batteryLevel;
+            data.naturalBaseAt=Date.now();
+          }
           if(!data.items) data.items=[];
+          const reasonListKey=inlineMode==='charge'?'chargeReasons':'drainReasons';
+          if(!data[reasonListKey]) data[reasonListKey]=inlineMode==='charge'?[...DEF_CHARGE]:[...DEF_DRAIN];
+          if(selectedReason && !data[reasonListKey].includes(selectedReason)) data[reasonListKey].push(selectedReason);
           data.items.push({id:uid(),type:inlineMode==='charge'?'heal':'plan',delta,text:selectedReason,date:todayKey(),timestamp:Date.now()});
           await save();
         }
@@ -898,11 +970,3 @@ if('serviceWorker' in navigator){
 </script>
 </body>
 </html>
-<style>
-.ranking-head-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
-.ranking-head-row .activity-section-title{margin-bottom:0}
-.rank-switch{display:flex;border:1px solid #333;border-radius:999px;overflow:hidden}
-.rank-switch-btn{border:0;background:transparent;color:#777;font:inherit;font-size:11px;padding:5px 10px;cursor:pointer}
-.rank-switch-btn.active{background:#e8e8e8;color:#111}
-.rank-switch-btn + .rank-switch-btn{border-left:1px solid #333}
-</style>
