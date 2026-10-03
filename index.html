@@ -218,7 +218,7 @@
   #root{max-width:420px;min-height:100vh;padding:calc(env(safe-area-inset-top) + 10px) 20px calc(env(safe-area-inset-bottom) + 20px);}
   .minimal-home{min-height:calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 30px);position:relative;}
   .home-actions{
-    position:absolute;left:50%;top:calc(51% + 76px);transform:translateX(-50%);
+    position:absolute;left:50%;top:calc(51% + 100px);transform:translateX(-50%);
     width:min(76vw,330px);display:flex;justify-content:space-between;align-items:center;
     padding:0 4px;box-sizing:border-box;z-index:10;
   }
@@ -262,7 +262,7 @@
   .condition-btn:active{color:#ddd;border-color:#888;}
   .condition-rate{color:#444;white-space:nowrap;font-size:9px;}
   .battery-status{
-    position:absolute;left:50%;top:43%;
+    position:absolute;left:50%;top:calc(51% + 72px);
     transform:translateX(-50%);
     color:#666;font:400 9px/1 -apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;
     letter-spacing:.08em;text-align:center;white-space:nowrap;
@@ -659,10 +659,10 @@ if('serviceWorker' in navigator){
           </div>
           <span class="condition-rate">${CONDITION_RATES[getTodayCondition()].toFixed(1)}%/h</span>
         </div>
-        ${cur<=20
+        ${cur<20
           ? `<div class="battery-status danger">DANGER · LOW ENERGY</div>`
           : cur>=80
-            ? `<div class="battery-status high">CAREFUL · ENERGY IS HIGH</div>`
+            ? `<div class="battery-status high">CAREFUL · ENERGY TOO HIGH</div>`
             : ''}
         <div class="battery-stage">
           <div class="minimal-battery-wrap" id="batt-touch">
