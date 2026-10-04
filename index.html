@@ -269,11 +269,26 @@
   }
   .battery-status.danger{color:#ff453a;}
   .battery-status.high{color:#9ab39b;}
+  .battery-info{
+    position:absolute;left:50%;top:calc(51% + 134px);transform:translateX(-50%);
+    display:flex;flex-direction:column;align-items:center;gap:8px;
+  }
+  .forecast{
+    color:#666;font:400 11px/1 -apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;
+    letter-spacing:.04em;white-space:nowrap;
+  }
   .last-open{
-    position:absolute;left:50%;top:calc(51% + 136px);transform:translateX(-50%);
     color:#444;font:400 10px/1 -apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;
     letter-spacing:.04em;white-space:nowrap;
   }
+  .sync-box{margin-top:26px;padding-bottom:30px;}
+  .sync-copy{border:1px solid #222;background:#070707;color:#888;border-radius:6px;padding:9px 12px;font:400 12px -apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;cursor:pointer;}
+  .sync-copy:active{color:#ddd;border-color:#666;}
+  .sync-id{margin-top:8px;color:#333;font:400 10px ui-monospace,"SF Mono",monospace;word-break:break-all;}
+  .insight-list{border-top:1px solid #181818;}
+  .insight-row{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid #181818;font:400 12px -apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;}
+  .insight-label{color:#555;white-space:nowrap;}
+  .insight-value{color:#aaa;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
   .battery-stage{
     position:absolute;left:50%;top:51%;transform:translate(-50%,-50%);
     width:min(76vw,330px);display:flex;justify-content:center;align-items:center;
@@ -462,6 +477,7 @@ if('serviceWorker' in navigator){
 
   let batteryLevel=80, lastBatteryUpdate=Date.now();
   let sinceLast=null; // {ms, drop} : 지난번 실행 이후 경과 시간과 자연 감소량
+  let healthInfo=null; // {hours, level, date} : 건강 앱(단축어)에서 받은 오늘 수면
   const CONDITION_RATES={good:2.0, normal:3.0, low:4.0};
   const CONDITION_LABELS={good:'Good', normal:'Normal', low:'Low'};
 
@@ -476,10 +492,12 @@ if('serviceWorker' in navigator){
     return 'normal';
   }
 
-  function setTodayCondition(level){
+  function setTodayCondition(level,source){
     const k=naturalDayKey();
     data.conditionDate=k;
     data.condition=level;
+    // 직접 고른 경우만 기록: 수면 자동 설정이 사용자의 선택을 덮어쓰지 않게 한다
+    if(source!=='sleep') data.conditionManualDate=k;
     // Condition is intended to be chosen once in the morning.
     // Choosing it resets today's natural-drain reference to the current battery.
     data.naturalDay=k;
@@ -519,7 +537,8 @@ if('serviceWorker' in navigator){
 
     const hrs=Math.max(0,(now-baseAt)/(1000*60*60));
     const rate=CONDITION_RATES[getTodayCondition()]||CONDITION_RATES.normal;
-    const naturalBattery=Math.max(5,Math.min(100,Math.floor(base-(hrs*rate))));
+    const naturalDrop=Math.floor(hrs*rate); // 감소량만 내림 (기준 배터리는 정수 그대로)
+    const naturalBattery=Math.max(5,Math.min(100,base-naturalDrop));
 
     if(naturalBattery < batteryLevel){
       // 마지막으로 앱을 연 뒤 자연 감소한 양을 누적한다
@@ -593,6 +612,8 @@ if('serviceWorker' in navigator){
           if(!isTypingNote) render();
         }
       });
+      // 건강 앱(단축어)에서 올린 수면 데이터 수신
+      db.ref('health/'+userId).on('value',snap=>handleHealth(snap.val()));
     }
   }
 
@@ -623,6 +644,99 @@ if('serviceWorker' in navigator){
     const h=Math.floor(mins/60), m=mins%60;
     const drop=sinceLast.drop>0?`−${sinceLast.drop}%`:'no change';
     return `Last opened ${h}h ${String(m).padStart(2,'0')}m ago · ${drop}`;
+  }
+
+  // 현재 속도 기준으로 배터리가 20%에 닿는 시각 예측
+  function forecastText(){
+    if(batteryLevel<=20) return 'Below 20% · time to rest';
+    const rate=CONDITION_RATES[getTodayCondition()]||CONDITION_RATES.normal;
+    const now=Date.now();
+    const base=Number(data.naturalBaseBattery), baseAt=Number(data.naturalBaseAt);
+    let eta=NaN;
+    if(Number.isFinite(base)&&Number.isFinite(baseAt)) eta=baseAt+((base-20)/rate)*3600000;
+    if(!Number.isFinite(eta)||eta<=now) eta=now+((batteryLevel-20)/rate)*3600000;
+    const d=new Date(eta);
+    const hh=String(d.getHours()).padStart(2,'0'), mm=String(d.getMinutes()).padStart(2,'0');
+    const k=naturalDayKey(eta);
+    const prefix=k===naturalDayKey(now)?'':k===naturalDayKey(now+86400000)?'tomorrow ':`${MONTHS_SHORT[d.getMonth()]} ${d.getDate()} `;
+    return `20% around ${prefix}${hh}:${mm}`;
+  }
+
+  function dateKeyOffset(n){
+    const d=new Date(); d.setDate(d.getDate()-n);
+    return naturalDayKey(d.getTime());
+  }
+
+  // 최근 7일 요약 (지난 7일과 비교)
+  function weeklyInsightHtml(){
+    const items=data.items||[];
+    const cur=new Set(Array.from({length:7},(_,i)=>dateKeyOffset(i)));
+    const prev=new Set(Array.from({length:7},(_,i)=>dateKeyOffset(i+7)));
+    const wk=items.filter(it=>cur.has(it.date));
+    let body='';
+    if(!wk.length){
+      body=`<div class="empty-progress">Log a few changes to see this week's summary.</div>`;
+    }else{
+      let charge=0, use=0;
+      const byUse={}, byCharge={}, byDay={};
+      wk.forEach(it=>{
+        const d=Number(it.delta)||0;
+        const name=(it.text||'').trim()||'Untitled';
+        if(d>0){ charge+=d; byCharge[name]=(byCharge[name]||0)+d; }
+        if(d<0){ use+=-d; byUse[name]=(byUse[name]||0)+(-d); }
+        byDay[it.date]=(byDay[it.date]||0)+d;
+      });
+      const top=o=>Object.entries(o).sort((a,b)=>b[1]-a[1])[0];
+      const prevUse=items.filter(it=>prev.has(it.date)).reduce((s,it)=>{ const d=Number(it.delta)||0; return d<0?s-d:s; },0);
+      const rows=[];
+      rows.push(['Charged / Used',`+${charge} / −${use}`]);
+      const tu=top(byUse); if(tu) rows.push(['Biggest drain',`${tu[0]} −${tu[1]}`]);
+      const tc=top(byCharge); if(tc) rows.push(['Best recharge',`${tc[0]} +${tc[1]}`]);
+      const worst=Object.entries(byDay).sort((a,b)=>a[1]-b[1])[0];
+      if(worst && worst[1]<0){
+        const [yy,mm,dd]=worst[0].split('-').map(Number);
+        rows.push(['Heaviest day',`${DAYS_SHORT[new Date(yy,mm-1,dd).getDay()]} −${Math.abs(worst[1])}`]);
+      }
+      if(prevUse>0){
+        const diff=use-prevUse;
+        rows.push(['Use vs last week',`${diff>=0?'+':'−'}${Math.abs(diff)}`]);
+      }
+      body=rows.map(([l,v])=>`<div class="insight-row"><span class="insight-label">${l}</span><span class="insight-value">${esc(v)}</span></div>`).join('');
+    }
+    return `<div class="activity-section">
+          <div class="activity-section-title">Last 7 days</div>
+          <div class="insight-list">${body}</div>
+        </div>`;
+  }
+
+  // ---- 건강 앱 연동 (iOS 단축어 → Firebase health/<userId>) ----
+  // 값이 시간/분/초 어느 단위로 와도 알아서 시간으로 변환한다
+  function sleepToHours(v){
+    v=Number(v);
+    if(!Number.isFinite(v)||v<=0) return NaN;
+    if(v>1500) return v/3600; // 초
+    if(v>24) return v/60;     // 분
+    return v;                 // 시간
+  }
+  function sleepLevel(h){ return h>=7?'good':h>=5?'normal':'low'; }
+  function fmtHM(h){
+    const mins=Math.round(h*60);
+    return `${Math.floor(mins/60)}h ${String(mins%60).padStart(2,'0')}m`;
+  }
+  function handleHealth(val){
+    if(!val) return;
+    const hours=sleepToHours(val.sleep);
+    if(!Number.isFinite(hours)||hours>16) return;
+    const today=todayKey();
+    if(val.date!==today) return; // 오늘 아침 데이터만 사용
+    const level=sleepLevel(hours);
+    healthInfo={hours,level,date:today};
+    if(data.sleepAppliedDate!==today){
+      data.sleepAppliedDate=today;
+      if(data.conditionManualDate!==today) setTodayCondition(level,'sleep');
+      save();
+    }
+    if(!isTypingNote) render();
   }
 
   function setupNotification(){
@@ -703,7 +817,12 @@ if('serviceWorker' in navigator){
           : cur>=80
             ? `<div class="battery-status high">CAREFUL · ENERGY TOO HIGH</div>`
             : ''}
-        ${sinceLast?`<div class="last-open">${lastOpenText()}</div>`:''}
+        ${(()=>{
+          const f=forecastText();
+          const l=sinceLast?lastOpenText():'';
+          const s=(healthInfo&&healthInfo.date===todayKey())?`Sleep ${fmtHM(healthInfo.hours)} · ${CONDITION_LABELS[healthInfo.level]}`:'';
+          return `<div class="battery-info">${f?`<div class="forecast">${f}</div>`:''}${s?`<div class="last-open">${s}</div>`:''}${l?`<div class="last-open">${l}</div>`:''}</div>`;
+        })()}
         <div class="battery-stage">
           <div class="minimal-battery-wrap" id="batt-touch">
             <div class="minimal-battery-shell">
@@ -796,6 +915,7 @@ if('serviceWorker' in navigator){
         <div class="month-grid">${cells}</div>
         <div class="progress-summary"><span>${changeCount} changes</span><span>${monthDelta>=0?'+':''}${monthDelta}% net</span></div>
         ${detailHtml}
+        ${weeklyInsightHtml()}
         <div class="activity-section">
           <div class="activity-section-title">Recent changes</div>
           <div class="activity-list">${recentHtml}</div>
@@ -848,6 +968,11 @@ if('serviceWorker' in navigator){
             </div>
           </div>`;
         })()}
+        <div class="sync-box">
+          <div class="activity-section-title">Health sync</div>
+          <button type="button" class="sync-copy" id="copy-sync">Copy sync URL</button>
+          <div class="sync-id">${esc(userId)}</div>
+        </div>
       </div>
       <button type="button" class="progress-home" id="open-home">Home</button>`;
   }
@@ -1009,6 +1134,11 @@ if('serviceWorker' in navigator){
 
     if(activeTab==='progress'){
       document.getElementById('open-home')?.addEventListener('click',()=>{ activeTab='home'; editOpen=false; inlineMode=null; render(); });
+      document.getElementById('copy-sync')?.addEventListener('click',async()=>{
+        const url=`${firebaseConfig.databaseURL}/health/${userId}.json`;
+        try{ await navigator.clipboard.writeText(url); alert('Copied'); }
+        catch(e){ window.prompt('Copy this URL',url); }
+      });
       root.querySelectorAll('[data-rank-mode]').forEach(btn=>btn.addEventListener('click',()=>{ window.__caruRankMode=btn.dataset.rankMode; render(); }));
       document.getElementById('prev-month')?.addEventListener('click',()=>{ progressMonth=new Date(progressMonth.getFullYear(),progressMonth.getMonth()-1,1); selectedDay=null; render(); });
       document.getElementById('next-month')?.addEventListener('click',()=>{ progressMonth=new Date(progressMonth.getFullYear(),progressMonth.getMonth()+1,1); selectedDay=null; render(); });
