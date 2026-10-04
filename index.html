@@ -456,7 +456,7 @@ if('serviceWorker' in navigator){
   function esc(s){ const d=document.createElement('div'); d.textContent=s||''; return d.innerHTML; }
 
   let batteryLevel=80, lastBatteryUpdate=Date.now();
-  const CONDITION_RATES={good:1.2, normal:1.5, low:1.9};
+  const CONDITION_RATES={good:2.0, normal:3.0, low:4.0};
   const CONDITION_LABELS={good:'Good', normal:'Normal', low:'Low'};
 
   function naturalDayKey(ts=Date.now()){
@@ -483,9 +483,36 @@ if('serviceWorker' in navigator){
     data.lastBatteryUpdate=lastBatteryUpdate;
   }
 
-  function applyNaturalDrain(){
-    const now=Date.now();
-    const currentDay=naturalDayKey(now);
+function applyNaturalDrain(){
+  const now=Date.now();
+
+  if(!data.naturalBaseAt || !Number.isFinite(Number(data.naturalBaseAt))){
+    data.naturalBaseAt=now;
+    data.naturalBaseBattery=batteryLevel;
+    lastBatteryUpdate=now;
+    data.lastBatteryUpdate=now;
+    return false;
+  }
+
+  const base=Number(data.naturalBaseBattery);
+  const baseAt=Number(data.naturalBaseAt);
+
+  if(!Number.isFinite(base)||!Number.isFinite(baseAt)) return false;
+
+  const hrs=Math.max(0,(now-baseAt)/(1000*60*60));
+  const rate=CONDITION_RATES[getTodayCondition()]||CONDITION_RATES.normal;
+
+  const naturalBattery=Math.max(5,Math.min(100,Math.floor(base-(hrs*rate))));
+
+  if(naturalBattery < batteryLevel){
+    batteryLevel=naturalBattery;
+    lastBatteryUpdate=now;
+    data.lastBatteryUpdate=now;
+    return true;
+  }
+
+  return false;
+}
 
     if(!data.naturalDay || data.naturalDay!==currentDay){
       data.naturalDay=currentDay;
@@ -977,7 +1004,34 @@ if('serviceWorker' in navigator){
     }
   }
 
-  load();
+let naturalDrainTimer=null;
+
+function startNaturalDrainTimer(){
+  clearInterval(naturalDrainTimer);
+
+  naturalDrainTimer=setInterval(async()=>{
+    const changed=applyNaturalDrain();
+
+    if(changed){
+      data.battery=batteryLevel;
+      data.lastBatteryUpdate=lastBatteryUpdate;
+      localStorage.setItem(STORAGE_KEY,JSON.stringify(data));
+
+      if(firebaseEnabled&&db){
+        try{
+          await db.ref('users/'+userId).set(data);
+        }catch(e){}
+      }
+
+      if(!isTypingNote) render();
+    }
+  },60000);
+}
+
+load().then(()=>{
+  startNaturalDrainTimer();
+});
+})();
 })();
 </script>
 </body>
