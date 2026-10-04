@@ -269,6 +269,11 @@
   }
   .battery-status.danger{color:#ff453a;}
   .battery-status.high{color:#9ab39b;}
+  .last-open{
+    position:absolute;left:50%;top:calc(51% + 136px);transform:translateX(-50%);
+    color:#444;font:400 10px/1 -apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;
+    letter-spacing:.04em;white-space:nowrap;
+  }
   .battery-stage{
     position:absolute;left:50%;top:51%;transform:translate(-50%,-50%);
     width:min(76vw,330px);display:flex;justify-content:center;align-items:center;
@@ -456,6 +461,7 @@ if('serviceWorker' in navigator){
   function esc(s){ const d=document.createElement('div'); d.textContent=s||''; return d.innerHTML; }
 
   let batteryLevel=80, lastBatteryUpdate=Date.now();
+  let sinceLast=null; // {ms, drop} : 지난번 실행 이후 경과 시간과 자연 감소량
   const CONDITION_RATES={good:2.0, normal:3.0, low:4.0};
   const CONDITION_LABELS={good:'Good', normal:'Normal', low:'Low'};
 
@@ -516,6 +522,8 @@ if('serviceWorker' in navigator){
     const naturalBattery=Math.max(5,Math.min(100,Math.floor(base-(hrs*rate))));
 
     if(naturalBattery < batteryLevel){
+      // 마지막으로 앱을 연 뒤 자연 감소한 양을 누적한다
+      data.drainSinceOpen=(Number(data.drainSinceOpen)||0)+(batteryLevel-naturalBattery);
       batteryLevel=naturalBattery;
       lastBatteryUpdate=now;
       data.lastBatteryUpdate=now;
@@ -565,8 +573,7 @@ if('serviceWorker' in navigator){
       data.naturalBaseBattery=batteryLevel;
       data.naturalBaseAt=Date.now();
     }
-    const naturalChanged=applyNaturalDrain();
-    if(naturalChanged){ data.battery=batteryLevel; data.lastBatteryUpdate=lastBatteryUpdate; localStorage.setItem(STORAGE_KEY,JSON.stringify(data)); }
+    markOpened(true);
     theme=localStorage.getItem('caru-theme-pref')==='light'?'light':'dark';
     render();
     if(firebaseEnabled&&db){
@@ -593,6 +600,29 @@ if('serviceWorker' in navigator){
     data.battery=batteryLevel; data.lastBatteryUpdate=lastBatteryUpdate;
     localStorage.setItem(STORAGE_KEY,JSON.stringify(data));
     if(firebaseEnabled&&db){ try{ await db.ref('users/'+userId).set(data); }catch(e){} }
+  }
+
+  // 앱을 열 때(또는 백그라운드에서 돌아올 때) 지난 실행 이후 경과/감소량을 계산
+  function markOpened(force){
+    const now=Date.now();
+    const prev=Number(data.lastOpenedAt);
+    if(!force && Number.isFinite(prev) && now-prev<60000) return false;
+    applyNaturalDrain();
+    if(Number.isFinite(prev) && prev>0){
+      sinceLast={ms:Math.max(0,now-prev), drop:Number(data.drainSinceOpen)||0};
+    }
+    data.drainSinceOpen=0;
+    data.lastOpenedAt=now;
+    save();
+    return true;
+  }
+
+  function lastOpenText(){
+    if(!sinceLast) return '';
+    const mins=Math.floor(sinceLast.ms/60000);
+    const h=Math.floor(mins/60), m=mins%60;
+    const drop=sinceLast.drop>0?`−${sinceLast.drop}%`:'no change';
+    return `Last opened ${h}h ${String(m).padStart(2,'0')}m ago · ${drop}`;
   }
 
   function setupNotification(){
@@ -673,6 +703,7 @@ if('serviceWorker' in navigator){
           : cur>=80
             ? `<div class="battery-status high">CAREFUL · ENERGY TOO HIGH</div>`
             : ''}
+        ${sinceLast?`<div class="last-open">${lastOpenText()}</div>`:''}
         <div class="battery-stage">
           <div class="minimal-battery-wrap" id="batt-touch">
             <div class="minimal-battery-shell">
@@ -1011,6 +1042,13 @@ if('serviceWorker' in navigator){
 
   load().then(()=>{
     startNaturalDrainTimer();
+  });
+
+  // 홈 화면 앱을 백그라운드에서 다시 열었을 때도 갱신
+  document.addEventListener('visibilitychange',()=>{
+    if(document.visibilityState==='visible'){
+      if(markOpened(false) && !isTypingNote) render();
+    }
   });
 })();
 </script>
