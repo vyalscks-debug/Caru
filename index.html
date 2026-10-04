@@ -483,37 +483,11 @@ if('serviceWorker' in navigator){
     data.lastBatteryUpdate=lastBatteryUpdate;
   }
 
-function applyNaturalDrain(){
-  const now=Date.now();
+  function applyNaturalDrain(){
+    const now=Date.now();
+    const currentDay=naturalDayKey(now);
 
-  if(!data.naturalBaseAt || !Number.isFinite(Number(data.naturalBaseAt))){
-    data.naturalBaseAt=now;
-    data.naturalBaseBattery=batteryLevel;
-    lastBatteryUpdate=now;
-    data.lastBatteryUpdate=now;
-    return false;
-  }
-
-  const base=Number(data.naturalBaseBattery);
-  const baseAt=Number(data.naturalBaseAt);
-
-  if(!Number.isFinite(base)||!Number.isFinite(baseAt)) return false;
-
-  const hrs=Math.max(0,(now-baseAt)/(1000*60*60));
-  const rate=CONDITION_RATES[getTodayCondition()]||CONDITION_RATES.normal;
-
-  const naturalBattery=Math.max(5,Math.min(100,Math.floor(base-(hrs*rate))));
-
-  if(naturalBattery < batteryLevel){
-    batteryLevel=naturalBattery;
-    lastBatteryUpdate=now;
-    data.lastBatteryUpdate=now;
-    return true;
-  }
-
-  return false;
-}
-
+    // 날짜가 바뀌면 기준점을 새로 잡는다
     if(!data.naturalDay || data.naturalDay!==currentDay){
       data.naturalDay=currentDay;
       data.naturalBaseBattery=batteryLevel;
@@ -525,14 +499,21 @@ function applyNaturalDrain(){
       return false;
     }
 
+    if(!data.naturalBaseAt || !Number.isFinite(Number(data.naturalBaseAt))){
+      data.naturalBaseAt=now;
+      data.naturalBaseBattery=batteryLevel;
+      lastBatteryUpdate=now;
+      data.lastBatteryUpdate=now;
+      return false;
+    }
+
     const base=Number(data.naturalBaseBattery);
     const baseAt=Number(data.naturalBaseAt);
     if(!Number.isFinite(base)||!Number.isFinite(baseAt)) return false;
 
     const hrs=Math.max(0,(now-baseAt)/(1000*60*60));
     const rate=CONDITION_RATES[getTodayCondition()]||CONDITION_RATES.normal;
-    const naturalDrop=Math.floor(hrs*rate);
-    const naturalBattery=Math.max(5,Math.min(100,base-naturalDrop));
+    const naturalBattery=Math.max(5,Math.min(100,Math.floor(base-(hrs*rate))));
 
     if(naturalBattery < batteryLevel){
       batteryLevel=naturalBattery;
@@ -602,7 +583,7 @@ function applyNaturalDrain(){
           if(!data.naturalDay){ data.naturalDay=todayKey(); data.naturalBaseBattery=batteryLevel; data.naturalBaseAt=Date.now(); }
           const naturalChanged=applyNaturalDrain();
           if(naturalChanged){ data.battery=batteryLevel; data.lastBatteryUpdate=lastBatteryUpdate; }
-         if(!isTypingNote) render();
+          if(!isTypingNote) render();
         }
       });
     }
@@ -862,23 +843,23 @@ function applyNaturalDrain(){
         activeTab='progress'; editOpen=false; inlineMode=null; editingReasons=false; render();
       });
 
-    const noteEl=document.getElementById('daily-note');
+      const noteEl=document.getElementById('daily-note');
 
-    noteEl?.addEventListener('focus',()=>{
-    isTypingNote=true;
-    });
+      noteEl?.addEventListener('focus',()=>{
+        isTypingNote=true;
+      });
 
-    noteEl?.addEventListener('blur',()=>{
-    isTypingNote=false;
-    clearTimeout(window.__caruNoteTimer);
-    save();
-    });
+      noteEl?.addEventListener('blur',()=>{
+        isTypingNote=false;
+        clearTimeout(window.__caruNoteTimer);
+        save();
+      });
 
-    noteEl?.addEventListener('input',()=>{
-    data.comments[todayKey()]=noteEl.value;
-    clearTimeout(window.__caruNoteTimer);
-    window.__caruNoteTimer=setTimeout(()=>save(),500);
-    });
+      noteEl?.addEventListener('input',()=>{
+        data.comments[todayKey()]=noteEl.value;
+        clearTimeout(window.__caruNoteTimer);
+        window.__caruNoteTimer=setTimeout(()=>save(),500);
+      });
 
       root.querySelectorAll('[data-condition]').forEach(btn=>btn.addEventListener('click',async()=>{
         setTodayCondition(btn.dataset.condition);
@@ -1004,34 +985,33 @@ function applyNaturalDrain(){
     }
   }
 
-let naturalDrainTimer=null;
+  let naturalDrainTimer=null;
 
-function startNaturalDrainTimer(){
-  clearInterval(naturalDrainTimer);
+  function startNaturalDrainTimer(){
+    clearInterval(naturalDrainTimer);
 
-  naturalDrainTimer=setInterval(async()=>{
-    const changed=applyNaturalDrain();
+    naturalDrainTimer=setInterval(async()=>{
+      const changed=applyNaturalDrain();
 
-    if(changed){
-      data.battery=batteryLevel;
-      data.lastBatteryUpdate=lastBatteryUpdate;
-      localStorage.setItem(STORAGE_KEY,JSON.stringify(data));
+      if(changed){
+        data.battery=batteryLevel;
+        data.lastBatteryUpdate=lastBatteryUpdate;
+        localStorage.setItem(STORAGE_KEY,JSON.stringify(data));
 
-      if(firebaseEnabled&&db){
-        try{
-          await db.ref('users/'+userId).set(data);
-        }catch(e){}
+        if(firebaseEnabled&&db){
+          try{
+            await db.ref('users/'+userId).set(data);
+          }catch(e){}
+        }
+
+        if(!isTypingNote) render();
       }
+    },60000);
+  }
 
-      if(!isTypingNote) render();
-    }
-  },60000);
-}
-
-load().then(()=>{
-  startNaturalDrainTimer();
-});
-})();
+  load().then(()=>{
+    startNaturalDrainTimer();
+  });
 })();
 </script>
 </body>
