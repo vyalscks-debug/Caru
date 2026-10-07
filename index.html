@@ -285,10 +285,43 @@
   .sync-copy{border:1px solid #222;background:#070707;color:#888;border-radius:6px;padding:9px 12px;font:400 12px -apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;cursor:pointer;}
   .sync-copy:active{color:#ddd;border-color:#666;}
   .sync-id{margin-top:8px;color:#333;font:400 10px ui-monospace,"SF Mono",monospace;word-break:break-all;}
-  .insight-list{border-top:1px solid #181818;}
-  .insight-row{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid #181818;font:400 12px -apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;}
-  .insight-label{color:#555;white-space:nowrap;}
-  .insight-value{color:#aaa;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .sleep-overlay{position:fixed;inset:0;z-index:100000;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center;padding:24px;animation:panelIn .16s ease-out;}
+  .sleep-card{width:100%;max-width:320px;background:#0b0b0b;border:1px solid #222;border-radius:18px;padding:26px 18px 14px;text-align:center;}
+  .sleep-title{color:#ddd;font:400 17px/1.3 -apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;margin-bottom:6px;}
+  .sleep-sub{color:#555;font:400 11px/1.4 -apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;margin-bottom:20px;}
+  .sleep-options{display:flex;gap:8px;}
+  .sleep-opt{flex:1;border:1px solid #2a2a2a;background:#070707;color:#bbb;border-radius:12px;padding:14px 4px 12px;font:400 14px -apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;cursor:pointer;}
+  .sleep-opt:active{border-color:#777;color:#fff;}
+  .sleep-opt small{display:block;margin-top:6px;color:#666;font-size:10px;}
+  .sleep-skip{margin-top:14px;border:0;background:none;color:#555;font:400 11px -apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;padding:6px 10px;cursor:pointer;}
+  .routine-bat{position:relative;height:64px;box-sizing:border-box;border:1.5px solid #666;border-radius:20px;padding:4px;background:#090909;overflow:hidden;touch-action:none;cursor:ew-resize;user-select:none;margin:4px 0 12px;}
+  .routine-fill{height:100%;border-radius:15px;background:#7b7b7b;pointer-events:none;}
+  .routine-now{position:absolute;top:4px;bottom:4px;width:2px;background:#fff;opacity:.55;pointer-events:none;}
+  .routine-pct{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#ddd;font:400 20px/1 -apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;pointer-events:none;mix-blend-mode:normal;}
+  .routine-delta{text-align:center;color:#777;font:400 13px -apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;margin-bottom:16px;min-height:16px;}
+  .routine-delta.plus{color:#9ab39b;}
+  .routine-delta.minus{color:#ff453a;}
+  .home-progress-btn{position:absolute;right:7%;top:calc(20% - 28px);z-index:5;padding:0;line-height:20px;}
+  .minimal-routine{min-height:calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 30px);padding-bottom:55px;}
+  .routine-card{border:1px solid #181818;border-radius:10px;padding:14px;margin-bottom:10px;background:#050505;}
+  .routine-card.open{border-color:#333;}
+  .routine-card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;}
+  .routine-card-name{color:#ddd;font:400 15px/1.3 -apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;}
+  .routine-card-meta{color:#777;font:400 12px/1.4 -apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;margin-top:5px;}
+  .routine-card-status{color:#444;font:400 10px/1.4 -apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;margin-top:4px;letter-spacing:.03em;}
+  .routine-delete{margin-top:14px;width:100%;border:1px solid #2a1a1a;background:transparent;color:#a55;border-radius:6px;padding:10px;font:400 12px -apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;cursor:pointer;}
+  .routine-add{width:100%;margin-top:6px;padding:13px;text-align:center;}
+  .routine-edit{margin-top:14px;}
+  .routine-name{width:100%;margin-bottom:12px;border:0;border-bottom:1px solid #222;outline:none;background:transparent;color:#ccc;padding:5px 0;font:400 13px -apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;border-radius:0;}
+  .routine-times{display:flex;align-items:center;gap:8px;margin-bottom:10px;color:#555;}
+  .routine-time{flex:1;min-width:0;border:1px solid #222;background:#070707;color:#aaa;border-radius:6px;padding:6px 8px;font:400 13px -apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;color-scheme:dark;}
+  .routine-days{display:flex;gap:4px;}
+  .routine-day{flex:1;border:1px solid #222;background:#070707;color:#666;border-radius:5px;padding:7px 0;font:400 11px -apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;cursor:pointer;}
+  .routine-day.on{border-color:#777;color:#ddd;}
+  .routine-day[data-rday="0"]{color:#8a3b36;}
+  .routine-day[data-rday="0"].on{border-color:#ff453a;color:#ff453a;}
+  .routine-day.sun{color:#8a3b36;}
+  .routine-day.sun.on{border-color:#ff453a;color:#ff453a;}
   .battery-stage{
     position:absolute;left:50%;top:51%;transform:translate(-50%,-50%);
     width:min(76vw,330px);display:flex;justify-content:center;align-items:center;
@@ -478,6 +511,7 @@ if('serviceWorker' in navigator){
   let batteryLevel=80, lastBatteryUpdate=Date.now();
   let sinceLast=null; // {ms, drop} : 지난번 실행 이후 경과 시간과 자연 감소량
   let healthInfo=null; // {hours, level, date} : 건강 앱(단축어)에서 받은 오늘 수면
+  let routineDraft=null, routineDragging=false, editingRoutineId=null; // 루틴 팝업 / 루틴 화면에서 편집 중인 루틴
   const CONDITION_RATES={good:2.0, normal:3.0, low:4.0};
   const CONDITION_LABELS={good:'Good', normal:'Normal', low:'Low'};
 
@@ -493,29 +527,29 @@ if('serviceWorker' in navigator){
   }
 
   function setTodayCondition(level,source){
+    // 속도를 바꾸기 전에, 지금까지 쌓인 감소를 이전 속도로 먼저 반영한다
+    applyNaturalDrain();
     const k=naturalDayKey();
     data.conditionDate=k;
     data.condition=level;
     // 직접 고른 경우만 기록: 수면 자동 설정이 사용자의 선택을 덮어쓰지 않게 한다
     if(source!=='sleep') data.conditionManualDate=k;
-    // Condition is intended to be chosen once in the morning.
-    // Choosing it resets today's natural-drain reference to the current battery.
     data.naturalDay=k;
-    data.naturalBaseBattery=batteryLevel;
-    data.naturalBaseAt=Date.now();
     lastBatteryUpdate=Date.now();
     data.lastBatteryUpdate=lastBatteryUpdate;
   }
 
+  // 자연 감소: 마지막으로 계산한 시각(drainAt)부터 지금까지의 감소만 현재 배터리에서 뺀다.
+  // 충전/사용으로 바꾼 값은 건드리지 않으므로, 예전 충전분이 되돌려지지 않는다.
   function applyNaturalDrain(){
     const now=Date.now();
     const currentDay=naturalDayKey(now);
 
-    // 날짜가 바뀌면 기준점을 새로 잡는다
+    // 날짜가 바뀌면 시계만 새로 시작한다 (밀린 감소를 한꺼번에 반영하지 않음)
     if(!data.naturalDay || data.naturalDay!==currentDay){
       data.naturalDay=currentDay;
-      data.naturalBaseBattery=batteryLevel;
-      data.naturalBaseAt=now;
+      data.drainAt=now;
+      data.drainCarry=0;
       data.conditionDate=currentDay;
       if(!CONDITION_RATES[data.condition]) data.condition='normal';
       lastBatteryUpdate=now;
@@ -523,27 +557,30 @@ if('serviceWorker' in navigator){
       return false;
     }
 
-    if(!data.naturalBaseAt || !Number.isFinite(Number(data.naturalBaseAt))){
-      data.naturalBaseAt=now;
-      data.naturalBaseBattery=batteryLevel;
-      lastBatteryUpdate=now;
-      data.lastBatteryUpdate=now;
+    const at=Number(data.drainAt);
+    if(!Number.isFinite(at)||at<=0){
+      // 이전 버전 데이터: 지금부터 새로 시작
+      data.drainAt=now;
+      data.drainCarry=0;
       return false;
     }
 
-    const base=Number(data.naturalBaseBattery);
-    const baseAt=Number(data.naturalBaseAt);
-    if(!Number.isFinite(base)||!Number.isFinite(baseAt)) return false;
+    // 아침 수면 팝업에 답하기 전까지는 감소 시계만 옮긴다 (밤사이 시간은 수면 충전에 포함)
+    if(sleepPromptDue()){ data.drainAt=now; data.drainCarry=0; return false; }
 
-    const hrs=Math.max(0,(now-baseAt)/(1000*60*60));
+    const hrs=Math.max(0,(now-at)/(1000*60*60));
     const rate=CONDITION_RATES[getTodayCondition()]||CONDITION_RATES.normal;
-    const naturalDrop=Math.floor(hrs*rate); // 감소량만 내림 (기준 배터리는 정수 그대로)
-    const naturalBattery=Math.max(5,Math.min(100,base-naturalDrop));
+    let carry=(Number(data.drainCarry)||0)+hrs*rate; // 1% 미만 자투리까지 누적
+    const whole=Math.floor(carry);
+    carry-=whole;
+    data.drainAt=now;
+    data.drainCarry=carry;
 
-    if(naturalBattery < batteryLevel){
+    if(whole>=1 && batteryLevel>5){
+      const nb=Math.max(5,batteryLevel-whole);
       // 마지막으로 앱을 연 뒤 자연 감소한 양을 누적한다
-      data.drainSinceOpen=(Number(data.drainSinceOpen)||0)+(batteryLevel-naturalBattery);
-      batteryLevel=naturalBattery;
+      data.drainSinceOpen=(Number(data.drainSinceOpen)||0)+(batteryLevel-nb);
+      batteryLevel=nb;
       lastBatteryUpdate=now;
       data.lastBatteryUpdate=now;
       return true;
@@ -651,9 +688,9 @@ if('serviceWorker' in navigator){
     if(batteryLevel<=20) return 'Below 20% · time to rest';
     const rate=CONDITION_RATES[getTodayCondition()]||CONDITION_RATES.normal;
     const now=Date.now();
-    const base=Number(data.naturalBaseBattery), baseAt=Number(data.naturalBaseAt);
+    const at=Number(data.drainAt), carry=Number(data.drainCarry)||0;
     let eta=NaN;
-    if(Number.isFinite(base)&&Number.isFinite(baseAt)) eta=baseAt+((base-20)/rate)*3600000;
+    if(Number.isFinite(at)&&at>0) eta=at+(((batteryLevel-20)-carry)/rate)*3600000;
     if(!Number.isFinite(eta)||eta<=now) eta=now+((batteryLevel-20)/rate)*3600000;
     const d=new Date(eta);
     const hh=String(d.getHours()).padStart(2,'0'), mm=String(d.getMinutes()).padStart(2,'0');
@@ -665,48 +702,6 @@ if('serviceWorker' in navigator){
   function dateKeyOffset(n){
     const d=new Date(); d.setDate(d.getDate()-n);
     return naturalDayKey(d.getTime());
-  }
-
-  // 최근 7일 요약 (지난 7일과 비교)
-  function weeklyInsightHtml(){
-    const items=data.items||[];
-    const cur=new Set(Array.from({length:7},(_,i)=>dateKeyOffset(i)));
-    const prev=new Set(Array.from({length:7},(_,i)=>dateKeyOffset(i+7)));
-    const wk=items.filter(it=>cur.has(it.date));
-    let body='';
-    if(!wk.length){
-      body=`<div class="empty-progress">Log a few changes to see this week's summary.</div>`;
-    }else{
-      let charge=0, use=0;
-      const byUse={}, byCharge={}, byDay={};
-      wk.forEach(it=>{
-        const d=Number(it.delta)||0;
-        const name=(it.text||'').trim()||'Untitled';
-        if(d>0){ charge+=d; byCharge[name]=(byCharge[name]||0)+d; }
-        if(d<0){ use+=-d; byUse[name]=(byUse[name]||0)+(-d); }
-        byDay[it.date]=(byDay[it.date]||0)+d;
-      });
-      const top=o=>Object.entries(o).sort((a,b)=>b[1]-a[1])[0];
-      const prevUse=items.filter(it=>prev.has(it.date)).reduce((s,it)=>{ const d=Number(it.delta)||0; return d<0?s-d:s; },0);
-      const rows=[];
-      rows.push(['Charged / Used',`+${charge} / −${use}`]);
-      const tu=top(byUse); if(tu) rows.push(['Biggest drain',`${tu[0]} −${tu[1]}`]);
-      const tc=top(byCharge); if(tc) rows.push(['Best recharge',`${tc[0]} +${tc[1]}`]);
-      const worst=Object.entries(byDay).sort((a,b)=>a[1]-b[1])[0];
-      if(worst && worst[1]<0){
-        const [yy,mm,dd]=worst[0].split('-').map(Number);
-        rows.push(['Heaviest day',`${DAYS_SHORT[new Date(yy,mm-1,dd).getDay()]} −${Math.abs(worst[1])}`]);
-      }
-      if(prevUse>0){
-        const diff=use-prevUse;
-        rows.push(['Use vs last week',`${diff>=0?'+':'−'}${Math.abs(diff)}`]);
-      }
-      body=rows.map(([l,v])=>`<div class="insight-row"><span class="insight-label">${l}</span><span class="insight-value">${esc(v)}</span></div>`).join('');
-    }
-    return `<div class="activity-section">
-          <div class="activity-section-title">Last 7 days</div>
-          <div class="insight-list">${body}</div>
-        </div>`;
   }
 
   // ---- 건강 앱 연동 (iOS 단축어 → Firebase health/<userId>) ----
@@ -737,6 +732,181 @@ if('serviceWorker' in navigator){
       save();
     }
     if(!isTypingNote) render();
+  }
+
+  // ---- 아침 수면 팝업 ----
+  // 새벽 4시 이후 첫 실행에서 "How was your sleep?"을 묻고, 고른 값으로 충전량과 감소 속도를 정한다
+  const SLEEP_BONUS={good:50, normal:40, low:30};
+  function sleepPromptDue(){
+    if(new Date().getHours()<4) return false;
+    const today=todayKey();
+    if(data.sleepPromptDay===today) return false;
+    if((data.items||[]).some(it=>it.date===today&&it.text==='Sleep'&&Number(it.delta)>0)) return false;
+    return true;
+  }
+  function sleepPopupHtml(){
+    if(editOpen||!sleepPromptDue()) return '';
+    const btn=l=>`<button type="button" class="sleep-opt" data-sleep="${l}">${CONDITION_LABELS[l]}<small>+${SLEEP_BONUS[l]}%</small></button>`;
+    return `
+      <div class="sleep-overlay">
+        <div class="sleep-card">
+          <div class="sleep-title">How was your sleep?</div>
+          <div class="sleep-sub">Sets today's charge and drain speed</div>
+          <div class="sleep-options">${btn('good')}${btn('normal')}${btn('low')}</div>
+          <button type="button" class="sleep-skip" id="sleep-skip">Skip</button>
+        </div>
+      </div>`;
+  }
+  async function applySleep(level){
+    if(!SLEEP_BONUS[level]) return;
+    const today=todayKey();
+    data.sleepPromptDay=today; // 먼저 표시해서, 이후 계산에서 감소 시계가 멈추지 않게 한다
+    const before=batteryLevel;
+    batteryLevel=Math.max(0,Math.min(100,batteryLevel+SLEEP_BONUS[level]));
+    const delta=batteryLevel-before;
+    if(delta>0){
+      if(!data.items) data.items=[];
+      data.items.push({id:uid(),type:'heal',delta,text:'Sleep',date:today,timestamp:Date.now()});
+    }
+    setTodayCondition(level); // 감소 속도 (Good 2 / Normal 3 / Low 4 %/h)
+    data.drainAt=Date.now(); data.drainCarry=0; // 밤사이 시간은 수면 충전에 이미 포함
+    await save(); render();
+  }
+  async function skipSleep(){
+    data.sleepPromptDay=todayKey();
+    await save(); render();
+  }
+
+  // ---- 루틴 ----
+  // 루틴(이름, 시작~종료 시각, 요일)을 등록해 두면, 종료 시각이 지난 뒤 처음 앱에 들어왔을 때
+  // 팝업이 뜨고 배터리를 드래그해서 +/− 변화량을 정한다. 하루에 루틴당 한 번만 묻는다.
+  function escAttr(s){ return esc(s).replace(/"/g,'&quot;'); }
+  function parseHM(t){ const m=/^(\d{1,2}):(\d{2})$/.exec(String(t||'')); return m?Number(m[1])*60+Number(m[2]):NaN; }
+  function getRoutines(){ return Array.isArray(data.routines)?data.routines.filter(r=>r&&r.id):[]; }
+  function routineDueList(){
+    const now=new Date();
+    const mins=now.getHours()*60+now.getMinutes(), dow=now.getDay();
+    const done=(data.routineDone&&data.routineDone[todayKey()])||{};
+    return getRoutines().filter(r=>{
+      const e=parseHM(r.end);
+      return Number.isFinite(e)&&mins>=e&&!done[r.id]&&Array.isArray(r.days)&&r.days.includes(dow);
+    }).sort((a,b)=>parseHM(a.end)-parseHM(b.end));
+  }
+  function markRoutineDone(id){
+    if(!data.routineDone) data.routineDone={};
+    const t=todayKey();
+    if(!data.routineDone[t]) data.routineDone[t]={};
+    data.routineDone[t][id]=true;
+    const old=dateKeyOffset(10);
+    Object.keys(data.routineDone).forEach(k=>{ if(k<old) delete data.routineDone[k]; });
+  }
+  function routinePopupHtml(){
+    if(editOpen||sleepPromptDue()) return '';
+    const list=routineDueList();
+    if(!list.length){ routineDraft=null; return ''; }
+    const r=list[0];
+    if(!routineDraft||routineDraft.id!==r.id) routineDraft={id:r.id,target:batteryLevel};
+    const t=routineDraft.target;
+    return `
+      <div class="sleep-overlay">
+        <div class="sleep-card">
+          ${list.length>1?`<div class="sleep-sub">1 of ${list.length}</div>`:''}
+          <div class="sleep-title">${esc(r.name||'Routine')}</div>
+          <div class="sleep-sub">Ended ${esc(r.end)} · drag the battery</div>
+          <div class="routine-bat" id="routine-bat">
+            <div class="routine-fill" id="routine-fill" style="width:${t}%"></div>
+            <div class="routine-now" style="left:calc(5px + (100% - 10px) * ${batteryLevel/100})"></div>
+            <div class="routine-pct" id="routine-pct">${t}%</div>
+          </div>
+          <div class="routine-delta" id="routine-delta"></div>
+          <div class="edit-actions">
+            <button type="button" class="cancel-btn" id="routine-skip">Skip</button>
+            <button type="button" class="apply-btn" id="routine-done">Done</button>
+          </div>
+        </div>
+      </div>`;
+  }
+  function paintRoutine(){
+    if(!routineDraft) return;
+    const t=routineDraft.target, d=t-batteryLevel;
+    const sign=d>0?'+':'−';
+    const f=document.getElementById('routine-fill'); if(f) f.style.width=t+'%';
+    const p=document.getElementById('routine-pct'); if(p) p.textContent=t+'%';
+    const dl=document.getElementById('routine-delta');
+    if(dl){ dl.textContent=d===0?'No change':`${sign}${Math.abs(d)}%`; dl.className='routine-delta'+(d>0?' plus':d<0?' minus':''); }
+    const b=document.getElementById('routine-done'); if(b) b.textContent=d===0?'Done':`Done · ${sign}${Math.abs(d)}%`;
+  }
+  async function applyRoutine(){
+    const r=routineDueList()[0];
+    if(!r||!routineDraft) return;
+    const target=Math.max(0,Math.min(100,routineDraft.target));
+    const delta=target-batteryLevel;
+    if(delta!==0){
+      if(!data.items) data.items=[];
+      data.items.push({id:uid(),type:delta>0?'heal':'plan',delta,text:(r.name||'Routine'),date:todayKey(),timestamp:Date.now()});
+      batteryLevel=target;
+    }
+    markRoutineDone(r.id);
+    routineDraft=null;
+    await save(); render();
+  }
+  async function skipRoutine(){
+    const r=routineDueList()[0];
+    if(r) markRoutineDone(r.id);
+    routineDraft=null;
+    await save(); render();
+  }
+  function routineDaysLabel(days){
+    const d=(Array.isArray(days)?days:[]).slice().sort().join();
+    if(d==='0,1,2,3,4,5,6') return 'Every day';
+    if(d==='1,2,3,4,5') return 'Weekdays';
+    if(d==='0,6') return 'Weekends';
+    return d?d.split(',').map(x=>DAYS_SHORT[Number(x)]).join(' '):'No days';
+  }
+  function routineStatus(r){
+    const now=new Date();
+    if(!Array.isArray(r.days)||!r.days.includes(now.getDay())) return 'Not today';
+    const done=(data.routineDone&&data.routineDone[todayKey()])||{};
+    if(done[r.id]) return 'Done today';
+    const e=parseHM(r.end), mins=now.getHours()*60+now.getMinutes();
+    if(Number.isFinite(e)&&mins>=e) return 'Pending · answer on Home';
+    return `Asks at ${r.end}`;
+  }
+  function renderRoutine(){
+    const rs=getRoutines();
+    const order=[1,2,3,4,5,6,0];
+    const cards=rs.map(r=>{
+      const open=editingRoutineId===r.id;
+      const rid=escAttr(r.id);
+      const body=open?`
+        <div class="routine-edit" data-rid="${rid}">
+          <input class="routine-name" data-rf="name" value="${escAttr(r.name)}" maxlength="24" placeholder="Name">
+          <div class="routine-times">
+            <input type="time" class="routine-time" data-rf="start" value="${escAttr(r.start)}"><span>–</span><input type="time" class="routine-time" data-rf="end" value="${escAttr(r.end)}">
+          </div>
+          <div class="routine-days">${order.map(d=>`<button type="button" class="routine-day${d===0?' sun':''}${(r.days||[]).includes(d)?' on':''}" data-rday="${d}" data-rid="${rid}">${DAYS_SHORT[d].slice(0,1)}</button>`).join('')}</div>
+          <button type="button" class="routine-delete" data-rdel="${rid}">Delete routine</button>
+        </div>`:'';
+      return `<div class="routine-card${open?' open':''}">
+        <div class="routine-card-head">
+          <div class="routine-card-main">
+            <div class="routine-card-name">${esc(r.name||'Routine')}</div>
+            <div class="routine-card-meta">${esc(r.start)}–${esc(r.end)} · ${routineDaysLabel(r.days)}</div>
+            <div class="routine-card-status">${esc(routineStatus(r))}</div>
+          </div>
+          <button type="button" class="reason-edit-btn" data-redit="${rid}">${open?'Done':'Edit'}</button>
+        </div>${body}
+      </div>`;
+    }).join('');
+    return `
+      <div class="minimal-routine">
+        <div class="progress-head">
+          <span class="progress-title">Routine</span>
+        </div>
+        ${cards}
+        <button type="button" class="sync-copy routine-add" id="routine-add">+ Add routine</button>
+      </div>
+      <button type="button" class="progress-home" id="open-home">Home</button>`;
   }
 
   function setupNotification(){
@@ -801,6 +971,7 @@ if('serviceWorker' in navigator){
 
     return `
       <div class="minimal-home">
+        <button type="button" class="minimal-tab home-progress-btn" id="open-progress">Progress</button>
         <div class="day-question">
           <span class="day-question-label">How was your day?</span>
           <textarea class="day-question-text" id="daily-note" rows="2" maxlength="120" placeholder="">${esc(note)}</textarea>
@@ -833,10 +1004,10 @@ if('serviceWorker' in navigator){
           </div>
         </div>
         <div class="home-actions">
-          <button type="button" class="minimal-tab" id="open-progress">Progress</button>
+          <button type="button" class="minimal-tab" id="open-routine">Routine</button>
           <button type="button" class="minimal-edit" id="minimal-edit">${isEditing?'Close':'Edit'}</button>
         </div>
-        ${panelHtml}
+        ${panelHtml}${sleepPopupHtml()}${routinePopupHtml()}
       </div>`;
   }
 
@@ -915,7 +1086,6 @@ if('serviceWorker' in navigator){
         <div class="month-grid">${cells}</div>
         <div class="progress-summary"><span>${changeCount} changes</span><span>${monthDelta>=0?'+':''}${monthDelta}% net</span></div>
         ${detailHtml}
-        ${weeklyInsightHtml()}
         <div class="activity-section">
           <div class="activity-section-title">Recent changes</div>
           <div class="activity-list">${recentHtml}</div>
@@ -978,9 +1148,10 @@ if('serviceWorker' in navigator){
   }
 
   function render(){
+    if(routineDragging) return;
     applyTheme();
     root.innerHTML=`
-      ${activeTab==='home'?renderHome():renderProgress()}`;
+      ${activeTab==='home'?renderHome():activeTab==='routine'?renderRoutine():renderProgress()}`;
     bindEvents();
   }
 
@@ -998,6 +1169,29 @@ if('serviceWorker' in navigator){
       document.getElementById('open-progress')?.addEventListener('click',()=>{
         activeTab='progress'; editOpen=false; inlineMode=null; editingReasons=false; render();
       });
+      document.getElementById('open-routine')?.addEventListener('click',()=>{
+        activeTab='routine'; editOpen=false; inlineMode=null; editingReasons=false; editingRoutineId=null; render();
+      });
+
+      root.querySelectorAll('[data-sleep]').forEach(b=>b.addEventListener('click',()=>applySleep(b.dataset.sleep)));
+      document.getElementById('sleep-skip')?.addEventListener('click',skipSleep);
+
+      const rbat=document.getElementById('routine-bat');
+      if(rbat&&routineDraft){
+        const setT=(clientX)=>{
+          const rect=rbat.getBoundingClientRect();
+          routineDraft.target=Math.max(0,Math.min(100,Math.round(((clientX-rect.left)/rect.width)*100)));
+          paintRoutine();
+        };
+        rbat.addEventListener('pointerdown',e=>{ routineDragging=true; rbat.setPointerCapture?.(e.pointerId); setT(e.clientX); });
+        rbat.addEventListener('pointermove',e=>{ if(routineDragging) setT(e.clientX); });
+        const endDrag=()=>{ routineDragging=false; };
+        rbat.addEventListener('pointerup',endDrag);
+        rbat.addEventListener('pointercancel',endDrag);
+        paintRoutine();
+      }
+      document.getElementById('routine-skip')?.addEventListener('click',skipRoutine);
+      document.getElementById('routine-done')?.addEventListener('click',applyRoutine);
 
       const noteEl=document.getElementById('daily-note');
 
@@ -1111,16 +1305,7 @@ if('serviceWorker' in navigator){
         const delta=targetBattery-batteryLevel;
         if(delta!==0){
           batteryLevel=targetBattery;
-          // Keep manual changes in the same natural-drain baseline so the
-          // battery changes immediately and continues to decay from the
-          // morning baseline rather than being overwritten on reload.
-          const currentBase=Number(data.naturalBaseBattery);
-          if(Number.isFinite(currentBase)) {
-            data.naturalBaseBattery=Math.max(0,Math.min(100,currentBase+delta));
-          } else {
-            data.naturalBaseBattery=batteryLevel;
-            data.naturalBaseAt=Date.now();
-          }
+          // 수동 변경은 자연 감소 계산과 분리되어 있어 그대로 유지된다
           if(!data.items) data.items=[];
           const reasonListKey=inlineMode==='charge'?'chargeReasons':'drainReasons';
           if(!data[reasonListKey]) data[reasonListKey]=inlineMode==='charge'?[...DEF_CHARGE]:[...DEF_DRAIN];
@@ -1130,6 +1315,37 @@ if('serviceWorker' in navigator){
         }
         editOpen=false; inlineMode=null; editingReasons=false; render();
       });
+    }
+
+    if(activeTab==='routine'){
+      document.getElementById('open-home')?.addEventListener('click',()=>{ activeTab='home'; editingRoutineId=null; render(); });
+      root.querySelectorAll('[data-redit]').forEach(b=>b.addEventListener('click',()=>{
+        editingRoutineId=editingRoutineId===b.dataset.redit?null:b.dataset.redit; render();
+      }));
+      document.getElementById('routine-add')?.addEventListener('click',async()=>{
+        if(!Array.isArray(data.routines)) data.routines=[];
+        const id=uid();
+        data.routines.push({id,name:'Routine',start:'09:00',end:'18:00',days:[1,2,3,4,5]});
+        editingRoutineId=id; await save(); render();
+      });
+      root.querySelectorAll('[data-rdel]').forEach(b=>b.addEventListener('click',async()=>{
+        if(!confirm('Delete this routine?')) return;
+        data.routines=getRoutines().filter(r=>r.id!==b.dataset.rdel);
+        editingRoutineId=null; await save(); render();
+      }));
+      root.querySelectorAll('[data-rday]').forEach(b=>b.addEventListener('click',async()=>{
+        const r=getRoutines().find(x=>x.id===b.dataset.rid); if(!r) return;
+        const d=Number(b.dataset.rday), set=new Set(Array.isArray(r.days)?r.days:[]);
+        if(set.has(d)) set.delete(d); else set.add(d);
+        r.days=[...set].sort(); await save(); render();
+      }));
+      root.querySelectorAll('.routine-edit [data-rf]').forEach(inp=>inp.addEventListener('change',async()=>{
+        const r=getRoutines().find(x=>x.id===inp.closest('.routine-edit').dataset.rid); if(!r) return;
+        const f=inp.dataset.rf; let v=inp.value;
+        if(f==='name') v=v.trim()||'Routine';
+        else if(!Number.isFinite(parseHM(v))){ render(); return; }
+        r[f]=v; await save();
+      }));
     }
 
     if(activeTab==='progress'){
@@ -1166,6 +1382,8 @@ if('serviceWorker' in navigator){
         }
 
         if(!isTypingNote) render();
+      } else if(activeTab==='home'&&!isTypingNote&&!editOpen&&!document.querySelector('.sleep-overlay')&&(sleepPromptDue()||routineDueList().length)){
+        render(); // 루틴 종료 시각이 지나 팝업이 떠야 할 때
       }
     },60000);
   }
@@ -1177,7 +1395,8 @@ if('serviceWorker' in navigator){
   // 홈 화면 앱을 백그라운드에서 다시 열었을 때도 갱신
   document.addEventListener('visibilitychange',()=>{
     if(document.visibilityState==='visible'){
-      if(markOpened(false) && !isTypingNote) render();
+      const opened=markOpened(false);
+      if((opened||sleepPromptDue()||routineDueList().length) && !isTypingNote) render();
     }
   });
 })();
