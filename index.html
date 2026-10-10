@@ -545,16 +545,11 @@ if('serviceWorker' in navigator){
     const now=Date.now();
     const currentDay=naturalDayKey(now);
 
-    // 날짜가 바뀌면 시계만 새로 시작한다 (밀린 감소를 한꺼번에 반영하지 않음)
+    // 날짜가 바뀌어도 drainAt은 유지한다. 앱을 닫아 둔 밤사이에도 자연 감소가 누락되지 않게 한다.
     if(!data.naturalDay || data.naturalDay!==currentDay){
       data.naturalDay=currentDay;
-      data.drainAt=now;
-      data.drainCarry=0;
       data.conditionDate=currentDay;
       if(!CONDITION_RATES[data.condition]) data.condition='normal';
-      lastBatteryUpdate=now;
-      data.lastBatteryUpdate=now;
-      return false;
     }
 
     const at=Number(data.drainAt);
@@ -565,8 +560,7 @@ if('serviceWorker' in navigator){
       return false;
     }
 
-    // 아침 수면 팝업에 답하기 전까지는 감소 시계만 옮긴다 (밤사이 시간은 수면 충전에 포함)
-    if(sleepPromptDue()){ data.drainAt=now; data.drainCarry=0; return false; }
+    // 수면 팝업 응답 여부와 관계없이 자연 감소를 계속 적용한다.
 
     const hrs=Math.max(0,(now-at)/(1000*60*60));
     const rate=CONDITION_RATES[getTodayCondition()]||CONDITION_RATES.normal;
@@ -736,7 +730,7 @@ if('serviceWorker' in navigator){
 
   // ---- 아침 수면 팝업 ----
   // 새벽 4시 이후 첫 실행에서 "How was your sleep?"을 묻고, 고른 값으로 충전량과 감소 속도를 정한다
-  const SLEEP_BONUS={good:50, normal:40, low:30};
+  const SLEEP_BONUS={good:25, normal:20, low:15};
   function sleepPromptDue(){
     if(new Date().getHours()<4) return false;
     const today=todayKey();
@@ -1058,9 +1052,13 @@ if('serviceWorker' in navigator){
       </div>`;
     }
 
-    const recent=mitems.slice().sort((a,b)=>(b.timestamp||0)-(a.timestamp||0)).slice(0,12);
-    const recentHtml=recent.length
-      ?recent.map(it=>{
+    // Show changes for the calendar-selected date only, not recent changes across the month.
+    const selectedItems=selectedDay
+      ?(data.items||[]).filter(it=>it.date===selectedDay)
+          .slice().sort((a,b)=>(b.timestamp||0)-(a.timestamp||0))
+      :[];
+    const recentHtml=selectedItems.length
+      ?selectedItems.map(it=>{
         const d=Number(it.delta)||0;
         const sign=d>0?'+':'';
         const date=it.date.slice(5).replace('-','.');
@@ -1070,7 +1068,7 @@ if('serviceWorker' in navigator){
           <span class="activity-delta ${d<0?'negative':'positive'}">${sign}${d}%</span>
         </div>`;
       }).join('')
-      :`<div class="empty-progress">No changes yet.</div>`;
+      :`<div class="empty-progress">${selectedDay?'No changes on this day.':'Select a date on the calendar to see its changes.'}</div>`;
 
     return `
       <div class="minimal-progress">
@@ -1087,7 +1085,7 @@ if('serviceWorker' in navigator){
         <div class="progress-summary"><span>${changeCount} changes</span><span>${monthDelta>=0?'+':''}${monthDelta}% net</span></div>
         ${detailHtml}
         <div class="activity-section">
-          <div class="activity-section-title">Recent changes</div>
+          <div class="activity-section-title">Selected day changes</div>
           <div class="activity-list">${recentHtml}</div>
         </div>
         ${(()=>{
