@@ -1,78 +1,109 @@
-const admin = require('firebase-admin');
+const https = require('https');
 
-const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+const FIREBASE_DB_URL = "https://zero-3dfef-default-rtdb.firebaseio.com";
+const FCM_SERVER_KEY = process.env.FCM_SERVER_KEY; // GitHub Secret에서 가져옴
 
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-  databaseURL: "https://zero-3dfef-default-rtdb.firebaseio.com"
-});
+function fetchJSON(url) {
+  return new Promise((resolve, reject) => {
+    https.get(url, (res) => {
+      let data = '';
+      res.on('data', chunk => data += chunk);
+      res.on('end', () => {
+        try { resolve(JSON.parse(data)); } catch (e) { resolve(null); }
+      });
+    }).on('error', reject);
+  });
+}
 
-const db = admin.database();
+function sendFCM(token, title, body, tag) {
+  return new Promise((resolve) => {
+    const payload = JSON.stringify({
+      to: token,
+      notification: { title, body },
+      data: { tag, title, body }
+    });
 
-async function checkAndSendRoutines() {
+    const req = https.request({
+      hostname: 'fcm.googleapis.com',
+      path: '/fcm/send',
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `key=${FCM_SERVER_KEY}`,
+        'Content-Length': Buffer.byteLength(payload)
+      }
+    }, (res) => {
+      let resData = '';
+      res.on('data', c => resData += c);
+      res.on('end', () => resolve(resData));
+    });
+
+    req.on('error', (e) => {
+      console.error('FCM 전송 실패:', e.message);
+      resolve(null);
+    });
+
+    req.write(payload);
+    req.end();
+  });
+}
+
+function parseHM(t) {
+  const m = /^(\d{1,2}):(\d{2})$/.exec(String(t || ''));
+  return m ? Number(m[1]) * 60 + Number(m[2]) : NaN;
+}
+
+async function run() {
+  if (!FCM_SERVER_KEY) {
+    console.error("FCM_SERVER_KEY 환경변수가 설정되지 않았습니다.");
+    process.exit(1);
+  }
+
+  // 한국 시간(KST) 구하기
   const now = new Date();
   const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
-  const kst = new Date(utc + (9 * 60 * 60000));
+  const kst = new Date(utc + (9 * 3600000));
 
-  const currentHours = kst.getHours();
-  const currentMins = kst.getMinutes();
-  const currentDay = kst.getDay();
-  const todayStr = `${kst.getFullYear()}-${String(kst.getMonth()+1).padStart(2,'0')}-${String(kst.getDate()).padStart(2,'0')}`;
+  const currentDow = kst.getDay();
+  const currentMinutes = kst.getHours() * 60 + kst.getMinutes();
 
-  console.log(`[스케줄러] KST: ${currentHours}:${String(currentMins).padStart(2,'0')} (${todayStr})`);
+  console.log(`현재 KST 시각: ${String(kst.getHours()).padStart(2,'0')}:${String(kst.getMinutes()).padStart(2,'0')} (요일: ${currentDow})`);
 
-  const tokensSnap = await db.ref('pushTokens').once('value');
-  const tokensData = tokensSnap.val() || {};
+  const [users, tokens] = await Promise.all([
+    fetchJSON(`${FIREBASE_DB_URL}/users.json`),
+    fetchJSON(`${FIREBASE_DB_URL}/pushTokens.json`)
+  ]);
 
-  const usersSnap = await db.ref('users').once('value');
-  const usersData = usersSnap.val() || {};
+  if (!users || !tokens) {
+    console.log("유저 또는 토큰 데이터가 없습니다.");
+    return;
+  }
 
-  for (const [userId, user] of Object.entries(usersData)) {
-    const tokenInfo = tokensData[userId];
-    if (!tokenInfo || !tokenInfo.token) {
-      console.log(`[스킵] ${userId} 토큰 없음`);
-      continue;
-    }
+  for (const [userId, userData] of Object.entries(users)) {
+    const tokenObj = tokens[userId];
+    if (!tokenObj || !tokenObj.token) continue;
 
-    const routines = Array.isArray(user.routines) ? user.routines : [];
-    const scheduleState = (user.routineScheduleState && user.routineScheduleState[todayStr]) || {};
+    const routines = Array.isArray(userData.routines) ? userData.routines : [];
 
-    for (const routine of routines) {
-      if (!routine || !routine.start) continue;
-      if (!Array.isArray(routine.days) || !routine.days.includes(currentDay)) continue;
+    for (const r of routines) {
+      if (!Array.isArray(r.days) || !r.days.includes(currentDow)) continue;
 
-      const [rHour, rMin] = routine.start.split(':').map(Number);
-      const startTotalMins = rHour * 60 + rMin;
-      const currentTotalMins = currentHours * 60 + currentMins;
+      const routineStartMins = parseHM(r.start);
+      if (isNaN(routineStartMins)) continue;
 
-      const diff = currentTotalMins - startTotalMins;
-      const st = scheduleState[routine.id] || {};
-
-      console.log(`루틴 확인: ${routine.name} (시작 ${routine.start}, 차이: ${diff}분)`);
-
-      // 시작 시각으로부터 0 ~ 15분 이내
-      if (diff >= 0 && diff <= 15 && !st.firstNoticeSent) {
-        console.log(`[푸시 전송] ${routine.name} 시작 알림 -> ${userId}`);
-        try {
-          await admin.messaging().send({
-            token: tokenInfo.token,
-            notification: {
-              title: `Time for ${routine.name || 'Routine'}`,
-              body: `루틴 시작 시간입니다! 지금 시작해보세요.`
-            }
-          });
-          await db.ref(`users/${userId}/routineScheduleState/${todayStr}/${routine.id}/firstNoticeSent`).set(true);
-        } catch(e) {
-          console.error('FCM 전송 실패:', e.message);
-        }
+      // GitHub Actions 실행 오차(±5분) 고려: 현재 시각과 루틴 시각이 5분 이내일 때 발송
+      const diff = currentMinutes - routineStartMins;
+      if (diff >= 0 && diff < 10) {
+        console.log(`[발송] 유저 ${userId} - ${r.name || '루틴'} (${r.start})`);
+        await sendFCM(
+          tokenObj.token,
+          `Time for ${r.name || 'Routine'}`,
+          `Your ${r.name || 'routine'} is scheduled now.`,
+          `routine-${r.id}`
+        );
       }
     }
   }
-  console.log('[스케줄러 완료]');
-  process.exit(0);
 }
 
-checkAndSendRoutines().catch(err => {
-  console.error(err);
-  process.exit(1);
-});
+run();
