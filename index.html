@@ -196,6 +196,7 @@
   .stat-pct{ font-family:ui-monospace,"SF Mono",monospace; font-weight:700; color:var(--ink); }
   .stat-bar-track{ width:100%; height:6px; background:var(--divider); border-radius:3px; overflow:hidden; }
   .stat-bar-fill{ height:100%; background:var(--ink); border-radius:3px; }
+
   /* Minimal Caru */
   :root{
     --paper:#000;
@@ -262,6 +263,23 @@
   .condition-btn.active{border-color:#666;color:#aaa;}
   .condition-btn:active{color:#ddd;border-color:#888;}
   .condition-rate{color:#444;white-space:nowrap;font-size:9px;}
+
+  /* 홈 화면 대형 10분 루틴 카운트다운 배너 */
+  .home-routine-alert{
+    position:absolute;left:7%;right:7%;top:calc(51% - 100px);z-index:8;
+    background:#0d0d0d;border:1px solid #333;border-radius:14px;
+    padding:12px 14px;display:flex;align-items:center;justify-content:space-between;
+    box-shadow:0 4px 20px rgba(0,0,0,0.7);
+  }
+  .hra-info{display:flex;flex-direction:column;gap:3px;}
+  .hra-title{color:#ff453a;font-size:10px;font-weight:700;letter-spacing:0.04em;}
+  .hra-timer{font-family:ui-monospace,"SF Mono",monospace;font-size:22px;font-weight:700;color:#f5f5f5;}
+  .hra-btn{
+    border:1px solid #444;background:#181818;color:#ddd;border-radius:8px;
+    padding:8px 12px;font-size:12px;font-weight:600;cursor:pointer;
+  }
+  .hra-btn:active{background:#2a2a2a;color:#fff;}
+
   .battery-status{
     position:absolute;left:50%;top:calc(51% + 72px);
     transform:translateX(-50%);
@@ -450,19 +468,19 @@
   .progress-home{position:fixed;right:20px;top:max(14px,calc(env(safe-area-inset-top) + 8px));bottom:auto;z-index:99999;display:block !important;border:0;background:#000;color:#777;font:400 14px -apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;padding:8px 2px;cursor:pointer;}
   .tabs,.top-bar{display:none;}
 
-/* Category ranking */
-.ranking-section{margin-top:28px;padding-bottom:36px;}
-.rank-block{margin-top:20px;}
-.rank-subtitle{font-size:11px;color:#ddd;margin-bottom:10px;letter-spacing:.04em;}
-.rank-symbol{display:inline-flex;width:18px;height:18px;align-items:center;justify-content:center;border:1px solid #333;border-radius:50%;margin-right:6px;font-size:11px;}
-.rank-header,.rank-row{display:grid;grid-template-columns:22px 1fr 52px;gap:8px;align-items:center;} .rank-empty{color:#444;}
-.rank-header{padding:0 0 8px;color:#666;font-size:9px;text-transform:uppercase;letter-spacing:.08em;border-bottom:1px solid #222;}
-.rank-row{min-height:38px;border-bottom:1px solid #181818;font-size:12px;}
-.rank-no{color:#555;font-size:10px;}
-.rank-name{color:#ddd;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.rank-total{text-align:right;color:#aaa;}
-.plus-symbol{color:#aaa}.minus-symbol{color:#777;}
-@media (max-width:520px){.rank-header,.rank-row{grid-template-columns:20px 1fr 48px;gap:6px;}}
+  /* Category ranking */
+  .ranking-section{margin-top:28px;padding-bottom:36px;}
+  .rank-block{margin-top:20px;}
+  .rank-subtitle{font-size:11px;color:#ddd;margin-bottom:10px;letter-spacing:.04em;}
+  .rank-symbol{display:inline-flex;width:18px;height:18px;align-items:center;justify-content:center;border:1px solid #333;border-radius:50%;margin-right:6px;font-size:11px;}
+  .rank-header,.rank-row{display:grid;grid-template-columns:22px 1fr 52px;gap:8px;align-items:center;} .rank-empty{color:#444;}
+  .rank-header{padding:0 0 8px;color:#666;font-size:9px;text-transform:uppercase;letter-spacing:.08em;border-bottom:1px solid #222;}
+  .rank-row{min-height:38px;border-bottom:1px solid #181818;font-size:12px;}
+  .rank-no{color:#555;font-size:10px;}
+  .rank-name{color:#ddd;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .rank-total{text-align:right;color:#aaa;}
+  .plus-symbol{color:#aaa}.minus-symbol{color:#777;}
+  @media (max-width:520px){.rank-header,.rank-row{grid-template-columns:20px 1fr 48px;gap:6px;}}
 
   .ranking-head-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;}
   .ranking-head-row .activity-section-title{margin-bottom:0;}
@@ -496,7 +514,6 @@ if('serviceWorker' in navigator){
   let db=null, firebaseEnabled=false;
   try{ firebase.initializeApp(firebaseConfig); db=firebase.database(); firebaseEnabled=true; }catch(e){}
 
-  // Web Push: replace this placeholder with the public VAPID key from Firebase Console.
   const CARU_VAPID_PUBLIC_KEY = 'BLOzYr2natAEkCvHLhqzGiHu0oFlEbLJiB8e0I-7q9Ozq5DP6cerjGOieFGrHB1Qpdoecb4MCauz_p3uMT3K86E';
   let caruMessaging = null;
   try { if(firebaseEnabled && firebase.messaging && firebase.messaging.isSupported()) caruMessaging=firebase.messaging(); } catch(e) {}
@@ -547,9 +564,9 @@ if('serviceWorker' in navigator){
   function esc(s){ const d=document.createElement('div'); d.textContent=s||''; return d.innerHTML; }
 
   let batteryLevel=80, lastBatteryUpdate=Date.now();
-  let sinceLast=null; // {ms, drop} : 지난번 실행 이후 경과 시간과 자연 감소량
-  let healthInfo=null; // {hours, level, date} : 건강 앱(단축어)에서 받은 오늘 수면
-  let routineDraft=null, routineDragging=false, editingRoutineId=null; // 루틴 팝업 / 루틴 화면에서 편집 중인 루틴
+  let sinceLast=null;
+  let healthInfo=null;
+  let routineDraft=null, routineDragging=false, editingRoutineId=null;
   const CONDITION_RATES={good:2.0, normal:3.0, low:4.0};
   const CONDITION_LABELS={good:'Good', normal:'Normal', low:'Low'};
 
@@ -565,25 +582,20 @@ if('serviceWorker' in navigator){
   }
 
   function setTodayCondition(level,source){
-    // 속도를 바꾸기 전에, 지금까지 쌓인 감소를 이전 속도로 먼저 반영한다
     applyNaturalDrain();
     const k=naturalDayKey();
     data.conditionDate=k;
     data.condition=level;
-    // 직접 고른 경우만 기록: 수면 자동 설정이 사용자의 선택을 덮어쓰지 않게 한다
     if(source!=='sleep') data.conditionManualDate=k;
     data.naturalDay=k;
     lastBatteryUpdate=Date.now();
     data.lastBatteryUpdate=lastBatteryUpdate;
   }
 
-  // 자연 감소: 마지막으로 계산한 시각(drainAt)부터 지금까지의 감소만 현재 배터리에서 뺀다.
-  // 충전/사용으로 바꾼 값은 건드리지 않으므로, 예전 충전분이 되돌려지지 않는다.
   function applyNaturalDrain(){
     const now=Date.now();
     const currentDay=naturalDayKey(now);
 
-    // 날짜가 바뀌어도 drainAt은 유지한다. 앱을 닫아 둔 밤사이에도 자연 감소가 누락되지 않게 한다.
     if(!data.naturalDay || data.naturalDay!==currentDay){
       data.naturalDay=currentDay;
       data.conditionDate=currentDay;
@@ -592,17 +604,14 @@ if('serviceWorker' in navigator){
 
     const at=Number(data.drainAt);
     if(!Number.isFinite(at)||at<=0){
-      // 이전 버전 데이터: 지금부터 새로 시작
       data.drainAt=now;
       data.drainCarry=0;
       return false;
     }
 
-    // 수면 팝업 응답 여부와 관계없이 자연 감소를 계속 적용한다.
-
     const hrs=Math.max(0,(now-at)/(1000*60*60));
     const rate=CONDITION_RATES[getTodayCondition()]||CONDITION_RATES.normal;
-    let carry=(Number(data.drainCarry)||0)+hrs*rate; // 1% 미만 자투리까지 누적
+    let carry=(Number(data.drainCarry)||0)+hrs*rate;
     const whole=Math.floor(carry);
     carry-=whole;
     data.drainAt=now;
@@ -610,7 +619,6 @@ if('serviceWorker' in navigator){
 
     if(whole>=1 && batteryLevel>5){
       const nb=Math.max(5,batteryLevel-whole);
-      // 마지막으로 앱을 연 뒤 자연 감소한 양을 누적한다
       data.drainSinceOpen=(Number(data.drainSinceOpen)||0)+(batteryLevel-nb);
       batteryLevel=nb;
       lastBatteryUpdate=now;
@@ -674,7 +682,7 @@ if('serviceWorker' in navigator){
           if(!data.naturalDay){ data.naturalDay=todayKey(); data.naturalBaseBattery=batteryLevel; data.naturalBaseAt=Date.now(); }
           const naturalChanged=applyNaturalDrain();
           if(naturalChanged){ data.battery=batteryLevel; data.lastBatteryUpdate=lastBatteryUpdate; }
-          if(!isTypingNote) render();
+          if(!isTypingNote && !editingRoutineId) render();
         }
       });
       db.ref('health/'+userId).on('value',snap=>handleHealth(snap.val()));
@@ -815,10 +823,31 @@ if('serviceWorker' in navigator){
     if(!('Notification' in window) || Notification.permission!=='granted') return false;
     try{ new Notification(title,{body,tag,renotify:false}); return true; }catch(e){ return false; }
   }
+
+  // 홈 화면에 띄울 "지금 10분 내로 시작해야 하는 루틴" 찾기
+  function getActiveCountdownRoutine(){
+    const now=Date.now(), day=todayKey(), dow=new Date().getDay();
+    const states=routineStateMap();
+    for(const r of getRoutines()){
+      if(!Array.isArray(r.days)||!r.days.includes(dow)) continue;
+      const startAt=routineStartAt(r,day);
+      if(!Number.isFinite(startAt)) continue;
+      const st=states[r.id]||{};
+      const done=(data.routineDone&&data.routineDone[day]&&data.routineDone[day][r.id])||false;
+      if(done || st.started) continue;
+      const remain = startAt + 10*60*1000 - now;
+      if(now >= startAt && remain > 0){
+        return { routine: r, remainMs: remain };
+      }
+    }
+    return null;
+  }
+
   function markRoutineStarted(id){
     const states=routineStateMap();
     states[id]={...(states[id]||{}),started:true,startedAt:Date.now(),reminderSent:true};
   }
+
   async function checkRoutineSchedules(){
     const now=Date.now(), day=todayKey(), dow=new Date().getDay();
     const states=routineStateMap(); let changed=false;
@@ -1055,6 +1084,23 @@ if('serviceWorker' in navigator){
           </div>
           <span class="condition-rate">${CONDITION_RATES[getTodayCondition()].toFixed(1)}%/h</span>
         </div>
+
+        ${(()=>{
+          const act = getActiveCountdownRoutine();
+          if(!act) return '';
+          const mins = Math.floor(act.remainMs / 60000);
+          const secs = Math.floor((act.remainMs % 60000) / 1000);
+          const timeStr = `${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
+          return `
+            <div class="home-routine-alert">
+              <div class="hra-info">
+                <span class="hra-title">⏰ TIME FOR ${esc(act.routine.name).toUpperCase()}</span>
+                <span class="hra-timer">${timeStr}</span>
+              </div>
+              <button type="button" class="hra-btn" id="home-start-routine" data-rid="${escAttr(act.routine.id)}">Start Routine</button>
+            </div>`;
+        })()}
+
         ${cur<20
           ? `<div class="battery-status danger">DANGER · LOW ENERGY</div>`
           : cur>=80
@@ -1216,12 +1262,18 @@ if('serviceWorker' in navigator){
     root.querySelectorAll('.tab-btn').forEach(b=>b.addEventListener('click',()=>{ activeTab=b.dataset.tab; inlineMode=null; render(); }));
 
     if(activeTab==='home'){
-      // 알림 켜기 버튼 이벤트 (단독으로 등록)
       document.getElementById('btn-enable-notify')?.addEventListener('click', async () => {
         const ok = await registerCaruPush();
         if (ok) {
           alert('알림이 정상적으로 등록되었습니다!');
         }
+      });
+
+      document.getElementById('home-start-routine')?.addEventListener('click', async(e)=>{
+        const rid = e.target.dataset.rid;
+        if(rid) markRoutineStarted(rid);
+        await save();
+        render();
       });
 
       document.getElementById('minimal-edit')?.addEventListener('click',()=>{
@@ -1386,7 +1438,9 @@ if('serviceWorker' in navigator){
         markRoutineStarted(r.id); await save(); render();
       }));
       root.querySelectorAll('[data-redit]').forEach(b=>b.addEventListener('click',()=>{
-        editingRoutineId=editingRoutineId===b.dataset.redit?null:b.dataset.redit; render();
+        editingRoutineId=editingRoutineId===b.dataset.redit?null:b.dataset.redit;
+        save();
+        render();
       }));
       document.getElementById('routine-add')?.addEventListener('click',async()=>{
         if(!Array.isArray(data.routines)) data.routines=[];
@@ -1405,12 +1459,15 @@ if('serviceWorker' in navigator){
         if(set.has(d)) set.delete(d); else set.add(d);
         r.days=[...set].sort(); await save(); render();
       }));
-      root.querySelectorAll('.routine-edit [data-rf]').forEach(inp=>inp.addEventListener('change',async()=>{
+
+      // 시간이 바뀔 때 즉시 render()하지 않고 데이터만 저장 (창 닫힘 방지 핵심 수정!)
+      root.querySelectorAll('.routine-edit [data-rf]').forEach(inp=>inp.addEventListener('input',async()=>{
         const r=getRoutines().find(x=>x.id===inp.closest('.routine-edit').dataset.rid); if(!r) return;
         const f=inp.dataset.rf; let v=inp.value;
         if(f==='name') v=v.trim()||'Routine';
-        else if(!Number.isFinite(parseHM(v))){ render(); return; }
-        r[f]=v; await save();
+        else if(!Number.isFinite(parseHM(v))) return;
+        r[f]=v;
+        save();
       }));
     }
 
@@ -1454,6 +1511,21 @@ if('serviceWorker' in navigator){
       }
     },15000);
   }
+
+  // 1초마다 홈 화면 10분 타이머 숫자 실시간 갱신
+  setInterval(()=>{
+    if(activeTab==='home' && !routineDragging && !editOpen){
+      const act = getActiveCountdownRoutine();
+      const el = document.querySelector('.hra-timer');
+      if(el && act){
+        const mins = Math.floor(act.remainMs / 60000);
+        const secs = Math.floor((act.remainMs % 60000) / 1000);
+        el.textContent = `${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
+      } else if(act || (!act && el)){
+        render();
+      }
+    }
+  }, 1000);
 
   load().then(()=>{
     startNaturalDrainTimer();
