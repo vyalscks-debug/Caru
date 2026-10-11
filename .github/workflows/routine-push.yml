@@ -1,27 +1,24 @@
-name: Caru Routine Push Scheduler
+name: Send Routine Push Notification
 
 on:
   schedule:
-    # 15분마다 자동 실행 (GitHub Actions 무료 cron 스케줄러)
-    - cron: '*/15 * * * *'
-  workflow_dispatch: # Actions 탭에서 수동으로 테스트 실행해볼 수 있는 버튼 생성
+    # 매 10분마다 자동 실행 (GitHub Actions 무료 스케줄러 최소 단위)
+    - cron: '*/10 * * * *'
+  workflow_dispatch: # 테스트용 수동 실행 버튼
 
 jobs:
-  check-and-push:
+  run-routine:
     runs-on: ubuntu-latest
     steps:
-      - name: 저장소 체크아웃
+      - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Node.js 설정
+      - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: 18
 
-      - name: firebase-admin 설치
-        run: npm install firebase-admin
-
-      - name: 루틴 알림 체크 및 전송
+      - name: Run routine script
         env:
-          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          FCM_SERVER_KEY: ${{ secrets.FCM_SERVER_KEY }}
         run: node send_routine.js
