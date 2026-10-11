@@ -431,6 +431,8 @@
   .minimal-progress .day-detail{border:1px solid #222 !important;border-radius:14px;padding:13px;margin:15px 0;}
   .minimal-progress .day-detail-title{color:#777;font-size:11px;margin-bottom:9px;}
   .minimal-progress .day-detail-item{display:flex;gap:8px;align-items:center;padding:5px 0;font-size:11px;color:#777;border-bottom:1px solid #181818 !important;}
+  .minimal-progress .day-detail-name{flex:1;min-width:0;}
+  .minimal-progress .day-detail-delta{margin-left:auto;white-space:nowrap;font-family:ui-monospace,"SF Mono",monospace;font-size:11px;color:#bbb;}
   .minimal-progress .type-pill{color:#999;border-color:#333;background:transparent;}
   .minimal-progress .type-pill.drain{color:#aaa;background:#2b2b2b;border-color:#333;}
   .minimal-progress .day-detail-item:last-child{border-bottom:none !important;}
@@ -760,7 +762,7 @@ if('serviceWorker' in navigator){
     const delta=batteryLevel-before;
     if(delta>0){
       if(!data.items) data.items=[];
-      data.items.push({id:uid(),type:'heal',delta,text:'Sleep',date:today,timestamp:Date.now()});
+      data.items.push({id:uid(),type:'heal',delta,text:'Sleep',date:today,timestamp:Date.now(),beforeBattery:before,afterBattery:batteryLevel});
     }
     setTodayCondition(level); // 감소 속도 (Good 2 / Normal 3 / Low 4 %/h)
     data.drainAt=Date.now(); data.drainCarry=0; // 밤사이 시간은 수면 충전에 이미 포함
@@ -837,7 +839,7 @@ if('serviceWorker' in navigator){
     const delta=target-batteryLevel;
     if(delta!==0){
       if(!data.items) data.items=[];
-      data.items.push({id:uid(),type:delta>0?'heal':'plan',delta,text:(r.name||'Routine'),date:todayKey(),timestamp:Date.now()});
+      data.items.push({id:uid(),type:delta>0?'heal':'plan',delta,text:(r.name||'Routine'),date:todayKey(),timestamp:Date.now(),beforeBattery:batteryLevel,afterBattery:target});
       batteryLevel=target;
     }
     markRoutineDone(r.id);
@@ -1040,7 +1042,10 @@ if('serviceWorker' in navigator){
         ?di2.map(it=>{
           const d=Number(it.delta)||0;
           const sign=d>0?'+':'';
-          return `<div class="day-detail-item"><span class="type-pill${d<0?' drain':''}">${sign}${d}%</span><span>${esc(it.text||'')}</span></div>`;
+          const actual=Number.isFinite(Number(it.beforeBattery)) && Number.isFinite(Number(it.afterBattery))
+            ? `${Number(it.beforeBattery)}% → ${Number(it.afterBattery)}%`
+            : 'before/after unavailable';
+          return `<div class="day-detail-item"><span class="day-detail-name">${esc(it.text||'')}</span><span class="day-detail-delta">${sign}${d}% (${actual})</span></div>`;
         }).join('')
         :`<div style="padding:7px 0;color:#444;font-size:11px">No changes this day.</div>`;
       const cmt=data.comments?.[selectedDay];
@@ -1052,15 +1057,7 @@ if('serviceWorker' in navigator){
       </div>`;
     }
 
-    // Reconstruct a rough start/end level for the selected date from recorded changes.
-    // Natural drain is not logged per event, so historical levels are an estimate.
-    const allItems=(data.items||[]).slice().sort((a,b)=>(a.timestamp||0)-(b.timestamp||0));
-    const selectedItems=selectedDay?allItems.filter(it=>it.date===selectedDay):[];
-    const dayNet=selectedItems.reduce((sum,it)=>sum+(Number(it.delta)||0),0);
-    const laterNet=selectedDay?allItems.filter(it=>it.date>selectedDay).reduce((sum,it)=>sum+(Number(it.delta)||0),0):0;
-    const estimatedEnd=Math.max(0,Math.min(100,batteryLevel-laterNet));
-    const estimatedStart=Math.max(0,Math.min(100,estimatedEnd-dayNet));
-    const levelTransition=selectedDay?`${estimatedStart}% → ${estimatedEnd}%`:'';
+    
 
     return `
       <div class="minimal-progress">
@@ -1074,7 +1071,7 @@ if('serviceWorker' in navigator){
         </div>
         <div class="month-weekday-row">${wkHtml}</div>
         <div class="month-grid">${cells}</div>
-        <div class="progress-summary"><span>${changeCount} changes</span><span>${selectedDay?levelTransition:`${monthDelta>=0?'+':''}${monthDelta}% net`}</span></div>
+        <div class="progress-summary"><span>${changeCount} changes</span><span>${monthDelta>=0?'+':''}${monthDelta}% net</span></div>
         ${detailHtml}
         ${(()=>{
           const ranks={};
@@ -1296,7 +1293,7 @@ if('serviceWorker' in navigator){
           const reasonListKey=inlineMode==='charge'?'chargeReasons':'drainReasons';
           if(!data[reasonListKey]) data[reasonListKey]=inlineMode==='charge'?[...DEF_CHARGE]:[...DEF_DRAIN];
           if(selectedReason && !data[reasonListKey].includes(selectedReason)) data[reasonListKey].push(selectedReason);
-          data.items.push({id:uid(),type:inlineMode==='charge'?'heal':'plan',delta,text:selectedReason,date:todayKey(),timestamp:Date.now()});
+          data.items.push({id:uid(),type:inlineMode==='charge'?'heal':'plan',delta,text:selectedReason,date:todayKey(),timestamp:Date.now(),beforeBattery:batteryLevel,afterBattery:targetBattery});
           await save();
         }
         editOpen=false; inlineMode=null; editingReasons=false; render();
