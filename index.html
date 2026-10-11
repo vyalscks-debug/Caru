@@ -11,6 +11,7 @@
 <title>Caru - Human Battery</title>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-messaging-compat.js"></script>
 <style>
   :root{
     --ink:#151515; --paper:#fbfaf8; --muted:#8e8e93; --faint:#e5e5ea;
@@ -495,6 +496,41 @@ if('serviceWorker' in navigator){
   let db=null, firebaseEnabled=false;
   try{ firebase.initializeApp(firebaseConfig); db=firebase.database(); firebaseEnabled=true; }catch(e){}
 
+  // Web Push: replace this placeholder with the public VAPID key from Firebase Console.
+  const CARU_VAPID_PUBLIC_KEY = 'PASTE_PUBLIC_VAPID_KEY_HERE';
+  let caruMessaging = null;
+  try { if(firebaseEnabled && firebase.messaging && firebase.messaging.isSupported()) caruMessaging=firebase.messaging(); } catch(e) {}
+
+  async function registerCaruPush(){
+    if(!firebaseEnabled || !db || !caruMessaging) {
+      alert('Push messaging is not supported here. Open Caru from its iPhone Home Screen icon and try again.');
+      return false;
+    }
+    if(!('Notification' in window) || !('serviceWorker' in navigator)) {
+      alert('Notifications require an iPhone Home Screen web app and a supported iOS version.');
+      return false;
+    }
+    if(CARU_VAPID_PUBLIC_KEY==='PASTE_PUBLIC_VAPID_KEY_HERE'){
+      alert('First paste the public VAPID key into CARU_VAPID_PUBLIC_KEY in index.html.');
+      return false;
+    }
+    const permission = await Notification.requestPermission();
+    if(permission!=='granted'){ alert('Please allow notifications for Caru in iPhone settings.'); return false; }
+    try{
+      const sw = await navigator.serviceWorker.register('firebase-messaging-sw.js');
+      await navigator.serviceWorker.ready;
+      const token = await caruMessaging.getToken({vapidKey:CARU_VAPID_PUBLIC_KEY,serviceWorkerRegistration:sw});
+      if(!token) throw new Error('No FCM token returned');
+      await db.ref('pushTokens/'+userId).set({token,updatedAt:Date.now(),platform:'ios-home-screen'});
+      new Notification('Caru notifications enabled',{body:'Routine push notifications are registered.'});
+      return true;
+    }catch(e){
+      console.error('Caru push setup failed',e);
+      alert('Push setup failed. Check the VAPID key, Firebase Cloud Messaging settings, and Realtime Database rules.');
+      return false;
+    }
+  }
+
   const STORAGE_KEY='caru_data_'+userId;
   const root=document.getElementById('root');
   const MONTHS_FULL=['January','February','March','April','May','June','July','August','September','October','November','December'];
@@ -779,6 +815,47 @@ if('serviceWorker' in navigator){
   function escAttr(s){ return esc(s).replace(/"/g,'&quot;'); }
   function parseHM(t){ const m=/^(\d{1,2}):(\d{2})$/.exec(String(t||'')); return m?Number(m[1])*60+Number(m[2]):NaN; }
   function getRoutines(){ return Array.isArray(data.routines)?data.routines.filter(r=>r&&r.id):[]; }
+  function routineStateMap(){
+    if(!data.routineScheduleState) data.routineScheduleState={};
+    if(!data.routineScheduleState[todayKey()]) data.routineScheduleState[todayKey()]={};
+    return data.routineScheduleState[todayKey()];
+  }
+  function routineStartAt(r, dayKey=todayKey()){
+    const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(dayKey); const mins=parseHM(r.start);
+    if(!m||!Number.isFinite(mins)) return NaN;
+    return new Date(Number(m[1]),Number(m[2])-1,Number(m[3]),Math.floor(mins/60),mins%60,0,0).getTime();
+  }
+  function notifyRoutine(title, body, tag){
+    if(!('Notification' in window) || Notification.permission!=='granted') return false;
+    try{ new Notification(title,{body,tag,renotify:false}); return true; }catch(e){ return false; }
+  }
+  // Countdown is calculated from the scheduled start time; no timer-start button is needed.
+  // The only button is Start Routine, which marks the routine as started and suppresses the follow-up reminder.
+  function markRoutineStarted(id){
+    const states=routineStateMap();
+    states[id]={...(states[id]||{}),started:true,startedAt:Date.now(),reminderSent:true};
+  }
+  async function checkRoutineSchedules(){
+    const now=Date.now(), day=todayKey(), dow=new Date().getDay();
+    const states=routineStateMap(); let changed=false;
+    for(const r of getRoutines()){
+      if(!Array.isArray(r.days)||!r.days.includes(dow)) continue;
+      const startAt=routineStartAt(r,day); if(!Number.isFinite(startAt)) continue;
+      const st=states[r.id]||(states[r.id]={});
+      const done=(data.routineDone&&data.routineDone[day]&&data.routineDone[day][r.id])||false;
+      if(done||st.started) continue;
+      // The app can catch up when reopened, but iOS may suspend JavaScript in background.
+      if(now>=startAt&&!st.firstNoticeSent){
+        notifyRoutine(`Time for ${r.name||'Routine'}`,`Your ${r.name||'routine'} is scheduled now. Start within 10 minutes.`,`caru-routine-${day}-${r.id}-start`);
+        st.firstNoticeSent=true; st.startedAtSchedule=startAt; changed=true;
+      }
+      if(now>=startAt+10*60*1000&&!st.followupSent){
+        notifyRoutine(`Start ${r.name||'Routine'}`,`10 minutes have passed. Start your routine now.`,`caru-routine-${day}-${r.id}-followup`);
+        st.followupSent=true; changed=true;
+      }
+    }
+    if(changed) await save();
+  }
   function routineDueList(){
     const now=new Date();
     const mins=now.getHours()*60+now.getMinutes(), dow=now.getDay();
@@ -859,14 +936,27 @@ if('serviceWorker' in navigator){
     if(d==='0,6') return 'Weekends';
     return d?d.split(',').map(x=>DAYS_SHORT[Number(x)]).join(' '):'No days';
   }
+  function routineCanStart(r){
+    const now=new Date(), day=todayKey();
+    if(!Array.isArray(r.days)||!r.days.includes(now.getDay())) return false;
+    const done=(data.routineDone&&data.routineDone[day]&&data.routineDone[day][r.id])||false;
+    const st=(data.routineScheduleState&&data.routineScheduleState[day]&&data.routineScheduleState[day][r.id])||{};
+    const startAt=routineStartAt(r,day);
+    return !done&&!st.started&&Number.isFinite(startAt)&&Date.now()>=startAt;
+  }
   function routineStatus(r){
     const now=new Date();
     if(!Array.isArray(r.days)||!r.days.includes(now.getDay())) return 'Not today';
     const done=(data.routineDone&&data.routineDone[todayKey()])||{};
     if(done[r.id]) return 'Done today';
+    const st=(data.routineScheduleState&&data.routineScheduleState[todayKey()]&&data.routineScheduleState[todayKey()][r.id])||{};
+    if(st.started) return 'Started today';
     const e=parseHM(r.end), mins=now.getHours()*60+now.getMinutes();
+    const startAt=routineStartAt(r,todayKey()), remain=Math.max(0,startAt+10*60*1000-Date.now());
+    if(Number.isFinite(startAt)&&Date.now()>=startAt&&remain>0) return `Start now · ${String(Math.floor(remain/60000)).padStart(2,'0')}:${String(Math.floor((remain%60000)/1000)).padStart(2,'0')} left`;
+    if(Number.isFinite(startAt)&&Date.now()>=startAt+10*60*1000) return 'Reminder sent · waiting to start';
     if(Number.isFinite(e)&&mins>=e) return 'Pending · answer on Home';
-    return `Asks at ${r.end}`;
+    return `Starts at ${r.start}`;
   }
   function renderRoutine(){
     const rs=getRoutines();
@@ -890,7 +980,10 @@ if('serviceWorker' in navigator){
             <div class="routine-card-meta">${esc(r.start)}–${esc(r.end)} · ${routineDaysLabel(r.days)}</div>
             <div class="routine-card-status">${esc(routineStatus(r))}</div>
           </div>
-          <button type="button" class="reason-edit-btn" data-redit="${rid}">${open?'Done':'Edit'}</button>
+          <div style="display:flex;gap:6px;align-items:center">
+            ${routineCanStart(r)?`<button type="button" class="reason-edit-btn" data-rstart="${rid}">Start Routine</button>`:''}
+            <button type="button" class="reason-edit-btn" data-redit="${rid}">${open?'Done':'Edit'}</button>
+          </div>
         </div>${body}
       </div>`;
     }).join('');
@@ -906,8 +999,7 @@ if('serviceWorker' in navigator){
   }
 
   function setupNotification(){
-    if(!('Notification' in window)){ alert('홈 화면에 추가한 후 실행해야 알림을 사용할 수 있습니다.'); return; }
-    Notification.requestPermission().then(p=>{ if(p==='granted'){ new Notification('Caru 알림 켜짐',{body:`현재 배터리: ${batteryLevel}%`}); render(); } });
+    registerCaruPush().then(async ok=>{ if(ok){ await checkRoutineSchedules(); render(); } });
   }
 
   function renderHome(){
@@ -1302,6 +1394,10 @@ if('serviceWorker' in navigator){
 
     if(activeTab==='routine'){
       document.getElementById('open-home')?.addEventListener('click',()=>{ activeTab='home'; editingRoutineId=null; render(); });
+      root.querySelectorAll('[data-rstart]').forEach(b=>b.addEventListener('click',async()=>{
+        const r=getRoutines().find(x=>x.id===b.dataset.rstart); if(!r) return;
+        markRoutineStarted(r.id); await save(); render();
+      }));
       root.querySelectorAll('[data-redit]').forEach(b=>b.addEventListener('click',()=>{
         editingRoutineId=editingRoutineId===b.dataset.redit?null:b.dataset.redit; render();
       }));
@@ -1351,6 +1447,7 @@ if('serviceWorker' in navigator){
     clearInterval(naturalDrainTimer);
 
     naturalDrainTimer=setInterval(async()=>{
+      await checkRoutineSchedules();
       const changed=applyNaturalDrain();
 
       if(changed){
@@ -1368,16 +1465,18 @@ if('serviceWorker' in navigator){
       } else if(activeTab==='home'&&!isTypingNote&&!editOpen&&!document.querySelector('.sleep-overlay')&&(sleepPromptDue()||routineDueList().length)){
         render(); // 루틴 종료 시각이 지나 팝업이 떠야 할 때
       }
-    },60000);
+    },15000);
   }
 
   load().then(()=>{
     startNaturalDrainTimer();
+    checkRoutineSchedules();
   });
 
   // 홈 화면 앱을 백그라운드에서 다시 열었을 때도 갱신
   document.addEventListener('visibilitychange',()=>{
     if(document.visibilityState==='visible'){
+      checkRoutineSchedules();
       const opened=markOpened(false);
       if((opened||sleepPromptDue()||routineDueList().length) && !isTypingNote) render();
     }
