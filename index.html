@@ -497,7 +497,7 @@ if('serviceWorker' in navigator){
   try{ firebase.initializeApp(firebaseConfig); db=firebase.database(); firebaseEnabled=true; }catch(e){}
 
   // Web Push: replace this placeholder with the public VAPID key from Firebase Console.
-  const CARU_VAPID_PUBLIC_KEY = 'PASTE_PUBLIC_VAPID_KEY_HERE';
+  const CARU_VAPID_PUBLIC_KEY = 'BLOzYr2natAEkCvHLhqzGiHu0oFlEbLJiB8e0I-7q9Ozq5DP6cerjGOieFGrHB1Qpdoecb4MCauz_p3uMT3K86E';
   let caruMessaging = null;
   try { if(firebaseEnabled && firebase.messaging && firebase.messaging.isSupported()) caruMessaging=firebase.messaging(); } catch(e) {}
 
