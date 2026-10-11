@@ -881,7 +881,7 @@ if('serviceWorker' in navigator){
         <div class="sleep-card">
           ${list.length>1?`<div class="sleep-sub">${list.length} routines waiting</div>`:''}
           <div class="sleep-title">${esc(r.name||'Routine')}</div>
-          <div class="sleep-sub">Scheduled ${esc(r.start)} · ${mm}:${ss}</div>
+          <div class="sleep-sub">Scheduled ${esc(r.start)} · <span id="routine-countdown">${mm}:${ss}</span></div>
           <div class="edit-actions">
             <button type="button" class="cancel-btn" id="routine-skip">Skip</button>
             <button type="button" class="apply-btn" id="routine-start-confirm">Start</button>
@@ -1458,10 +1458,23 @@ if('serviceWorker' in navigator){
         }
 
         if(!isTypingNote) render();
-      } else if(activeTab==='home'&&!isTypingNote&&!editOpen&&(sleepPromptDue()||routineDueList().length)){
-        render();
+      } else if(activeTab==='home'&&!isTypingNote&&!editOpen){
+        // 팝업 전체를 매초 다시 그리면 깜빡이므로, 카운트다운 숫자만 갱신
+        const dueRoutines=routineDueList();
+        if(dueRoutines.length){
+          const countdown=document.getElementById('routine-countdown');
+          if(!countdown){
+            render();
+          }else{
+            const startAt=routineStartAt(dueRoutines[0],todayKey());
+            const remain=Math.max(0,10*60*1000-(Date.now()-startAt));
+            countdown.textContent=String(Math.floor(remain/60000)).padStart(2,'0')+':'+String(Math.floor((remain%60000)/1000)).padStart(2,'0');
+          }
+        }else if(sleepPromptDue()&&!document.querySelector('.sleep-overlay')){
+          render();
+        }
       }
-    },1000); // 1초마다 자연감소, 루틴 타이머 및 배터리 감소 체크
+    },1000); // 1초마다 자연감소 및 카운트다운 숫자만 갱신
   }
 
   load().then(()=>{
