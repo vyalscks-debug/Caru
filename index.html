@@ -640,10 +640,6 @@ if('serviceWorker' in navigator){
     if(data.lastBatteryUpdate) lastBatteryUpdate=data.lastBatteryUpdate;
     if(!Array.isArray(data.chargeReasons)||!data.chargeReasons.length) data.chargeReasons=[...DEF_CHARGE];
     if(!Array.isArray(data.drainReasons)||!data.drainReasons.length) data.drainReasons=[...DEF_DRAIN];
-    // Natural-drain baseline is established from the battery level that exists
-    // when the day is first opened. Never assume a fixed 80% starting point.
-    // Migrate older data once so a stale baseline cannot overwrite the user's
-    // current battery on first open of the updated version.
     const today=todayKey();
     if(data.naturalSchemaVersion!==2){
       data.naturalSchemaVersion=2;
@@ -681,7 +677,6 @@ if('serviceWorker' in navigator){
           if(!isTypingNote) render();
         }
       });
-      // 건강 앱(단축어)에서 올린 수면 데이터 수신
       db.ref('health/'+userId).on('value',snap=>handleHealth(snap.val()));
     }
   }
@@ -692,7 +687,6 @@ if('serviceWorker' in navigator){
     if(firebaseEnabled&&db){ try{ await db.ref('users/'+userId).set(data); }catch(e){} }
   }
 
-  // 앱을 열 때(또는 백그라운드에서 돌아올 때) 지난 실행 이후 경과/감소량을 계산
   function markOpened(force){
     const now=Date.now();
     const prev=Number(data.lastOpenedAt);
@@ -715,7 +709,6 @@ if('serviceWorker' in navigator){
     return `Last opened ${h}h ${String(m).padStart(2,'0')}m ago · ${drop}`;
   }
 
-  // 현재 속도 기준으로 배터리가 20%에 닿는 시각 예측
   function forecastText(){
     if(batteryLevel<=20) return 'Below 20% · time to rest';
     const rate=CONDITION_RATES[getTodayCondition()]||CONDITION_RATES.normal;
@@ -736,14 +729,12 @@ if('serviceWorker' in navigator){
     return naturalDayKey(d.getTime());
   }
 
-  // ---- 건강 앱 연동 (iOS 단축어 → Firebase health/<userId>) ----
-  // 값이 시간/분/초 어느 단위로 와도 알아서 시간으로 변환한다
   function sleepToHours(v){
     v=Number(v);
     if(!Number.isFinite(v)||v<=0) return NaN;
-    if(v>1500) return v/3600; // 초
-    if(v>24) return v/60;     // 분
-    return v;                 // 시간
+    if(v>1500) return v/3600;
+    if(v>24) return v/60;
+    return v;
   }
   function sleepLevel(h){ return h>=7?'good':h>=5?'normal':'low'; }
   function fmtHM(h){
@@ -755,7 +746,7 @@ if('serviceWorker' in navigator){
     const hours=sleepToHours(val.sleep);
     if(!Number.isFinite(hours)||hours>16) return;
     const today=todayKey();
-    if(val.date!==today) return; // 오늘 아침 데이터만 사용
+    if(val.date!==today) return;
     const level=sleepLevel(hours);
     healthInfo={hours,level,date:today};
     if(data.sleepAppliedDate!==today){
@@ -766,8 +757,6 @@ if('serviceWorker' in navigator){
     if(!isTypingNote) render();
   }
 
-  // ---- 아침 수면 팝업 ----
-  // 새벽 4시 이후 첫 실행에서 "How was your sleep?"을 묻고, 고른 값으로 충전량과 감소 속도를 정한다
   const SLEEP_BONUS={good:25, normal:20, low:15};
   function sleepPromptDue(){
     if(new Date().getHours()<4) return false;
@@ -792,7 +781,7 @@ if('serviceWorker' in navigator){
   async function applySleep(level){
     if(!SLEEP_BONUS[level]) return;
     const today=todayKey();
-    data.sleepPromptDay=today; // 먼저 표시해서, 이후 계산에서 감소 시계가 멈추지 않게 한다
+    data.sleepPromptDay=today;
     const before=batteryLevel;
     batteryLevel=Math.max(0,Math.min(100,batteryLevel+SLEEP_BONUS[level]));
     const delta=batteryLevel-before;
@@ -800,8 +789,8 @@ if('serviceWorker' in navigator){
       if(!data.items) data.items=[];
       data.items.push({id:uid(),type:'heal',delta,text:'Sleep',date:today,timestamp:Date.now(),beforeBattery:before,afterBattery:batteryLevel});
     }
-    setTodayCondition(level); // 감소 속도 (Good 2 / Normal 3 / Low 4 %/h)
-    data.drainAt=Date.now(); data.drainCarry=0; // 밤사이 시간은 수면 충전에 이미 포함
+    setTodayCondition(level);
+    data.drainAt=Date.now(); data.drainCarry=0;
     await save(); render();
   }
   async function skipSleep(){
@@ -809,9 +798,6 @@ if('serviceWorker' in navigator){
     await save(); render();
   }
 
-  // ---- 루틴 ----
-  // 루틴(이름, 시작~종료 시각, 요일)을 등록해 두면, 종료 시각이 지난 뒤 처음 앱에 들어왔을 때
-  // 팝업이 뜨고 배터리를 드래그해서 +/− 변화량을 정한다. 하루에 루틴당 한 번만 묻는다.
   function escAttr(s){ return esc(s).replace(/"/g,'&quot;'); }
   function parseHM(t){ const m=/^(\d{1,2}):(\d{2})$/.exec(String(t||'')); return m?Number(m[1])*60+Number(m[2]):NaN; }
   function getRoutines(){ return Array.isArray(data.routines)?data.routines.filter(r=>r&&r.id):[]; }
@@ -829,8 +815,6 @@ if('serviceWorker' in navigator){
     if(!('Notification' in window) || Notification.permission!=='granted') return false;
     try{ new Notification(title,{body,tag,renotify:false}); return true; }catch(e){ return false; }
   }
-  // Countdown is calculated from the scheduled start time; no timer-start button is needed.
-  // The only button is Start Routine, which marks the routine as started and suppresses the follow-up reminder.
   function markRoutineStarted(id){
     const states=routineStateMap();
     states[id]={...(states[id]||{}),started:true,startedAt:Date.now(),reminderSent:true};
@@ -844,7 +828,6 @@ if('serviceWorker' in navigator){
       const st=states[r.id]||(states[r.id]={});
       const done=(data.routineDone&&data.routineDone[day]&&data.routineDone[day][r.id])||false;
       if(done||st.started) continue;
-      // The app can catch up when reopened, but iOS may suspend JavaScript in background.
       if(now>=startAt&&!st.firstNoticeSent){
         notifyRoutine(`Time for ${r.name||'Routine'}`,`Your ${r.name||'routine'} is scheduled now. Start within 10 minutes.`,`caru-routine-${day}-${r.id}-start`);
         st.firstNoticeSent=true; st.startedAtSchedule=startAt; changed=true;
@@ -1058,8 +1041,9 @@ if('serviceWorker' in navigator){
     }
 
     return `
-      <div class="minimal-home">
+     <div class="minimal-home">
         <button type="button" class="minimal-tab home-progress-btn" id="open-progress">Progress</button>
+        <button type="button" class="minimal-tab" id="btn-enable-notify" style="position:absolute;left:7%;top:calc(20% - 28px);color:#888;font-size:12px;">🔔 알림 켜기</button>
         <div class="day-question">
           <span class="day-question-label">How was your day?</span>
           <textarea class="day-question-text" id="daily-note" rows="2" maxlength="120" placeholder="">${esc(note)}</textarea>
@@ -1149,8 +1133,6 @@ if('serviceWorker' in navigator){
       </div>`;
     }
 
-    
-
     return `
       <div class="minimal-progress">
         <div class="progress-head">
@@ -1234,6 +1216,14 @@ if('serviceWorker' in navigator){
     root.querySelectorAll('.tab-btn').forEach(b=>b.addEventListener('click',()=>{ activeTab=b.dataset.tab; inlineMode=null; render(); }));
 
     if(activeTab==='home'){
+      // 알림 켜기 버튼 이벤트 (단독으로 등록)
+      document.getElementById('btn-enable-notify')?.addEventListener('click', async () => {
+        const ok = await registerCaruPush();
+        if (ok) {
+          alert('알림이 정상적으로 등록되었습니다!');
+        }
+      });
+
       document.getElementById('minimal-edit')?.addEventListener('click',()=>{
         editOpen=!editOpen;
         if(!editOpen){ inlineMode=null; editingReasons=false; }
@@ -1325,8 +1315,6 @@ if('serviceWorker' in navigator){
 
       root.querySelectorAll('[data-step]').forEach(btn=>btn.addEventListener('click',()=>{
         const step=parseInt(btn.dataset.step,10);
-        // Preset buttons set a fresh amount from the current battery;
-        // they do not accumulate with previous preset clicks.
         targetBattery=batteryLevel+step;
         targetBattery=Math.max(0,Math.min(100,targetBattery));
         render();
@@ -1380,7 +1368,6 @@ if('serviceWorker' in navigator){
         const delta=targetBattery-batteryLevel;
         if(delta!==0){
           batteryLevel=targetBattery;
-          // 수동 변경은 자연 감소 계산과 분리되어 있어 그대로 유지된다
           if(!data.items) data.items=[];
           const reasonListKey=inlineMode==='charge'?'chargeReasons':'drainReasons';
           if(!data[reasonListKey]) data[reasonListKey]=inlineMode==='charge'?[...DEF_CHARGE]:[...DEF_DRAIN];
@@ -1463,7 +1450,7 @@ if('serviceWorker' in navigator){
 
         if(!isTypingNote) render();
       } else if(activeTab==='home'&&!isTypingNote&&!editOpen&&!document.querySelector('.sleep-overlay')&&(sleepPromptDue()||routineDueList().length)){
-        render(); // 루틴 종료 시각이 지나 팝업이 떠야 할 때
+        render();
       }
     },15000);
   }
@@ -1473,7 +1460,6 @@ if('serviceWorker' in navigator){
     checkRoutineSchedules();
   });
 
-  // 홈 화면 앱을 백그라운드에서 다시 열었을 때도 갱신
   document.addEventListener('visibilitychange',()=>{
     if(document.visibilityState==='visible'){
       checkRoutineSchedules();
