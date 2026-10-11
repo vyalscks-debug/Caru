@@ -264,21 +264,25 @@
   .condition-btn:active{color:#ddd;border-color:#888;}
   .condition-rate{color:#444;white-space:nowrap;font-size:9px;}
 
-  /* 홈 화면 대형 10분 루틴 카운트다운 배너 */
-  .home-routine-alert{
-    position:absolute;left:7%;right:7%;top:calc(51% - 100px);z-index:8;
-    background:#0d0d0d;border:1px solid #333;border-radius:14px;
-    padding:12px 14px;display:flex;align-items:center;justify-content:space-between;
-    box-shadow:0 4px 20px rgba(0,0,0,0.7);
+  /* 🔥 홈 화면 대형 10분 타이머 & Start Routine 위젯 */
+  .home-routine-box{
+    position:absolute;left:7%;right:7%;top:calc(51% - 104px);z-index:8;
+    background:#0a0a0a;border:1.2px solid #282828;border-radius:16px;
+    padding:14px 16px;display:flex;align-items:center;justify-content:space-between;
+    box-shadow:0 6px 24px rgba(0,0,0,0.8);
   }
-  .hra-info{display:flex;flex-direction:column;gap:3px;}
-  .hra-title{color:#ff453a;font-size:10px;font-weight:700;letter-spacing:0.04em;}
-  .hra-timer{font-family:ui-monospace,"SF Mono",monospace;font-size:22px;font-weight:700;color:#f5f5f5;}
-  .hra-btn{
-    border:1px solid #444;background:#181818;color:#ddd;border-radius:8px;
-    padding:8px 12px;font-size:12px;font-weight:600;cursor:pointer;
+  .hrb-left{display:flex;flex-direction:column;gap:3px;}
+  .hrb-label{color:#888;font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;}
+  .hrb-label.running{color:#ff453a;}
+  .hrb-timer{font-family:ui-monospace,"SF Mono",monospace;font-size:24px;font-weight:700;color:#f5f5f5;letter-spacing:-0.02em;}
+  .hrb-drain-rate{color:#777;font-size:9px;font-family:ui-monospace,"SF Mono",monospace;margin-top:2px;}
+  .hrb-actions{display:flex;gap:6px;}
+  .hrb-btn{
+    border:1px solid #333;background:#151515;color:#eee;border-radius:10px;
+    padding:9px 14px;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s ease;
   }
-  .hra-btn:active{background:#2a2a2a;color:#fff;}
+  .hrb-btn:active{background:#262626;color:#fff;}
+  .hrb-btn.cancel{background:transparent;border-color:#222;color:#666;}
 
   .battery-status{
     position:absolute;left:50%;top:calc(51% + 72px);
@@ -493,6 +497,7 @@
 <body>
 <div id="root"><div style="text-align:center;padding:60px 0;font-family:monospace;color:#888">Caru Loading…</div></div>
 <script>
+// 통합 서비스 워커 sw.js 등록
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{ navigator.serviceWorker.register('sw.js').catch(()=>{}); });
 }
@@ -527,15 +532,10 @@ if('serviceWorker' in navigator){
       alert('Notifications require an iPhone Home Screen web app and a supported iOS version.');
       return false;
     }
-    if(CARU_VAPID_PUBLIC_KEY==='PASTE_PUBLIC_VAPID_KEY_HERE'){
-      alert('First paste the public VAPID key into CARU_VAPID_PUBLIC_KEY in index.html.');
-      return false;
-    }
     const permission = await Notification.requestPermission();
     if(permission!=='granted'){ alert('Please allow notifications for Caru in iPhone settings.'); return false; }
     try{
-      const sw = await navigator.serviceWorker.register('firebase-messaging-sw.js');
-      await navigator.serviceWorker.ready;
+      const sw = await navigator.serviceWorker.ready;
       const token = await caruMessaging.getToken({vapidKey:CARU_VAPID_PUBLIC_KEY,serviceWorkerRegistration:sw});
       if(!token) throw new Error('No FCM token returned');
       await db.ref('pushTokens/'+userId).set({token,updatedAt:Date.now(),platform:'ios-home-screen'});
@@ -543,7 +543,7 @@ if('serviceWorker' in navigator){
       return true;
     }catch(e){
       console.error('Caru push setup failed',e);
-      alert('Push setup failed. Check the VAPID key, Firebase Cloud Messaging settings, and Realtime Database rules.');
+      alert('Push setup failed: ' + e.message);
       return false;
     }
   }
@@ -562,6 +562,8 @@ if('serviceWorker' in navigator){
   }
   function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
   function esc(s){ const d=document.createElement('div'); d.textContent=s||''; return d.innerHTML; }
+  function escAttr(s){ return esc(s).replace(/"/g,'&quot;'); }
+  function parseHM(t){ const m=/^(\d{1,2}):(\d{2})$/.exec(String(t||'')); return m?Number(m[1])*60+Number(m[2]):NaN; }
 
   let batteryLevel=80, lastBatteryUpdate=Date.now();
   let sinceLast=null;
@@ -592,9 +594,35 @@ if('serviceWorker' in navigator){
     data.lastBatteryUpdate=lastBatteryUpdate;
   }
 
+  // 🔥 자연 감소 + 루틴 10분 타이머 진행 중 1분당 0.5% 감소 계산
   function applyNaturalDrain(){
     const now=Date.now();
     const currentDay=naturalDayKey(now);
+    let changed = false;
+
+    // 10분 루틴 타이머 감소 (1분당 0.5%씩 감소, 최대 5%)
+    if(data.routineTimerStartAt){
+      const elapsedMs = now - Number(data.routineTimerStartAt);
+      const totalTenMinMs = 10 * 60 * 1000;
+      const validElapsedMs = Math.min(elapsedMs, totalTenMinMs);
+      const targetRoutineDrain = (validElapsedMs / (60 * 1000)) * 0.5;
+
+      const alreadyDrained = Number(data.routineAlreadyDrained) || 0;
+      const toDrainNow = Math.floor(targetRoutineDrain - alreadyDrained);
+
+      if(toDrainNow >= 1 && batteryLevel > 1){
+        batteryLevel = Math.max(1, batteryLevel - toDrainNow);
+        data.routineAlreadyDrained = alreadyDrained + toDrainNow;
+        changed = true;
+      }
+
+      if(elapsedMs >= totalTenMinMs){
+        delete data.routineTimerStartAt;
+        delete data.routineTimerName;
+        delete data.routineAlreadyDrained;
+        changed = true;
+      }
+    }
 
     if(!data.naturalDay || data.naturalDay!==currentDay){
       data.naturalDay=currentDay;
@@ -606,7 +634,7 @@ if('serviceWorker' in navigator){
     if(!Number.isFinite(at)||at<=0){
       data.drainAt=now;
       data.drainCarry=0;
-      return false;
+      return changed;
     }
 
     const hrs=Math.max(0,(now-at)/(1000*60*60));
@@ -623,9 +651,9 @@ if('serviceWorker' in navigator){
       batteryLevel=nb;
       lastBatteryUpdate=now;
       data.lastBatteryUpdate=now;
-      return true;
+      changed = true;
     }
-    return false;
+    return changed;
   }
 
   let data={ items:[], comments:{}, battery:80, lastBatteryUpdate:Date.now(), chargeReasons:[...DEF_CHARGE], drainReasons:[...DEF_DRAIN] };
@@ -806,8 +834,6 @@ if('serviceWorker' in navigator){
     await save(); render();
   }
 
-  function escAttr(s){ return esc(s).replace(/"/g,'&quot;'); }
-  function parseHM(t){ const m=/^(\d{1,2}):(\d{2})$/.exec(String(t||'')); return m?Number(m[1])*60+Number(m[2]):NaN; }
   function getRoutines(){ return Array.isArray(data.routines)?data.routines.filter(r=>r&&r.id):[]; }
   function routineStateMap(){
     if(!data.routineScheduleState) data.routineScheduleState={};
@@ -824,30 +850,38 @@ if('serviceWorker' in navigator){
     try{ new Notification(title,{body,tag,renotify:false}); return true; }catch(e){ return false; }
   }
 
-  // 홈 화면에 띄울 "지금 10분 내로 시작해야 하는 루틴" 찾기
-  function getActiveCountdownRoutine(){
-    const now=Date.now(), day=todayKey(), dow=new Date().getDay();
-    const states=routineStateMap();
-    for(const r of getRoutines()){
-      if(!Array.isArray(r.days)||!r.days.includes(dow)) continue;
-      const startAt=routineStartAt(r,day);
-      if(!Number.isFinite(startAt)) continue;
-      const st=states[r.id]||{};
-      const done=(data.routineDone&&data.routineDone[day]&&data.routineDone[day][r.id])||false;
-      if(done || st.started) continue;
-      const remain = startAt + 10*60*1000 - now;
-      if(now >= startAt && remain > 0){
-        return { routine: r, remainMs: remain };
-      }
-    }
-    return null;
+  // 🔥 10분 타이머 상태 가져오기
+  function getActiveHomeTimer(){
+    const startAt = Number(data.routineTimerStartAt);
+    if(!startAt) return null;
+    const remainMs = (startAt + 10 * 60 * 1000) - Date.now();
+    if(remainMs <= 0) return null;
+    return {
+      remainMs,
+      name: data.routineTimerName || 'Routine'
+    };
+  }
+
+  async function startTenMinuteTimer(name='Routine'){
+    data.routineTimerStartAt = Date.now();
+    data.routineTimerName = name;
+    data.routineAlreadyDrained = 0;
+    await save();
+    render();
+  }
+
+  async function cancelTenMinuteTimer(){
+    delete data.routineTimerStartAt;
+    delete data.routineTimerName;
+    delete data.routineAlreadyDrained;
+    await save();
+    render();
   }
 
   function markRoutineStarted(id){
     const states=routineStateMap();
     states[id]={...(states[id]||{}),started:true,startedAt:Date.now(),reminderSent:true};
   }
-
   async function checkRoutineSchedules(){
     const now=Date.now(), day=todayKey(), dow=new Date().getDay();
     const states=routineStateMap(); let changed=false;
@@ -1024,8 +1058,6 @@ if('serviceWorker' in navigator){
 
     let panelHtml='';
     if(isEditing){
-      const isC=inlineMode==='charge';
-      const reasons=inlineMode?(isC?(data.chargeReasons||DEF_CHARGE):(data.drainReasons||DEF_DRAIN)):[];
       const chipsHtml=reasons.map(r=>`
         <button type="button" class="reason-chip${selectedReason===r?' selected':''}" data-reason-click="${esc(r)}">
           <span>${esc(r)}</span>
@@ -1069,6 +1101,36 @@ if('serviceWorker' in navigator){
         </div>`;
     }
 
+    const timer = getActiveHomeTimer();
+    let timerWidget = '';
+    if(timer){
+      const mins = Math.floor(timer.remainMs / 60000);
+      const secs = Math.floor((timer.remainMs % 60000) / 1000);
+      const timeStr = `${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
+      timerWidget = `
+        <div class="home-routine-box">
+          <div class="hrb-left">
+            <span class="hrb-label running">⚡ ${esc(timer.name)} RUNNING</span>
+            <span class="hrb-timer" id="live-timer-val">${timeStr}</span>
+            <span class="hrb-drain-rate">Draining -0.5% / min</span>
+          </div>
+          <div class="hrb-actions">
+            <button type="button" class="hrb-btn cancel" id="btn-cancel-timer">Cancel</button>
+            <button type="button" class="hrb-btn" id="btn-finish-timer">Finish</button>
+          </div>
+        </div>`;
+    } else {
+      timerWidget = `
+        <div class="home-routine-box">
+          <div class="hrb-left">
+            <span class="hrb-label">10-MIN ROUTINE</span>
+            <span class="hrb-timer" style="color:#555">10:00</span>
+            <span class="hrb-drain-rate">Rate: -0.5% / min</span>
+          </div>
+          <button type="button" class="hrb-btn" id="btn-start-home-timer">Start Routine</button>
+        </div>`;
+    }
+
     return `
      <div class="minimal-home">
         <button type="button" class="minimal-tab home-progress-btn" id="open-progress">Progress</button>
@@ -1085,21 +1147,7 @@ if('serviceWorker' in navigator){
           <span class="condition-rate">${CONDITION_RATES[getTodayCondition()].toFixed(1)}%/h</span>
         </div>
 
-        ${(()=>{
-          const act = getActiveCountdownRoutine();
-          if(!act) return '';
-          const mins = Math.floor(act.remainMs / 60000);
-          const secs = Math.floor((act.remainMs % 60000) / 1000);
-          const timeStr = `${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
-          return `
-            <div class="home-routine-alert">
-              <div class="hra-info">
-                <span class="hra-title">⏰ TIME FOR ${esc(act.routine.name).toUpperCase()}</span>
-                <span class="hra-timer">${timeStr}</span>
-              </div>
-              <button type="button" class="hra-btn" id="home-start-routine" data-rid="${escAttr(act.routine.id)}">Start Routine</button>
-            </div>`;
-        })()}
+        ${timerWidget}
 
         ${cur<20
           ? `<div class="battery-status danger">DANGER · LOW ENERGY</div>`
@@ -1116,7 +1164,7 @@ if('serviceWorker' in navigator){
           <div class="minimal-battery-wrap" id="batt-touch">
             <div class="minimal-battery-shell">
               <div class="minimal-battery-fill ${cur<=20?'low':cur>=80?'over':''}" style="width:${fill}%"></div>
-              <div class="minimal-battery-percent">${cur}%</div>
+              <div class="minimal-battery-percent" id="live-batt-num">${cur}%</div>
             </div>
             <div class="minimal-battery-cap ${cur>=80?'over':'' }"></div>
           </div>
@@ -1269,11 +1317,17 @@ if('serviceWorker' in navigator){
         }
       });
 
-      document.getElementById('home-start-routine')?.addEventListener('click', async(e)=>{
-        const rid = e.target.dataset.rid;
-        if(rid) markRoutineStarted(rid);
-        await save();
-        render();
+      document.getElementById('btn-start-home-timer')?.addEventListener('click', async () => {
+        await startTenMinuteTimer('Routine');
+      });
+
+      document.getElementById('btn-cancel-timer')?.addEventListener('click', async () => {
+        await cancelTenMinuteTimer();
+      });
+
+      document.getElementById('btn-finish-timer')?.addEventListener('click', async () => {
+        await cancelTenMinuteTimer();
+        alert('루틴 완료!');
       });
 
       document.getElementById('minimal-edit')?.addEventListener('click',()=>{
@@ -1438,9 +1492,7 @@ if('serviceWorker' in navigator){
         markRoutineStarted(r.id); await save(); render();
       }));
       root.querySelectorAll('[data-redit]').forEach(b=>b.addEventListener('click',()=>{
-        editingRoutineId=editingRoutineId===b.dataset.redit?null:b.dataset.redit;
-        save();
-        render();
+        editingRoutineId=editingRoutineId===b.dataset.redit?null:b.dataset.redit; render();
       }));
       document.getElementById('routine-add')?.addEventListener('click',async()=>{
         if(!Array.isArray(data.routines)) data.routines=[];
@@ -1459,15 +1511,12 @@ if('serviceWorker' in navigator){
         if(set.has(d)) set.delete(d); else set.add(d);
         r.days=[...set].sort(); await save(); render();
       }));
-
-      // 시간이 바뀔 때 즉시 render()하지 않고 데이터만 저장 (창 닫힘 방지 핵심 수정!)
       root.querySelectorAll('.routine-edit [data-rf]').forEach(inp=>inp.addEventListener('input',async()=>{
         const r=getRoutines().find(x=>x.id===inp.closest('.routine-edit').dataset.rid); if(!r) return;
         const f=inp.dataset.rf; let v=inp.value;
         if(f==='name') v=v.trim()||'Routine';
         else if(!Number.isFinite(parseHM(v))) return;
-        r[f]=v;
-        save();
+        r[f]=v; await save();
       }));
     }
 
@@ -1512,17 +1561,25 @@ if('serviceWorker' in navigator){
     },15000);
   }
 
-  // 1초마다 홈 화면 10분 타이머 숫자 실시간 갱신
+  // 🔥 1초마다 실시간 타이머 및 0.5%/분 배터리 감소 반영
   setInterval(()=>{
-    if(activeTab==='home' && !routineDragging && !editOpen){
-      const act = getActiveCountdownRoutine();
-      const el = document.querySelector('.hra-timer');
-      if(el && act){
-        const mins = Math.floor(act.remainMs / 60000);
-        const secs = Math.floor((act.remainMs % 60000) / 1000);
-        el.textContent = `${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
-      } else if(act || (!act && el)){
+    const changed = applyNaturalDrain();
+    if(activeTab==='home'){
+      const timer = getActiveHomeTimer();
+      const timerEl = document.getElementById('live-timer-val');
+      if(timer && timerEl){
+        const mins = Math.floor(timer.remainMs / 60000);
+        const secs = Math.floor((timer.remainMs % 60000) / 1000);
+        timerEl.textContent = `${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
+      } else if(!timer && timerEl){
         render();
+      }
+      if(changed){
+        const battNum = document.getElementById('live-batt-num');
+        const battFill = document.querySelector('.minimal-battery-fill');
+        if(battNum) battNum.textContent = `${batteryLevel}%`;
+        if(battFill) battFill.style.width = `${batteryLevel}%`;
+        save();
       }
     }
   }, 1000);
