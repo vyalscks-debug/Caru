@@ -579,24 +579,24 @@ if('serviceWorker' in navigator){
     const currentDay=naturalDayKey(now);
     let changed = false;
 
-    // 루틴 실행 중이면 1분당 0.5% 추가 감소 (최대 10분, 5%)
-    if(data.routineRunningAt){
-      const elapsedMs = now - Number(data.routineRunningAt);
-      const totalTenMinMs = 10 * 60 * 1000;
-      const validMs = Math.min(elapsedMs, totalTenMinMs);
-      const targetDrain = (validMs / 60000) * 0.5;
-      const alreadyDrained = Number(data.routineDrained) || 0;
-      const toDrain = Math.floor(targetDrain - alreadyDrained);
 
-      if(toDrain >= 1 && batteryLevel > 1){
-        batteryLevel = Math.max(1, batteryLevel - toDrain);
-        data.routineDrained = alreadyDrained + toDrain;
-        changed = true;
-      }
-      if(elapsedMs >= totalTenMinMs){
-        delete data.routineRunningAt;
-        delete data.routineDrained;
-      }
+    // 예약 시작 시각부터 Start/Skip을 누를 때까지 1분당 1% 감소 (최대 10분)
+    const waitDay=todayKey(now), waitDow=new Date(now).getDay();
+    const waitStates=(data.routineScheduleState&&data.routineScheduleState[waitDay])||{};
+    const waitDone=(data.routineDone&&data.routineDone[waitDay])||{};
+    for(const r of getRoutines()){
+      if(!Array.isArray(r.days)||!r.days.includes(waitDow)||waitDone[r.id]) continue;
+      const startAt=routineStartAt(r,waitDay), st=waitStates[r.id]||(waitStates[r.id]={});
+      if(!Number.isFinite(startAt)||now<startAt||st.started) continue;
+      const elapsed=Math.min(10*60000,now-startAt);
+      const target=Math.floor(elapsed/60000), already=Number(st.waitDrained)||0;
+      const amount=Math.max(0,target-already);
+      if(amount>0&&batteryLevel>0){
+        const actual=Math.min(amount,batteryLevel);
+        batteryLevel=Math.max(0,batteryLevel-actual);
+        st.waitDrained=already+amount;
+        changed=true;
+      }else if(amount>0){ st.waitDrained=already+amount; }
     }
 
     if(!data.naturalDay || data.naturalDay!==currentDay){
@@ -829,8 +829,6 @@ if('serviceWorker' in navigator){
   function markRoutineStarted(id){
     const states=routineStateMap();
     states[id]={...(states[id]||{}),started:true,startedAt:Date.now(),reminderSent:true};
-    data.routineRunningAt = Date.now();
-    data.routineDrained = 0;
   }
 
   async function checkRoutineSchedules(){
@@ -854,13 +852,13 @@ if('serviceWorker' in navigator){
     if(changed) await save();
   }
   function routineDueList(){
-    const now=new Date();
-    const mins=now.getHours()*60+now.getMinutes(), dow=now.getDay();
-    const done=(data.routineDone&&data.routineDone[todayKey()])||{};
+    const now=Date.now(), dow=new Date().getDay(), day=todayKey();
+    const done=(data.routineDone&&data.routineDone[day])||{};
+    const states=(data.routineScheduleState&&data.routineScheduleState[day])||{};
     return getRoutines().filter(r=>{
-      const e=parseHM(r.end);
-      return Number.isFinite(e)&&mins>=e&&!done[r.id]&&Array.isArray(r.days)&&r.days.includes(dow);
-    }).sort((a,b)=>parseHM(a.end)-parseHM(b.end));
+      const startAt=routineStartAt(r,day), st=states[r.id]||{};
+      return Number.isFinite(startAt)&&now>=startAt&&!done[r.id]&&!st.started&&Array.isArray(r.days)&&r.days.includes(dow);
+    }).sort((a,b)=>parseHM(a.start)-parseHM(b.start));
   }
   function markRoutineDone(id){
     if(!data.routineDone) data.routineDone={};
@@ -874,24 +872,19 @@ if('serviceWorker' in navigator){
     if(editOpen||sleepPromptDue()) return '';
     const list=routineDueList();
     if(!list.length){ routineDraft=null; return ''; }
-    const r=list[0];
-    if(!routineDraft||routineDraft.id!==r.id) routineDraft={id:r.id,target:batteryLevel};
-    const t=routineDraft.target;
+    const r=list[0], startAt=routineStartAt(r,todayKey());
+    const remain=Math.max(0,10*60*1000-(Date.now()-startAt));
+    const mm=String(Math.floor(remain/60000)).padStart(2,'0');
+    const ss=String(Math.floor((remain%60000)/1000)).padStart(2,'0');
     return `
       <div class="sleep-overlay">
         <div class="sleep-card">
-          ${list.length>1?`<div class="sleep-sub">1 of ${list.length}</div>`:''}
+          ${list.length>1?`<div class="sleep-sub">${list.length} routines waiting</div>`:''}
           <div class="sleep-title">${esc(r.name||'Routine')}</div>
-          <div class="sleep-sub">Ended ${esc(r.end)} · drag the battery</div>
-          <div class="routine-bat" id="routine-bat">
-            <div class="routine-fill" id="routine-fill" style="width:${t}%"></div>
-            <div class="routine-now" style="left:calc(5px + (100% - 10px) * ${batteryLevel/100})"></div>
-            <div class="routine-pct" id="routine-pct">${t}%</div>
-          </div>
-          <div class="routine-delta" id="routine-delta"></div>
+          <div class="sleep-sub">Scheduled ${esc(r.start)} · ${mm}:${ss}</div>
           <div class="edit-actions">
             <button type="button" class="cancel-btn" id="routine-skip">Skip</button>
-            <button type="button" class="apply-btn" id="routine-done">Done</button>
+            <button type="button" class="apply-btn" id="routine-start-confirm">Start</button>
           </div>
         </div>
       </div>`;
@@ -906,17 +899,10 @@ if('serviceWorker' in navigator){
     if(dl){ dl.textContent=d===0?'No change':`${sign}${Math.abs(d)}%`; dl.className='routine-delta'+(d>0?' plus':d<0?' minus':''); }
     const b=document.getElementById('routine-done'); if(b) b.textContent=d===0?'Done':`Done · ${sign}${Math.abs(d)}%`;
   }
-  async function applyRoutine(){
+  async function confirmRoutineStart(){
     const r=routineDueList()[0];
-    if(!r||!routineDraft) return;
-    const target=Math.max(0,Math.min(100,routineDraft.target));
-    const delta=target-batteryLevel;
-    if(delta!==0){
-      if(!data.items) data.items=[];
-      data.items.push({id:uid(),type:delta>0?'heal':'plan',delta,text:(r.name||'Routine'),date:todayKey(),timestamp:Date.now(),beforeBattery:batteryLevel,afterBattery:target});
-      batteryLevel=target;
-    }
-    markRoutineDone(r.id);
+    if(!r) return;
+    markRoutineStarted(r.id);
     routineDraft=null;
     await save(); render();
   }
@@ -1263,7 +1249,7 @@ if('serviceWorker' in navigator){
         paintRoutine();
       }
       document.getElementById('routine-skip')?.addEventListener('click',skipRoutine);
-      document.getElementById('routine-done')?.addEventListener('click',applyRoutine);
+      document.getElementById('routine-start-confirm')?.addEventListener('click',confirmRoutineStart);
 
       const noteEl=document.getElementById('daily-note');
 
@@ -1398,7 +1384,7 @@ if('serviceWorker' in navigator){
       document.getElementById('routine-add')?.addEventListener('click',async()=>{
         if(!Array.isArray(data.routines)) data.routines=[];
         const id=uid();
-        data.routines.push({id,name:'Routine',start:'09:00',end:'18:00',days:[1,2,3,4,5]});
+        data.routines.push({id,name:'Routine',start:'09:00',end:'09:30',days:[1,2,3,4,5]});
         editingRoutineId=id; await save(); render();
       });
       root.querySelectorAll('[data-rdel]').forEach(b=>b.addEventListener('click',async()=>{
@@ -1419,7 +1405,21 @@ if('serviceWorker' in navigator){
         const f=inp.dataset.rf; let v=inp.value;
         if(f==='name') v=v.trim()||'Routine';
         else if(!Number.isFinite(parseHM(v))) return;
-        r[f]=v; await save();
+        if(f==='start'){
+          const endM=(parseHM(v)+30)%(24*60);
+          r.start=v;
+          r.end=String(Math.floor(endM/60)).padStart(2,'0')+':'+String(endM%60).padStart(2,'0');
+          const endInput=inp.closest('.routine-edit')?.querySelector('[data-rf="end"]');
+          if(endInput) endInput.value=r.end;
+        }else{
+          if(f==='end' && parseHM(v)<parseHM(r.start)){
+            const startM=parseHM(r.start), endM=(startM+30)%(24*60);
+            v=String(Math.floor(endM/60)).padStart(2,'0')+':'+String(endM%60).padStart(2,'0');
+            inp.value=v;
+          }
+          r[f]=v;
+        }
+        await save();
       }));
     }
 
@@ -1458,10 +1458,10 @@ if('serviceWorker' in navigator){
         }
 
         if(!isTypingNote) render();
-      } else if(activeTab==='home'&&!isTypingNote&&!editOpen&&!document.querySelector('.sleep-overlay')&&(sleepPromptDue()||routineDueList().length)){
+      } else if(activeTab==='home'&&!isTypingNote&&!editOpen&&(sleepPromptDue()||routineDueList().length)){
         render();
       }
-    },1000); // 1초마다 자연감소 및 루틴 0.5% 감소 체크
+    },1000); // 1초마다 자연감소, 루틴 타이머 및 배터리 감소 체크
   }
 
   load().then(()=>{
