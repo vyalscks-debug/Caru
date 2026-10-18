@@ -1,7 +1,10 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#000"><title>caru.</title>
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 <style>
-*{box-sizing:border-box}html,body{margin:0;height:100%;background:#000;color:#f7f7f3;font-family:"Courier New",Courier,monospace}button,textarea{font:inherit}button{cursor:pointer}#app{height:100dvh;max-width:430px;margin:auto;position:relative;overflow:hidden;background:#000}.screen{position:absolute;inset:0;background:#000;display:none}.screen.active{display:block}#homeTap{position:absolute;inset:0;border:0;background:#000;z-index:1}#homeDate{position:absolute;top:46%;left:0;right:0;text-align:center;color:#292929;font-size:11px;letter-spacing:.18em;font-weight:400;pointer-events:none;z-index:2;text-transform:uppercase}#progressOpen{position:absolute;right:12px;bottom:12px;color:#191919;background:transparent;border:0;font-size:10px;padding:12px}#noteOverlay,#detailOverlay,#tomorrowOverlay{position:absolute;inset:0;z-index:5;background:#000a;display:none;align-items:center;justify-content:center;padding:20px}#noteOverlay.show,#detailOverlay.show,#tomorrowOverlay.show{display:flex}.paper{background:#030303;color:#f4f4f0;width:min(100%,350px);max-height:calc(100dvh - 40px);overflow:auto;padding:25px 22px 20px;box-shadow:0 18px 40px #0008;transform:rotate(-.25deg);position:relative;border:1px solid #444;border-radius:2px}.paper:before,.paper:after{content:none}.head{display:flex;justify-content:space-between;align-items:center;color:#999;font-size:10px;letter-spacing:.08em;margin-bottom:22px}.x{border:0;background:transparent;color:#aaa;font-size:22px}.q{font-size:22px;font-weight:500;letter-spacing:-.04em;line-height:1.25;margin:0 0 20px}.moods{display:flex;flex-direction:column;gap:8px}.mood{height:48px;border:1px solid #383838;background:#050505;color:#f2f2ee;display:flex;align-items:center;gap:15px;padding:0 14px;text-align:left;border-radius:2px}.mood .sym{font-size:22px;width:20px;text-align:center}.mood.sel{background:#171717;border-color:#aaa}.mood.sel[data-m="+"]{background:#172019;border-color:#526b59}.mood.sel[data-m="="]{background:#1b1b1b;border-color:#777}.mood.sel[data-m="−"]{background:#211919;border-color:#765555}.muted{font-size:10px;color:#999;letter-spacing:.08em;margin-bottom:10px}textarea{width:100%;resize:none;min-height:100px;border:0;border-bottom:1px solid #444;background:transparent;color:#f4f4f0;outline:none;padding:8px 0;font-size:14px;line-height:1.5}textarea::placeholder{color:#666}.count{text-align:right;color:#777;font-size:10px;margin-top:7px}.foot{display:flex;justify-content:space-between;align-items:center;margin-top:20px}.textbtn{border:0;background:transparent;color:#aaa;padding:8px 0;font-size:12px}.primary{border:1px solid #777;background:#f0f0ec;color:#111;padding:10px 15px;font-size:12px}.progressHead{position:absolute;top:0;right:0;padding:20px;z-index:2}.pill{border:1px solid #444;border-radius:30px;background:#050505;color:#eee;padding:9px 12px;font-size:11px}#scatter{position:absolute;inset:60px 10px 20px;overflow:hidden}.sticky{position:absolute;background-color:#d9d9d2;background-image:radial-gradient(ellipse at 18% 10%,#ffffff55 0,transparent 48%),radial-gradient(ellipse at 84% 88%,#aaa99f30 0,transparent 56%),repeating-linear-gradient(8deg,#77776609 0px,#77776609 1px,transparent 1px,transparent 4px),repeating-linear-gradient(93deg,#77776607 0px,#77776607 1px,transparent 1px,transparent 6px),linear-gradient(135deg,#e7e7e0 0%,#dcdcd5 58%,#d0d0c8 100%);color:#383832;border:0;border-radius:0;text-align:left;padding:18px 14px;width:clamp(108px,32vw,136px);aspect-ratio:.96;overflow:hidden;box-shadow:0 1px 1px #ffffff35 inset,1px 2px 0 #a5a59d,0 7px 16px #0006,0 2px 4px #0003;transform-origin:center center;clip-path:polygon(2% 1.8%,97.8% 0,100% 3%,98.4% 97.6%,95% 99.5%,3% 100%,0 96%,1.2% 4%)}.sticky:before{content:'';position:absolute;inset:0;pointer-events:none;opacity:.42;background:radial-gradient(ellipse at 20% 20%,#fff5 0,transparent 58%),repeating-linear-gradient(0deg,transparent 0px,transparent 5px,#7777660a 6px),repeating-linear-gradient(90deg,transparent 0px,transparent 9px,#77776607 10px)}.sticky:after{content:'';position:absolute;inset:0;pointer-events:none;opacity:.32;background:linear-gradient(90deg,transparent 0%,#c9c6ba12 2%,transparent 4%,transparent 97%,#c9c6ba20 100%)}.date{font-size:9px;letter-spacing:.04em;color:#777770;margin-bottom:13px}.sticky .sym{font-size:24px;margin-bottom:9px}.snippet{font-size:11px;line-height:1.45;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}.listView{position:absolute;inset:0;overflow:auto;padding:75px 16px 24px}.row{width:100%;display:flex;align-items:center;gap:12px;padding:13px 10px;border:0;border-bottom:1px solid #222;background:#050505;color:#f5f5ef;text-align:left}.mini{width:34px;height:39px;background:linear-gradient(145deg,#e7e7e0,#dcdcd5 60%,#d0d0c8);border:1px solid #c6c6bd;color:#383832;display:flex;align-items:center;justify-content:center;font-size:18px;flex:none;box-shadow:1px 2px 2px #0003}.listDate{font-size:10px;color:#92928a;margin-bottom:5px}.listSnippet{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.detailBody{white-space:pre-wrap;font-size:14px;line-height:1.6;margin:10px 0 20px}.tomorrow{background:#030303;border:1px solid #444;color:#f4f4f0;width:min(100%,330px);padding:24px;box-shadow:0 18px 40px #0009;transform:rotate(.2deg)}.tomorrow h2{font-size:21px;line-height:1.3;font-weight:500;margin:0 0 14px}.tomorrow p{font-size:14px;line-height:1.6;white-space:pre-wrap}.empty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#222;font-size:11px}.sticky.fly-in{animation:stickDown .72s cubic-bezier(.2,.75,.25,1) both}@keyframes stickDown{0%{opacity:0;transform:translate(var(--from-x,0),var(--from-y,-70vh)) rotate(-9deg) scale(1.08);filter:blur(1px)}65%{opacity:1;filter:blur(0);transform:translate(0,5px) rotate(var(--rotation,0deg)) scale(.99)}100%{opacity:1;transform:translate(0,0) rotate(var(--rotation,0deg)) scale(1)}}
+*{box-sizing:border-box}html,body{margin:0;height:100%;background:#000;color:#f7f7f3;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Rounded","SF Pro Text",system-ui,sans-serif;-webkit-font-smoothing:antialiased}button,textarea,input,select{font:inherit}button{cursor:pointer}#app{height:100dvh;max-width:430px;margin:auto;position:relative;overflow:hidden;background:#000}.screen{position:absolute;inset:0;background:#000;display:none}.screen.active{display:block}#homeTap{position:absolute;inset:0;border:0;background:#000;z-index:1}#homeDate{position:absolute;top:46%;left:0;right:0;text-align:center;color:#292929;font-size:11px;letter-spacing:.18em;font-weight:400;pointer-events:none;z-index:2;text-transform:uppercase}#progressOpen{position:absolute;right:12px;bottom:12px;color:#191919;background:transparent;border:0;font-size:10px;padding:12px}#noteOverlay,#detailOverlay,#tomorrowOverlay{position:absolute;inset:0;z-index:5;background:#000a;display:none;align-items:center;justify-content:center;padding:20px}#noteOverlay.show,#detailOverlay.show,#tomorrowOverlay.show{display:flex}.paper{background:#030303;color:#f4f4f0;width:min(100%,350px);max-height:calc(100dvh - 40px);overflow:auto;padding:25px 22px 20px;box-shadow:0 18px 40px #0008;transform:rotate(-.25deg);position:relative;border:1px solid #444;border-radius:2px}.paper:before,.paper:after{content:none}.head{display:flex;justify-content:space-between;align-items:center;color:#999;font-size:10px;letter-spacing:.08em;margin-bottom:22px}.x{border:0;background:transparent;color:#aaa;font-size:22px}.q{font-size:22px;font-weight:500;letter-spacing:-.04em;line-height:1.25;margin:0 0 20px}.moods{display:flex;flex-direction:column;gap:8px}.mood{height:48px;border:1px solid #383838;background:#050505;color:#f2f2ee;display:flex;align-items:center;gap:15px;padding:0 14px;text-align:left;border-radius:2px}.mood .sym{font-size:22px;width:20px;text-align:center}.mood.sel{background:#171717;border-color:#aaa}.mood.sel[data-m="+"]{background:#172019;border-color:#526b59}.mood.sel[data-m="="]{background:#1b1b1b;border-color:#777}.mood.sel[data-m="−"]{background:#211919;border-color:#765555}.muted{font-size:10px;color:#999;letter-spacing:.08em;margin-bottom:10px}textarea{width:100%;resize:none;min-height:100px;border:0;border-bottom:1px solid #444;background:transparent;color:#f4f4f0;outline:none;padding:8px 0;font-size:14px;line-height:1.5}textarea::placeholder{color:#666}.count{text-align:right;color:#777;font-size:10px;margin-top:7px}.foot{display:flex;justify-content:space-between;align-items:center;margin-top:20px}.textbtn{border:0;background:transparent;color:#aaa;padding:8px 0;font-size:12px}.primary{border:1px solid #777;background:#f0f0ec;color:#111;padding:10px 15px;font-size:12px}.progressHead{position:absolute;top:0;right:0;padding:20px;z-index:2}.pill{border:1px solid #444;border-radius:30px;background:#050505;color:#eee;padding:9px 12px;font-size:11px}#scatter{position:absolute;inset:60px 10px 20px;overflow:hidden}.sticky{position:absolute;background-color:#d9d9d2;background-image:radial-gradient(ellipse at 18% 10%,#ffffff55 0,transparent 48%),radial-gradient(ellipse at 84% 88%,#aaa99f30 0,transparent 56%),repeating-linear-gradient(8deg,#77776609 0px,#77776609 1px,transparent 1px,transparent 4px),repeating-linear-gradient(93deg,#77776607 0px,#77776607 1px,transparent 1px,transparent 6px),linear-gradient(135deg,#e7e7e0 0%,#dcdcd5 58%,#d0d0c8 100%);color:#383832;border:0;border-radius:0;text-align:left;padding:18px 14px;width:clamp(108px,32vw,136px);aspect-ratio:.96;overflow:hidden;box-shadow:0 1px 1px #ffffff35 inset,1px 2px 0 #a5a59d,0 7px 16px #0006,0 2px 4px #0003;transform-origin:center center;clip-path:polygon(2% 1.8%,97.8% 0,100% 3%,98.4% 97.6%,95% 99.5%,3% 100%,0 96%,1.2% 4%)}.sticky:before{content:'';position:absolute;inset:0;pointer-events:none;opacity:.42;background:radial-gradient(ellipse at 20% 20%,#fff5 0,transparent 58%),repeating-linear-gradient(0deg,transparent 0px,transparent 5px,#7777660a 6px),repeating-linear-gradient(90deg,transparent 0px,transparent 9px,#77776607 10px)}.sticky:after{content:'';position:absolute;inset:0;pointer-events:none;opacity:.32;background:linear-gradient(90deg,transparent 0%,#c9c6ba12 2%,transparent 4%,transparent 97%,#c9c6ba20 100%)}.date{font-size:9px;letter-spacing:.04em;color:#777770;margin-bottom:13px}.sticky .sym{font-size:24px;margin-bottom:9px}.snippet{font-size:11px;line-height:1.45;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}.listView{position:absolute;inset:0;overflow:auto;padding:75px 16px 24px}.row{width:100%;display:flex;align-items:center;gap:12px;padding:13px 10px;border:0;border-bottom:1px solid #222;background:#050505;color:#f5f5ef;text-align:left}.mini{width:34px;height:39px;background:linear-gradient(145deg,#e7e7e0,#dcdcd5 60%,#d0d0c8);border:1px solid #c6c6bd;color:#383832;display:flex;align-items:center;justify-content:center;font-size:18px;flex:none;box-shadow:1px 2px 2px #0003}.listDate{font-size:10px;color:#92928a;margin-bottom:5px}.listSnippet{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.detailBody{white-space:pre-wrap;font-size:14px;line-height:1.6;margin:10px 0 20px}.tomorrow{background:#030303;border:1px solid #444;color:#f4f4f0;width:min(100%,330px);padding:24px;box-shadow:0 18px 40px #0009;transform:rotate(.2deg)}.tomorrow h2{font-size:21px;line-height:1.3;font-weight:500;margin:0 0 14px}.tomorrow p{font-size:14px;line-height:1.6;white-space:pre-wrap}.empty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#222;font-size:11px}.sticky.fly-in{animation:stickDown .72s cubic-bezier(.2,.75,.25,1) both}@keyframes stickDown{0%{opacity:0;transform:translate(var(--from-x,0),var(--from-y,-70vh)) rotate(-9deg) scale(1.08);filter:blur(1px)}65%{opacity:1;filter:blur(0);transform:translate(0,5px) rotate(var(--rotation,0deg)) scale(.99)}100%{opacity:1;transform:translate(0,0) rotate(var(--rotation,0deg)) scale(1)}}
 
 /* Caru visual direction: quiet monochrome, paper-like notes */
 #noteOverlay,#detailOverlay,#tomorrowOverlay{background:#000b;backdrop-filter:blur(2px)}
@@ -19,9 +22,9 @@ textarea{font-size:13px;color:#ddd;min-height:112px;border-bottom:1px solid #303
 textarea::placeholder{color:#555}
 .primary{background:transparent;color:#bdbdb7;border:1px solid #414141;padding:9px 13px;font-size:11px}
 .textbtn{color:#777;font-size:11px}
-.progressHead{left:0;right:0;display:flex;align-items:center;justify-content:space-between;padding:20px 20px 14px;border-bottom:1px solid #1c1c1c}
+.progressHead{left:0;right:0;display:flex;align-items:center;justify-content:space-between;padding:20px 20px 14px;border-bottom:1px solid #1c1c1c;gap:8px}
 .progressHead:before{content:'Progress';font-size:17px;letter-spacing:.08em;color:#d0d0ca}
-.pill{border:1px solid #343434;border-radius:0;background:#030303;color:#aaa;padding:7px 9px;font-size:10px;letter-spacing:.03em}
+.pill{border:1px solid #343434;border-radius:0;background:#030303;color:#aaa;padding:7px 9px;font-size:10px;letter-spacing:.03em}.headActions{display:flex;gap:6px;align-items:center}.friendPanel{position:absolute;inset:0;z-index:8;background:#000f;display:none;overflow:auto;padding:24px 20px 30px}.friendPanel.show{display:block}.friendTop{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px}.friendTitle{font-size:17px;letter-spacing:.08em;color:#ddd}.friendSection{border-top:1px solid #252525;padding:18px 0}.friendLabel{font-size:10px;letter-spacing:.1em;color:#858580;margin-bottom:12px}.friendInput,.friendTextarea{width:100%;border:1px solid #353535;background:#030303;color:#ddd;padding:12px;font:inherit;font-size:12px;outline:none;border-radius:0}.friendTextarea{min-height:100px;border:1px solid #353535;resize:vertical}.friendActions{display:flex;gap:8px;margin-top:12px}.friendActions button{flex:1}.friendItem{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid #1c1c1c;font-size:12px;color:#ccc}.friendSub{font-size:10px;color:#777;margin-top:5px;line-height:1.5}.friendNotice{font-size:10px;line-height:1.6;color:#777;margin-top:14px}.friendEmpty{font-size:11px;color:#555;padding:12px 0}.friendToast{color:#b8b8ae;font-size:10px;line-height:1.6;margin-top:12px;min-height:16px}
 #scatter{inset:68px 10px 18px}
 .sticky{background-color:#555650;background-image:radial-gradient(ellipse at 18% 10%,#ffffff20 0,transparent 48%),radial-gradient(ellipse at 84% 88%,#00000022 0,transparent 56%),repeating-linear-gradient(8deg,#d0d0c008 0px,#d0d0c008 1px,transparent 1px,transparent 4px),repeating-linear-gradient(93deg,#d0d0c007 0px,#d0d0c007 1px,transparent 1px,transparent 6px),linear-gradient(135deg,#62635d 0%,#555650 58%,#494a45 100%);color:#deded7;padding:16px 12px;width:clamp(96px,29vw,122px);aspect-ratio:.96;box-shadow:0 1px 1px #ffffff1a inset,1px 2px 0 #343530,0 7px 16px #0008,0 2px 4px #0004;clip-path:polygon(2% 1.8%,97.8% 0,100% 3%,98.4% 97.6%,95% 99.5%,3% 100%,0 96%,1.2% 4%)}
 .sticky:before{opacity:.5;background:radial-gradient(ellipse at 20% 20%,#fff2 0,transparent 58%),repeating-linear-gradient(0deg,transparent 0px,transparent 5px,#e5e5dc08 6px),repeating-linear-gradient(90deg,transparent 0px,transparent 9px,#e5e5dc07 10px)}
@@ -37,34 +40,413 @@ textarea::placeholder{color:#555}
 .empty{color:#444;font-size:10px;letter-spacing:.05em}
 @media(max-width:360px){.paper{padding:20px 16px 15px}.q{font-size:17px}.sticky{width:clamp(90px,29vw,108px)}}
 
+/* v12: restrained outlined paper style */
+.sticky{background:#030303!important;background-image:none!important;color:#d8d8d2!important;border:1px solid #62625d!important;border-radius:0!important;box-shadow:0 2px 8px #0008!important;clip-path:polygon(1.5% 1%,98.5% 0,100% 2%,99% 98%,97% 100%,2% 99%,0 97%,.5% 3%)!important}
+.sticky:before{content:none!important}.sticky:after{content:none!important}
+.sticky .date{color:#777771!important}.sticky .sym{color:#d8d8d2!important}
+.mini{background:#030303!important;color:#d8d8d2!important;border:1px solid #62625d!important;clip-path:polygon(1.5% 1%,98.5% 0,100% 2%,99% 98%,97% 100%,2% 99%,0 97%,.5% 3%)!important;box-shadow:none!important}
 </style></head><body><div id="app">
 <section id="home" class="screen active"><div id="homeDate"></div><button id="homeTap" aria-label="Open note"></button><button id="progressOpen" title="Progress (long press anywhere on home also opens it)">·</button></section>
-<section id="progress" class="screen"><div class="progressHead"><button id="listToggle" class="pill">List up ☷</button></div><div id="scatter"></div><div id="listView" class="listView" style="display:none"></div></section>
+<section id="progress" class="screen"><div class="progressHead"><button id="friendsOpen" class="pill">Friends +</button><div class="headActions"><button id="listToggle" class="pill">List up ☷</button></div></div><div id="scatter"></div><div id="listView" class="listView" style="display:none"></div></section>
 <div id="noteOverlay"><div class="paper"><div class="head"><span id="todayDate"></span><button class="x" id="closeNote">×</button></div><div id="questionArea"></div><div class="foot"><button id="backBtn" class="textbtn">Back</button><button id="nextBtn" class="primary">Next →</button></div></div></div>
 <div id="detailOverlay"><div class="paper"><div class="head"><span id="detailDate"></span><button class="x" id="closeDetail">×</button></div><div id="detailContent"></div></div></div>
 <div id="tomorrowOverlay"><div class="tomorrow"><div class="muted" id="tomorrowDate"></div><h2>A note from yesterday.</h2><p id="tomorrowMessage"></p><div class="foot"><span></span><button id="closeTomorrow" class="primary">Keep it close</button></div></div></div>
+<div id="friendPanel" class="friendPanel"><div class="friendTop"><div class="friendTitle">Friends</div><button id="friendsClose" class="x">×</button></div>
+  <div class="friendSection">
+    <div class="friendLabel">YOUR CARU ID</div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <input id="myCaruId" class="friendInput" readonly style="color:#d0d0ca;background:#0d0d0d;letter-spacing:.08em;font-weight:600">
+      <button id="copyMyId" class="primary" style="flex:none;white-space:nowrap">Copy</button>
+    </div>
+    <div class="friendNotice" style="margin-top:8px">Share this ID with a friend so they can send you notes.</div>
+  </div>
+  <div class="friendSection"><div class="friendLabel">YOUR FRIENDS</div><div id="friendList"></div></div>
+  <div class="friendSection"><div class="friendLabel">ADD A FRIEND</div><input id="friendName" class="friendInput" maxlength="40" placeholder="Friend's name"><input id="friendCode" class="friendInput" maxlength="60" placeholder="Friend's Caru ID or invite code" style="margin-top:8px"><div class="friendActions"><button id="addFriend" class="primary">Add friend</button></div><div class="friendNotice">Enter your friend's Caru ID to connect.</div></div>
+  <div class="friendSection"><div class="friendLabel">LEAVE A LITTLE NOTE</div><select id="friendRecipient" class="friendInput"><option value="">Choose a friend</option></select><textarea id="friendMessage" class="friendTextarea" maxlength="240" placeholder="A little note for them..."></textarea><div style="color:#666;font-size:10px;margin-top:14px;margin-bottom:8px">DELIVERY DATE & TIME</div><div style="display:flex;gap:8px"><input id="friendDeliveryDate" class="friendInput" type="date" style="min-width:0;flex:1"><input id="friendDeliveryTime" class="friendInput" type="time" value="09:00" style="width:112px;flex:none"></div><div style="display:flex;justify-content:flex-end;color:#666;font-size:10px;margin-top:7px"><span id="friendCount">0/240</span></div><div class="friendActions"><button id="queueFriendNote" class="primary">Leave a note ↗</button></div><div id="friendStatus" class="friendToast"></div><div class="friendNotice">Notes are delivered in real time to your friend's Caru via Firebase at the scheduled date & time.</div></div>
+  <div class="friendSection"><div class="friendLabel">RECEIVED NOTES</div><div id="incomingNotes"></div></div>
+  <div class="friendSection"><div class="friendLabel">WAITING TO BE SENT</div><div id="outgoingNotes"></div></div>
+</div>
 </div>
 <script>
-const $=id=>document.getElementById(id), key=()=>{let d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}, pretty=k=>new Date(k+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'2-digit',year:'numeric'}).toUpperCase(), esc=s=>String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-let records=[];try{records=JSON.parse(localStorage.getItem('caru_notes_v1')||'[]')}catch{}let step=0,draft={},listMode=false;
-function screen(id){document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));$(id).classList.add('active')}
-function updateHomeDate(){const d=new Date();$('homeDate').textContent=d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'2-digit'}).replace(',', ',').toUpperCase()}
-updateHomeDate();
-function openNote(){draft={mood:'',moment:'',line:'',tomorrow:''};step=0;$('noteOverlay').classList.add('show');renderStep()}
-function renderStep(){ $('todayDate').textContent=pretty(key());$('backBtn').style.visibility=step===0?'hidden':'visible';$('nextBtn').textContent=step===3?'Save':'Next →';let a=$('questionArea');
-if(step===0){a.innerHTML='<h1 class="q">Q1. How was your day?</h1><div class="moods">'+[{v:"+",t:"Good"},{v:"=",t:"Okay"},{v:"−",t:"Not great"}].map(m=>`<button class="mood ${draft.mood===m.v?'sel':''}" data-m="${m.v}"><span class="sym">${m.v}</span><span>${m.t}</span></button>`).join('')+'</div>';a.querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>{draft.mood=b.dataset.m;renderStep()})}
-if(step===1||step===2||step===3){let data=[null,{title:'Q2. Events or moments?',field:'moment',ph:'Anything worth remembering...'},{title:'Q3. One line.',field:'line',ph:'Leave a line for today...'},{title:'Q4. A word for tomorrow.',field:'tomorrow',ph:'Something for tomorrow-you...'}][step];a.innerHTML=`<h1 class="q">${data.title}</h1><textarea id="answer" maxlength="100" placeholder="${data.ph}"></textarea><div class="count"><span id="count">0</span>/100</div>${step===3?'<div style="font-size:10px;color:#85857d;line-height:1.5;margin-top:12px">This note will appear the next time you open Caru tomorrow.</div>':''}`;$('answer').value=draft[data.field];$('count').textContent=draft[data.field].length;$('answer').oninput=e=>{draft[data.field]=e.target.value;$('count').textContent=e.target.value.length}}
+/* ── Firebase Initialization ── */
+const firebaseConfig = {
+  apiKey: "AIzaSyCitVETsMx-5ax48t4UViBT8DyIMOiB0sM",
+  authDomain: "zero-3dfef.firebaseapp.com",
+  databaseURL: "https://zero-3dfef-default-rtdb.firebaseio.com",
+  projectId: "zero-3dfef",
+  storageBucket: "zero-3dfef.firebasestorage.app",
+  messagingSenderId: "59219649844",
+  appId: "1:59219649844:web:38546f1960e27abac83161"
+};
+
+let db = null;
+try {
+  if (typeof firebase !== 'undefined') {
+    firebase.initializeApp(firebaseConfig);
+    db = firebase.database();
+  }
+} catch (e) {
+  console.warn('Firebase init error:', e);
 }
-function saveRecord(){let i=records.findIndex(r=>r.date===key()),r={date:key(),...draft,savedAt:Date.now()};if(i>=0)records[i]=r;else records.push(r);records.sort((a,b)=>b.date.localeCompare(a.date));localStorage.setItem('caru_notes_v1',JSON.stringify(records));$('noteOverlay').classList.remove('show');screen('progress');listMode=false;renderProgress(true,r.date)}
-$('homeTap').onclick=openNote;$('closeNote').onclick=()=>$('noteOverlay').classList.remove('show');$('nextBtn').onclick=()=>{if(step===0&&!draft.mood)return;if(step<3){step++;renderStep()}else saveRecord()};$('backBtn').onclick=()=>{if(step>0){step--;renderStep()}};
-$('progressOpen').onclick=()=>{screen('progress');renderProgress()};let timer;$('homeTap').addEventListener('pointerdown',()=>timer=setTimeout(()=>{screen('progress');renderProgress()},700));['pointerup','pointerleave','pointercancel'].forEach(e=>$('homeTap').addEventListener(e,()=>clearTimeout(timer)));
-function summary(r){return r.line||r.moment||r.tomorrow||'A quiet day.'}
-function renderProgress(animateNew=false,newDate=''){$('listToggle').textContent=listMode?'Notes ↗':'List up ☷';$('scatter').style.display=listMode?'none':'block';$('listView').style.display=listMode?'block':'none';$('scatter').innerHTML='';$('listView').innerHTML='';if(!records.length){$('scatter').innerHTML='<div class="empty">YOUR NOTES WILL LIVE HERE</div>';return}
-if(listMode){records.forEach(r=>{let b=document.createElement('button');b.className='row';b.innerHTML=`<span class="mini">${esc(r.mood)}</span><span style="flex:1;min-width:0"><span class="listDate">${pretty(r.date)}</span><br><span class="listSnippet">${esc(summary(r))}</span></span><span style="color:#777">${esc(r.mood)}</span>`;b.onclick=()=>detail(r);$('listView').appendChild(b)})}
-else{let pos=[[7,8,-5],[52,18,4],[19,43,3],[56,57,-4],[3,68,2],[44,76,5],[29,26,-2],[66,39,3]];records.forEach((r,i)=>{let b=document.createElement('button'),p=pos[i%pos.length];b.className='sticky';b.style.left=Math.max(1,Math.min(68,p[0]+Math.random()*3))+'%';b.style.top=Math.max(1,Math.min(78,p[1]+Math.random()*3))+'%';const rot=p[2]+Math.random()*2-1;b.style.setProperty('--rotation',rot+'deg');b.style.transform=`rotate(${rot}deg)`;b.style.zIndex=i+1;if(animateNew&&r.date===newDate){b.classList.add('fly-in');b.style.setProperty('--from-y','-75vh');b.style.setProperty('--from-x','12vw')}b.innerHTML=`<div class="date">${pretty(r.date)}</div><div class="sym">${esc(r.mood)}</div>`;b.onclick=()=>detail(r);$('scatter').appendChild(b)})}}
-$('listToggle').onclick=()=>{listMode=!listMode;renderProgress()};
-function detail(r){$('detailDate').textContent=pretty(r.date);$('detailContent').innerHTML=`<div style="font-size:22px;margin-bottom:18px">${esc(r.mood)}</div>${r.moment?'<div class="muted">EVENTS OR MOMENTS</div><div class="detailBody">'+esc(r.moment)+'</div>':''}${r.line?'<div class="muted">ONE LINE</div><div class="detailBody">'+esc(r.line)+'</div>':''}${r.tomorrow?'<div class="muted">A WORD FOR TOMORROW</div><div class="detailBody">'+esc(r.tomorrow)+'</div>':''}`;$('detailOverlay').classList.add('show')}
-$('closeDetail').onclick=()=>$('detailOverlay').classList.remove('show');$('closeTomorrow').onclick=()=>$('tomorrowOverlay').classList.remove('show');
-function checkTomorrow(){let d=new Date();d.setDate(d.getDate()-1);let y=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'),shown=localStorage.getItem('caru_tomorrow_shown_for'),r=records.find(x=>x.date===y&&x.tomorrow&&x.tomorrow.trim());if(r&&shown!==key()){$('tomorrowDate').textContent=pretty(y);$('tomorrowMessage').textContent=r.tomorrow;$('tomorrowOverlay').classList.add('show');localStorage.setItem('caru_tomorrow_shown_for',key())}}
-checkTomorrow();renderProgress();
+
+/* ── My Caru ID ── */
+let myCode = localStorage.getItem('caru_my_code') || localStorage.getItem('caru_uid');
+if (!myCode) {
+  myCode = 'CR-' + Math.random().toString(36).substring(2, 8).toUpperCase();
+  localStorage.setItem('caru_my_code', myCode);
+}
+
+const $ = id => document.getElementById(id),
+      key = () => { let d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); },
+      pretty = k => new Date(k + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }).toUpperCase(),
+      esc = s => String(s || '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+let records = [];
+try { records = JSON.parse(localStorage.getItem('caru_notes_v1') || '[]'); } catch {}
+let step = 0, draft = {}, listMode = false;
+
+function screen(id) {
+  document.querySelectorAll('.screen').forEach(x => x.classList.remove('active'));
+  $(id).classList.add('active');
+}
+
+function updateHomeDate() {
+  const d = new Date();
+  $('homeDate').textContent = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: '2-digit' }).replace(',', ',').toUpperCase();
+}
+updateHomeDate();
+
+function openNote() {
+  draft = { mood: '', moment: '', line: '', tomorrow: '' };
+  step = 0;
+  $('noteOverlay').classList.add('show');
+  renderStep();
+}
+
+function renderStep() {
+  $('todayDate').textContent = pretty(key());
+  $('backBtn').style.visibility = step === 0 ? 'hidden' : 'visible';
+  $('nextBtn').textContent = step === 2 ? 'Save' : 'Next →';
+  let a = $('questionArea');
+  if (step === 0) {
+    a.innerHTML = '<h1 class="q">Q1. How was your day?</h1><div class="moods">' +
+      [{ v: "+", t: "Good" }, { v: "=", t: "Okay" }, { v: "−", t: "Not great" }].map(m =>
+        `<button class="mood ${draft.mood === m.v ? 'sel' : ''}" data-m="${m.v}"><span class="sym">${m.v}</span><span>${m.t}</span></button>`
+      ).join('') + '</div>';
+    a.querySelectorAll('[data-m]').forEach(b => b.onclick = () => { draft.mood = b.dataset.m; renderStep(); });
+  }
+  if (step === 1 || step === 2) {
+    let data = [
+      null,
+      { title: 'Q2. One line for today.', field: 'moment', ph: 'Write a line about today...' },
+      { title: 'Q3. A note for tomorrow.', field: 'tomorrow', ph: 'Something for tomorrow...' }
+    ][step];
+    a.innerHTML = `<h1 class="q">${data.title}</h1><textarea id="answer" maxlength="100" placeholder="${data.ph}"></textarea><div class="count"><span id="count">0</span>/100</div>${step === 2 ? '<div style="font-size:10px;color:#85857d;line-height:1.5;margin-top:12px">This note will appear the next time you open Caru tomorrow.</div>' : ''}`;
+    $('answer').value = draft[data.field];
+    $('count').textContent = draft[data.field].length;
+    $('answer').oninput = e => { draft[data.field] = e.target.value; $('count').textContent = e.target.value.length; };
+  }
+}
+
+function saveRecord() {
+  let i = records.findIndex(r => r.date === key()),
+      r = { date: key(), ...draft, savedAt: Date.now() };
+  if (i >= 0) records[i] = r;
+  else records.push(r);
+  records.sort((a, b) => b.date.localeCompare(a.date));
+  localStorage.setItem('caru_notes_v1', JSON.stringify(records));
+
+  /* Firebase Cloud Sync */
+  if (db && myCode) {
+    db.ref('users/' + myCode + '/records').set(records).catch(err => console.warn('Sync failed:', err));
+  }
+
+  $('noteOverlay').classList.remove('show');
+  screen('progress');
+  listMode = false;
+  renderProgress(true, r.date);
+}
+
+$('homeTap').onclick = openNote;
+$('closeNote').onclick = () => $('noteOverlay').classList.remove('show');
+$('nextBtn').onclick = () => {
+  if (step === 0 && !draft.mood) return;
+  if (step < 2) { step++; renderStep(); }
+  else saveRecord();
+};
+$('backBtn').onclick = () => { if (step > 0) { step--; renderStep(); } };
+
+$('progressOpen').onclick = () => { screen('progress'); renderProgress(); };
+let timer;
+$('homeTap').addEventListener('pointerdown', () => timer = setTimeout(() => { screen('progress'); renderProgress(); }, 700));
+['pointerup', 'pointerleave', 'pointercancel'].forEach(e => $('homeTap').addEventListener(e, () => clearTimeout(timer)));
+
+function summary(r) { return r.line || r.moment || r.tomorrow || 'A quiet day.'; }
+
+function renderProgress(animateNew = false, newDate = '') {
+  $('listToggle').textContent = listMode ? 'Notes ↗' : 'List up ☷';
+  $('scatter').style.display = listMode ? 'none' : 'block';
+  $('listView').style.display = listMode ? 'block' : 'none';
+  $('scatter').innerHTML = '';
+  $('listView').innerHTML = '';
+  if (!records.length) {
+    $('scatter').innerHTML = '<div class="empty">YOUR NOTES WILL LIVE HERE</div>';
+    return;
+  }
+  if (listMode) {
+    records.forEach(r => {
+      let b = document.createElement('button');
+      b.className = 'row';
+      b.innerHTML = `<span class="mini">${esc(r.mood)}</span><span style="flex:1;min-width:0"><span class="listDate">${pretty(r.date)}</span><br><span class="listSnippet">${esc(summary(r))}</span></span><span style="color:#777">${esc(r.mood)}</span>`;
+      b.onclick = () => detail(r);
+      $('listView').appendChild(b);
+    });
+  } else {
+    let pos = [[7, 8, -5], [52, 18, 4], [19, 43, 3], [56, 57, -4], [3, 68, 2], [44, 76, 5], [29, 26, -2], [66, 39, 3]];
+    records.forEach((r, i) => {
+      let b = document.createElement('button'), p = pos[i % pos.length];
+      b.className = 'sticky';
+      b.style.left = Math.max(1, Math.min(68, p[0] + Math.random() * 3)) + '%';
+      b.style.top = Math.max(1, Math.min(78, p[1] + Math.random() * 3)) + '%';
+      const rot = p[2] + Math.random() * 2 - 1;
+      b.style.setProperty('--rotation', rot + 'deg');
+      b.style.transform = `rotate(${rot}deg)`;
+      b.style.zIndex = i + 1;
+      if (animateNew && r.date === newDate) {
+        b.classList.add('fly-in');
+        b.style.setProperty('--from-y', '-75vh');
+        b.style.setProperty('--from-x', '12vw');
+      }
+      b.innerHTML = `<div class="date">${pretty(r.date)}</div><div class="sym">${esc(r.mood)}</div>`;
+      b.onclick = () => detail(r);
+      $('scatter').appendChild(b);
+    });
+  }
+}
+
+$('listToggle').onclick = () => { listMode = !listMode; renderProgress(); };
+
+function detail(r) {
+  $('detailDate').textContent = pretty(r.date);
+  $('detailContent').innerHTML = `<div style="font-size:22px;margin-bottom:18px">${esc(r.mood)}</div>${r.moment ? '<div class="muted">ONE LINE FOR TODAY</div><div class="detailBody">' + esc(r.moment) + '</div>' : ''}${r.line ? '<div class="muted">ONE LINE</div><div class="detailBody">' + esc(r.line) + '</div>' : ''}${r.tomorrow ? '<div class="muted">A WORD FOR TOMORROW</div><div class="detailBody">' + esc(r.tomorrow) + '</div>' : ''}`;
+  $('detailOverlay').classList.add('show');
+}
+$('closeDetail').onclick = () => $('detailOverlay').classList.remove('show');
+$('closeTomorrow').onclick = () => $('tomorrowOverlay').classList.remove('show');
+
+/* ── Friend Notes & Cross-Device Firebase Sync ── */
+const friendsKey = 'caru_friends_v1', outgoingKey = 'caru_friend_notes_v1';
+let friends = [];
+let outgoing = [];
+let incoming = [];
+
+try { friends = JSON.parse(localStorage.getItem(friendsKey) || '[]'); } catch {}
+try { outgoing = JSON.parse(localStorage.getItem(outgoingKey) || '[]'); } catch {}
+
+function saveFriends() {
+  localStorage.setItem(friendsKey, JSON.stringify(friends));
+  localStorage.setItem(outgoingKey, JSON.stringify(outgoing));
+  if (db && myCode) {
+    db.ref('users/' + myCode + '/friends').set(friends).catch(() => {});
+  }
+}
+
+function renderFriends() {
+  $('myCaruId').value = myCode;
+  const list = $('friendList'), recipient = $('friendRecipient'), out = $('outgoingNotes'), inc = $('incomingNotes');
+  list.innerHTML = '';
+  recipient.innerHTML = '<option value="">Choose a friend</option>';
+  out.innerHTML = '';
+  inc.innerHTML = '';
+
+  if (!friends.length) list.innerHTML = '<div class="friendEmpty">No friends added yet.</div>';
+  friends.forEach((f, i) => {
+    const item = document.createElement('div');
+    item.className = 'friendItem';
+    item.innerHTML = `<div><div>${esc(f.name)}</div><div class="friendSub">${esc(f.code)}</div></div><button class="textbtn" data-remove-friend="${i}">Remove</button>`;
+    list.appendChild(item);
+    const opt = document.createElement('option');
+    opt.value = f.id;
+    opt.textContent = `${f.name} (${f.code})`;
+    recipient.appendChild(opt);
+  });
+
+  list.querySelectorAll('[data-remove-friend]').forEach(b => b.onclick = () => {
+    friends.splice(Number(b.dataset.removeFriend), 1);
+    saveFriends();
+    renderFriends();
+  });
+
+  /* Incoming Notes */
+  if (!incoming.length) {
+    inc.innerHTML = '<div class="friendEmpty">No received notes yet.</div>';
+  } else {
+    incoming.slice().reverse().forEach(n => {
+      const isDelivered = !n.deliveryAt || new Date(n.deliveryAt) <= new Date();
+      const when = n.deliveryAt ? new Date(n.deliveryAt).toLocaleString('en-US', { month: 'short', day: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
+      const item = document.createElement('div');
+      item.className = 'friendItem';
+      if (isDelivered) {
+        item.innerHTML = `<div style="min-width:0;flex:1"><div style="color:#d0d0ca;font-weight:600">From ${esc(n.senderName || n.senderCode || 'Friend')}</div><div class="friendSub" style="color:#f0f0ec;margin-top:5px;font-size:13px;white-space:pre-wrap">${esc(n.message)}</div><div class="friendSub" style="color:#666;margin-top:5px">${esc(when)}</div></div>`;
+      } else {
+        item.innerHTML = `<div style="min-width:0;flex:1"><div>From ${esc(n.senderName || n.senderCode || 'Friend')}</div><div class="friendSub" style="color:#777;margin-top:4px">Locked until ${esc(when)} 🔒</div></div><span style="color:#666;font-size:10px">Scheduled</span>`;
+      }
+      inc.appendChild(item);
+    });
+  }
+
+  /* Outgoing Notes */
+  if (!outgoing.length) out.innerHTML = '<div class="friendEmpty">No notes waiting.</div>';
+  outgoing.slice().reverse().forEach(n => {
+    const f = friends.find(x => x.id === n.friendId);
+    const item = document.createElement('div');
+    item.className = 'friendItem';
+    const when = n.deliveryAt ? new Date(n.deliveryAt).toLocaleString('en-US', { month: 'short', day: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'No delivery time';
+    item.innerHTML = `<div style="min-width:0;flex:1"><div>To ${esc(n.friendName || f?.name || 'Friend')}</div><div class="friendSub">${esc(when)}</div><div class="friendSub">${esc(n.message)}</div></div><span style="color:#777;font-size:10px">Scheduled</span>`;
+    out.appendChild(item);
+  });
+}
+
+$('friendsOpen').onclick = () => { $('friendPanel').classList.add('show'); renderFriends(); };
+$('friendsClose').onclick = () => $('friendPanel').classList.remove('show');
+
+$('copyMyId').onclick = () => {
+  navigator.clipboard.writeText(myCode).then(() => {
+    $('friendStatus').textContent = 'Caru ID copied to clipboard.';
+    setTimeout(() => { $('friendStatus').textContent = ''; }, 2500);
+  }).catch(() => {
+    $('friendStatus').textContent = 'Please select and copy your Caru ID.';
+  });
+};
+
+$('addFriend').onclick = () => {
+  const name = $('friendName').value.trim(), code = $('friendCode').value.trim().toUpperCase();
+  if (!name || !code) { $('friendStatus').textContent = 'Enter a name and Caru ID.'; return; }
+  if (code === myCode) { $('friendStatus').textContent = 'Cannot add your own Caru ID.'; return; }
+  if (friends.some(f => f.code.toUpperCase() === code)) { $('friendStatus').textContent = 'This friend is already on your list.'; return; }
+  friends.push({ id: 'f_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 7), name, code });
+  saveFriends();
+  $('friendName').value = '';
+  $('friendCode').value = '';
+  $('friendStatus').textContent = `${name} added to your friends.`;
+  renderFriends();
+};
+
+$('friendMessage').oninput = () => { $('friendCount').textContent = $('friendMessage').value.length + '/240'; };
+
+const deliveryDateInput = $('friendDeliveryDate');
+{
+  const today = new Date();
+  deliveryDateInput.min = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
+  deliveryDateInput.value = deliveryDateInput.min;
+}
+
+$('queueFriendNote').onclick = () => {
+  const friend = friends.find(f => f.id === $('friendRecipient').value),
+        message = $('friendMessage').value.trim(),
+        date = $('friendDeliveryDate').value,
+        time = $('friendDeliveryTime').value;
+  if (!friend) { $('friendStatus').textContent = 'Choose a friend first.'; return; }
+  if (!message) { $('friendStatus').textContent = 'Write a little note first.'; return; }
+  if (!date || !time) { $('friendStatus').textContent = 'Choose a delivery date and time.'; return; }
+  const deliveryAt = new Date(date + 'T' + time);
+  if (Number.isNaN(deliveryAt.getTime()) || deliveryAt <= new Date()) {
+    $('friendStatus').textContent = 'Choose a future date and time.';
+    return;
+  }
+
+  const noteId = 'n_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 6);
+  const notePayload = {
+    id: noteId,
+    friendId: friend.id,
+    friendName: friend.name,
+    friendCode: friend.code,
+    senderCode: myCode,
+    senderName: 'Friend (' + myCode + ')',
+    message,
+    createdAt: key(),
+    deliveryAt: deliveryAt.toISOString(),
+    status: 'scheduled'
+  };
+
+  outgoing.push(notePayload);
+  saveFriends();
+
+  /* Send to friend's inbox in Firebase */
+  if (db && friend.code) {
+    const targetCode = friend.code.trim().toUpperCase();
+    db.ref('inbox/' + targetCode + '/' + noteId).set(notePayload).catch(e => console.warn('Delivery error:', e));
+    db.ref('users/' + myCode + '/outgoing/' + noteId).set(notePayload).catch(() => {});
+  }
+
+  $('friendMessage').value = '';
+  $('friendCount').textContent = '0/240';
+  $('friendStatus').textContent = `Message scheduled for ${friend.name} in Firebase.`;
+  renderFriends();
+};
+
+function checkTomorrow() {
+  let d = new Date();
+  d.setDate(d.getDate() - 1);
+  let y = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'),
+      shown = localStorage.getItem('caru_tomorrow_shown_for'),
+      r = records.find(x => x.date === y && x.tomorrow && x.tomorrow.trim());
+  if (r && shown !== key()) {
+    $('tomorrowDate').textContent = pretty(y);
+    $('tomorrowMessage').textContent = r.tomorrow;
+    $('tomorrowOverlay').classList.add('show');
+    localStorage.setItem('caru_tomorrow_shown_for', key());
+  }
+}
+
+/* ── Firebase Real-time Listeners ── */
+function initFirebaseSync() {
+  if (!db || !myCode) return;
+
+  // 1. Sync User's Records
+  db.ref('users/' + myCode + '/records').on('value', snap => {
+    const val = snap.val();
+    if (Array.isArray(val) && val.length > 0) {
+      const map = new Map();
+      records.forEach(r => map.set(r.date, r));
+      val.forEach(r => {
+        const existing = map.get(r.date);
+        if (!existing || (r.savedAt || 0) >= (existing.savedAt || 0)) {
+          map.set(r.date, r);
+        }
+      });
+      records = Array.from(map.values()).sort((a, b) => b.date.localeCompare(a.date));
+      localStorage.setItem('caru_notes_v1', JSON.stringify(records));
+      renderProgress();
+      checkTomorrow();
+    }
+  });
+
+  // 2. Sync Friends
+  db.ref('users/' + myCode + '/friends').on('value', snap => {
+    const val = snap.val();
+    if (Array.isArray(val) && val.length > 0) {
+      friends = val;
+      localStorage.setItem(friendsKey, JSON.stringify(friends));
+      renderFriends();
+    }
+  });
+
+  // 3. Listen for Incoming Notes to My Caru ID
+  db.ref('inbox/' + myCode).on('value', snap => {
+    const val = snap.val();
+    if (val) {
+      incoming = Object.values(val);
+      renderFriends();
+    } else {
+      incoming = [];
+      renderFriends();
+    }
+  });
+}
+
+renderFriends();
+checkTomorrow();
+renderProgress();
+initFirebaseSync();
 </script></body></html>
